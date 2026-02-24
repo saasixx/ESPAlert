@@ -6,21 +6,59 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to DigitalOcean via SSH
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Lint backend
+        run: |
+          pip install ruff
+          ruff check backend/ || echo "Lint warnings found (non-blocking)"
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy backend to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: root
+          key: ${{ secrets.DO_SSH_KEY }}
+          source: "backend/"
+          target: "/opt/espalert/"
+          overwrite: true
+
+      - name: Build and restart containers
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DO_HOST }}
-          username: ${{ secrets.DO_USER }}
+          username: root
           key: ${{ secrets.DO_SSH_KEY }}
-          passphrase: ${{ secrets.DO_PASSPHRASE }}
           script: |
-            cd /home/${{ secrets.DO_USER }}/espalert
-            git pull origin main
-            docker compose -f docker-compose.prod.yml up -d --build
+            cd /opt/espalert/backend
+
+            # Ensure .env exists (never overwritten by SCP)
+            if [ ! -f .env ]; then
+              echo "ERROR: .env file missing! Create it before deploying."
+              exit 1
+            fi
+
+            docker compose -p espalert -f docker-compose.deploy.yml build --no-cache api worker beat
+            docker compose -p espalert -f docker-compose.deploy.yml up -d --force-recreate api worker beat
             docker system prune -f
+            echo "Deploy complete: $(date)"
