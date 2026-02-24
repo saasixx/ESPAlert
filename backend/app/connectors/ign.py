@@ -11,8 +11,8 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# IGN FDSN event service (Centro Sismológico Nacional)
-FDSN_BASE = "https://www.ign.es/csn/fdsnws/event/1"
+# EMSC Seismic Portal FDSN event service (includes IGN/CSN data)
+FDSN_BASE = "https://seismicportal.eu/fdsnws/event/1"
 
 # IGN web page for latest earthquakes (fallback scrape)
 IGN_LATEST_URL = "https://www.ign.es/web/ign/portal/ultimos-terremotos/-/ultimos-terremotos/getUltimosTerremotos"

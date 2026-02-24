@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 # DGT NAP endpoint for traffic incidents (DATEX2)
-# Note: may require registration / credentials for full access
+# Requires free registration at https://nap.dgt.es to obtain API credentials
 DGT_INCIDENTS_URL = "https://nap.dgt.es/api/datex/v3/incidents"
 DGT_INCIDENTS_FALLBACK = "https://infocar.dgt.es/datex2/dgt/SituationPublication/all/content.xml"
 

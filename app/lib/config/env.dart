@@ -10,19 +10,19 @@ class Env {
   /// Base URL for the REST API
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000/api/v1',
+    defaultValue: 'http://165.22.29.181:8001/api/v1',
   );
 
   /// WebSocket URL for real-time event stream
   static const String wsEventsUrl = String.fromEnvironment(
     'WS_EVENTS_URL',
-    defaultValue: 'ws://10.0.2.2:8000/api/v1/ws/events',
+    defaultValue: 'ws://165.22.29.181:8001/api/v1/ws/events',
   );
 
   /// Base URL for mesh network API
   static const String meshBaseUrl = String.fromEnvironment(
     'MESH_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000/api/v1/mesh',
+    defaultValue: 'http://165.22.29.181:8001/api/v1/mesh',
   );
 
   /// HTTP request timeout

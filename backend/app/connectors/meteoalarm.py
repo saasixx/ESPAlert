@@ -1,4 +1,4 @@
-"""MeteoAlarm EDR connector — fetches European weather warnings via OGC EDR API."""
+"""MeteoAlarm connector — fetches European weather warnings via CAP/JSON feeds API."""
 
 import logging
 from datetime import datetime, timezone
@@ -11,41 +11,42 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# MeteoAlarm EDR API (public, no key required, CC BY 4.0 license)
-EDR_BASE = "https://api.meteoalarm.org/edr/v1"
+# MeteoAlarm Feeds API (public, no key required)
+FEEDS_URL = "https://feeds.meteoalarm.org/api/v1/warnings/feeds-spain"
 
-# MeteoAlarm awareness levels → our severity
-AWARENESS_SEVERITY = {
-    "1": "green",    # Green — no particular awareness required
-    "2": "yellow",   # Yellow — weather is potentially dangerous
-    "3": "orange",   # Orange — weather is dangerous
-    "4": "red",      # Red — weather is very dangerous
+# CAP severity → our severity
+CAP_SEVERITY = {
+    "Extreme": "red",
+    "Severe": "orange",
+    "Moderate": "yellow",
+    "Minor": "green",
+    "Unknown": "green",
 }
 
-# MeteoAlarm awareness types → our event types
+# awareness_type parameter → our event types
 AWARENESS_TYPE_MAP = {
     "1": "wind",
-    "2": "snow",      # Snow/Ice
-    "3": "storm",     # Thunderstorms
+    "2": "snow",
+    "3": "storm",
     "4": "fog",
-    "5": "heat",      # Extreme high temperature
-    "6": "cold",      # Extreme low temperature
-    "7": "coastal",   # Coastal event
-    "8": "fire_risk", # Forest fire
-    "9": "wave",      # Avalanche (reuse wave/snow)
-    "10": "rain",     # Rain
-    "11": "rain",     # Flooding (rain-related)
-    "12": "rain",     # Rain-Flood
-    "13": "other",    # Unknown
+    "5": "heat",
+    "6": "cold",
+    "7": "coastal",
+    "8": "fire_risk",
+    "9": "wave",
+    "10": "rain",
+    "11": "rain",
+    "12": "rain",
+    "13": "other",
 }
 
 
 class MeteoAlarmConnector:
     """
-    Fetches weather warnings from MeteoAlarm's OGC Environmental Data Retrieval API.
+    Fetches weather warnings from MeteoAlarm's feeds API.
 
-    Returns GeoJSON features with warning details for Spain (country code: ES).
-    Supplements AEMET data with the standardized European format.
+    Uses the CAP-based JSON feed which returns all active warnings for Spain,
+    sourced from AEMET and published in the standardized European format.
     """
 
     async def fetch_warnings(self) -> list[dict]:
@@ -53,104 +54,111 @@ class MeteoAlarmConnector:
         events = []
 
         try:
-            geojson = await self._query_edr()
-            if geojson:
-                events = self._parse_geojson(geojson)
+            data = await self._query_feed()
+            if data:
+                events = self._parse_warnings(data)
         except Exception as e:
             logger.exception(f"Error fetching MeteoAlarm warnings: {e}")
 
         logger.info(f"MeteoAlarm: fetched {len(events)} warnings")
         return events
 
-    async def _query_edr(self) -> Optional[dict]:
-        """Query the EDR API for Spain warnings."""
+    async def _query_feed(self) -> Optional[dict]:
+        """Query the MeteoAlarm feeds API."""
         async with httpx.AsyncClient(timeout=30) as client:
-            # Query active warnings for Spain
-            resp = await client.get(
-                f"{EDR_BASE}/collections/warnings/items",
-                params={
-                    "country": "ES",
-                    "f": "GeoJSON",
-                },
-                headers={"Accept": "application/geo+json"},
-            )
+            resp = await client.get(FEEDS_URL)
 
             if resp.status_code != 200:
-                logger.error(f"MeteoAlarm EDR returned {resp.status_code}: {resp.text[:200]}")
+                logger.error(f"MeteoAlarm feeds returned {resp.status_code}: {resp.text[:200]}")
                 return None
 
             return resp.json()
 
-    def _parse_geojson(self, geojson: dict) -> list[dict]:
-        """Parse MeteoAlarm GeoJSON features into our event format."""
+    def _parse_warnings(self, data: dict) -> list[dict]:
+        """Parse MeteoAlarm CAP/JSON warnings into our event format."""
         events = []
 
-        features = geojson.get("features", [])
-
-        for feature in features:
+        warnings = data.get("warnings", [])
+        for warning in warnings:
             try:
-                event = self._parse_feature(feature)
+                event = self._parse_warning(warning)
                 if event:
                     events.append(event)
             except Exception as e:
-                logger.warning(f"Error parsing MeteoAlarm feature: {e}")
+                logger.warning(f"Error parsing MeteoAlarm warning: {e}")
 
         return events
 
-    def _parse_feature(self, feature: dict) -> Optional[dict]:
-        """Parse a single GeoJSON feature into our event dict."""
-        props = feature.get("properties", {})
-        geometry = feature.get("geometry", {})
-
-        # Extract awareness info
-        awareness_level = str(props.get("awareness_level", "1"))
-        awareness_type = str(props.get("awareness_type", "13"))
-
-        severity = AWARENESS_SEVERITY.get(awareness_level.split(".")[0] if "." in awareness_level else awareness_level, "green")
-        event_type = AWARENESS_TYPE_MAP.get(awareness_type.split(".")[0] if "." in awareness_type else awareness_type, "other")
-
-        # Build identifier
-        warning_id = props.get("identifier", props.get("id", ""))
-        if not warning_id:
+    def _parse_warning(self, warning: dict) -> Optional[dict]:
+        """Parse a single CAP alert warning."""
+        alert = warning.get("alert", {})
+        identifier = alert.get("identifier", "")
+        if not identifier:
             return None
 
-        # Extract text
-        headline = props.get("headline", "")
-        description = props.get("description", "")
-        instruction = props.get("instruction", "")
+        # Get Spanish info block (first), fallback to any
+        info_list = alert.get("info", [])
+        if not info_list:
+            return None
 
-        # Area name
-        area_name = props.get("geocode_name", props.get("area", ""))
+        info = info_list[0]
+        for i in info_list:
+            if i.get("language", "").startswith("es"):
+                info = i
+                break
+
+        # Skip "AllClear" responses — these are cancellations
+        response_types = info.get("responseType", [])
+        if "AllClear" in response_types:
+            return None
+
+        # Severity
+        cap_severity = info.get("severity", "Minor")
+        severity = CAP_SEVERITY.get(cap_severity, "green")
+
+        # Skip green/minor alerts to reduce noise
+        if severity == "green":
+            return None
+
+        # Event type from awareness_type parameter
+        event_type = "other"
+        params = info.get("parameter", [])
+        for p in params:
+            if p.get("valueName") == "awareness_type":
+                # Format: "1; Wind" → take first number
+                val = p.get("value", "13")
+                type_num = val.split(";")[0].strip()
+                event_type = AWARENESS_TYPE_MAP.get(type_num, "other")
+                break
+
+        # Text fields
+        headline = info.get("headline", "")
+        event_name = info.get("event", "")
+        description = info.get("description", headline)
+
+        # Area
+        areas = info.get("area", [])
+        area_name = areas[0].get("areaDesc", "") if areas else ""
 
         # Timestamps
-        effective = props.get("effective", props.get("onset", ""))
-        expires = props.get("expires", "")
+        effective = info.get("effective", info.get("onset", ""))
+        expires = info.get("expires", "")
 
-        # Convert GeoJSON geometry to WKT
-        wkt = self._geojson_geometry_to_wkt(geometry) if geometry else None
+        # Sender
+        sender_name = info.get("senderName", "MeteoAlarm")
 
         return {
             "source": "meteoalarm",
-            "source_id": f"meteoalarm-{warning_id}",
+            "source_id": f"meteoalarm-{identifier}",
             "event_type": event_type,
             "severity": severity,
-            "title": headline or f"Aviso MeteoAlarm — {area_name}",
-            "description": description,
-            "instructions": instruction,
-            "area_wkt": wkt,
+            "title": headline or f"{event_name} — {area_name}",
+            "description": description or event_name,
+            "instructions": f"Fuente: {sender_name}",
+            "area_wkt": None,  # No geometry in feeds API, only geocodes
             "area_name": area_name,
             "effective": effective,
             "expires": expires,
-            "source_url": "https://meteoalarm.org",
-            "raw_data": feature,
+            "source_url": info.get("web", "https://meteoalarm.org"),
+            "raw_data": warning,
         }
-
-    @staticmethod
-    def _geojson_geometry_to_wkt(geometry: dict) -> Optional[str]:
-        """Convert a GeoJSON geometry object to WKT string."""
-        try:
-            from shapely.geometry import shape
-            geom = shape(geometry)
-            return geom.wkt
-        except Exception:
-            return None
