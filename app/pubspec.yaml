@@ -1,0 +1,61 @@
+name: espalert
+description: "ESPAlert — Multi-hazard real-time alert system for Spain"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  shimmer: ^3.0.0
+
+  # Maps
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.1
+
+  # State management
+  provider: ^6.1.2
+
+  # Networking
+  http: ^1.2.2
+  web_socket_channel: ^2.4.5
+
+  # Firebase
+  firebase_core: ^2.27.1
+  firebase_messaging: ^14.7.19
+
+  # Location
+  geolocator: ^11.1.0
+  geocoding: ^3.0.0
+
+  # Charts
+  fl_chart: ^0.68.0
+
+  # Local storage
+  shared_preferences: ^2.3.3
+
+  # Utils
+  intl: ^0.19.0
+  url_launcher: ^6.3.1
+  timeago: ^3.7.0
+
+  # Meshtastic BLE
+  flutter_reactive_ble: ^5.3.1
+  protobuf: ^3.1.0
+  permission_handler: ^11.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

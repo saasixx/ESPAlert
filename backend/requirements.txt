@@ -1,0 +1,51 @@
+# FastAPI & Server
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+
+# Database
+sqlalchemy==2.0.36
+geoalchemy2==0.15.2
+alembic==1.14.1
+asyncpg==0.30.0
+psycopg2-binary==2.9.10
+
+# Redis & Celery
+redis==5.2.1
+celery[redis]==5.4.0
+
+# HTTP & Parsing
+httpx==0.28.1
+lxml==5.3.0
+xmltodict==0.14.1
+
+# Firebase
+firebase-admin==6.6.0
+
+# Meshtastic
+meshtastic==2.5.6
+pypubsub==4.0.3
+
+# Auth
+pyjwt==2.10.1
+passlib[bcrypt]==1.7.4
+
+# GeoJSON / Geometry
+shapely==2.0.6
+geojson==3.2.0
+
+# Utils
+pydantic==2.10.4
+pydantic-settings==2.7.1
+python-dotenv==1.0.1
+email-validator==2.2.0
+
+# Security
+slowapi==0.1.9
+
+# Production server
+gunicorn==22.0.0
+
+# Testing
+pytest==8.3.4
+pytest-asyncio==0.25.0

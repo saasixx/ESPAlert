@@ -1,0 +1,111 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL + PostGIS ─────────────────────────────
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: espalert
+      POSTGRES_USER: espalert
+      POSTGRES_PASSWORD: espalert
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U espalert" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass devpassword
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "devpassword", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Backend ──────────────────────────────────
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://espalert:espalert@db:5432/espalert
+      DATABASE_URL_SYNC: postgresql+psycopg2://espalert:espalert@db:5432/espalert
+      REDIS_URL: redis://:devpassword@redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "
+        alembic upgrade head &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  # ── Celery Worker ────────────────────────────────────
+  worker:
+    build: .
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://espalert:espalert@db:5432/espalert
+      DATABASE_URL_SYNC: postgresql+psycopg2://espalert:espalert@db:5432/espalert
+      REDIS_URL: redis://:devpassword@:devpassword@redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=4
+
+  # ── Celery Beat (scheduler) ──────────────────────────
+  beat:
+    build: .
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://espalert:espalert@db:5432/espalert
+      DATABASE_URL_SYNC: postgresql+psycopg2://espalert:espalert@db:5432/espalert
+      REDIS_URL: redis://:devpassword@:devpassword@redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A app.tasks.celery_app beat --loglevel=info
+
+  # ── Meshtastic Gateway (LoRa mesh bridge) ────────────
+  # Optional: only needed if you have a Meshtastic radio
+  # connected via USB. Comment out if not using mesh.
+  mesh-gw:
+    build: .
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://:devpassword@redis:6379/0
+      MESHTASTIC_CONNECTION: serial
+      MESHTASTIC_ADDRESS: /dev/ttyUSB0
+    depends_on:
+      redis:
+        condition: service_healthy
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0" # Map host serial device
+    cap_add:
+      - SYS_RAWIO
+    command: python -m app.connectors.meshtastic_gw --type serial --address /dev/ttyUSB0
+    restart: unless-stopped
+    profiles:
+      - mesh # Only starts with: docker compose --profile mesh up
+
+volumes:
+  pgdata:

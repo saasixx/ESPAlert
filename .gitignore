@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+.pytest_cache/
+htmlcov/
+.coverage
+*.cover
+
+# Environment / Secrets
+.env
+.env.*
+!.env.example
+firebase-credentials.json
+*.pem
+*.key
+*.crt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker
+pgdata/
+redisdata/
+
+# Backups
+*.sql.gz
+*.sql.gz.gpg
+
+# Flutter
+app/.dart_tool/
+app/.packages
+app/build/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/pubspec.lock
+app/android/.gradle/
+app/ios/Pods/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
