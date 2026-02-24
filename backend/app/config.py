@@ -46,9 +46,17 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://localhost:8080",
+        "*",
     ]
-    # In production, add your actual domain:
+    # In production, restrict to your actual domain:
     # ALLOWED_ORIGINS=["https://espalert.es","https://app.espalert.es"]
+
+    TRUSTED_HOSTS: list[str] = [
+        "espalert.es",
+        "*.espalert.es",
+        "localhost",
+        "165.22.29.181",
+    ]
 
     RATE_LIMIT_DEFAULT: str = "100/minute"
     RATE_LIMIT_AUTH: str = "10/minute"
@@ -58,7 +66,7 @@ class Settings(BaseSettings):
     MESHTASTIC_CONNECTION: str = "serial"
     MESHTASTIC_ADDRESS: str = "/dev/ttyUSB0"
 
-    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @field_validator("ALLOWED_ORIGINS", "TRUSTED_HOSTS", mode="before")
     @classmethod
     def parse_origins(cls, v):
         if isinstance(v, str):

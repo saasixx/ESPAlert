@@ -78,7 +78,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 if settings.ENVIRONMENT == "production":
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["espalert.es", "*.espalert.es", "localhost"],
+        allowed_hosts=settings.TRUSTED_HOSTS,
     )
 
 # 3. CORS — restrictive in production
