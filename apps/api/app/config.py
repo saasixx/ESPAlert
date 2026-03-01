@@ -52,10 +52,8 @@ class Settings(BaseSettings):
     # ALLOWED_ORIGINS=["https://espalert.es","https://app.espalert.es"]
 
     TRUSTED_HOSTS: list[str] = [
-        "espalert.es",
-        "*.espalert.es",
         "localhost",
-        "165.22.29.181",
+        "127.0.0.1"
     ]
 
     RATE_LIMIT_DEFAULT: str = "100/minute"

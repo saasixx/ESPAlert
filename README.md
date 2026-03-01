@@ -2,92 +2,67 @@
 
 **Sistema de alertas multi-riesgo en tiempo real para España**
 
-Inspirado en [Yurekuru](https://play.google.com/store/apps/details?id=jp.co.rcsc.yurekuru.android): suscripción por zonas, mapa vivo, lista de eventos y avisos altamente configurables — pero para meteorología, sismos, tráfico y protección civil.
+*ESPAlert* es una plataforma Open Source diseñada para proporcionar alertas tempranas de meteorología, sismos, tráfico y avisos de protección civil en un único mapa interactivo. 
 
-## 📦 Stack
+> **Aviso de Migración:** El proyecto ha sido reescrito desde Flutter a **Next.js + MapLibre GL** para abrirlo a la comunidad web Open Source. La versión Flutter original reside en `app_flutter_archive/`.
 
-| Componente | Tecnología |
-|---|---|
-| Backend API | Python 3.12 + FastAPI |
-| Base de datos | PostgreSQL 16 + PostGIS |
-| Caché/Cola | Redis 7 |
-| Workers | Celery (Beat + Worker) |
-| Push | Firebase Cloud Messaging |
-| App móvil | Flutter 3.x (Android + iOS) |
-| Mapas | flutter_map + CartoDB dark tiles |
-| Mesh Radio | Meshtastic (LoRa) — chat sin cobertura |
+## 📦 Arquitectura (Monorepo)
 
-## 🗂️ Estructura
+| Componente | Tecnología | Ubicación |
+|---|---|---|
+| **Frontend Web** | Next.js 15, Tailwind, shadcn/ui, MapLibre GL | `/apps/web` |
+| **Backend API** | Python 3.12, FastAPI, PostGIS, Celery, Redis | `/apps/api` |
+| **Monorepo** | Turborepo | Raíz |
+| **Mesh Radio** | Meshtastic (LoRa) | `/apps/api/connectors` |
 
-```
+## 🗂️ Estructura del repositorio
+
+```text
 ESPAlert/
-├── backend/                    # FastAPI + Celery
-│   ├── app/
-│   │   ├── main.py             # Entry point
-│   │   ├── config.py           # Settings
-│   │   ├── database.py         # SQLAlchemy async
-│   │   ├── schemas.py          # Pydantic schemas
-│   │   ├── models/             # SQLAlchemy + GeoAlchemy2
-│   │   ├── connectors/         # AEMET, IGN, DGT, MeteoAlarm
-│   │   ├── services/           # Normalizer, GeoEngine, Notifications
-│   │   ├── tasks/              # Celery periodic ingestion
-│   │   └── api/                # REST + WebSocket endpoints
-│   ├── alembic/                # DB migrations
-│   ├── docker-compose.yml      # Full stack
-│   ├── Dockerfile
-│   └── requirements.txt
-│
-└── app/                        # Flutter mobile app
-    ├── lib/
-    │   ├── main.dart
-    │   ├── config/theme.dart
-    │   ├── models/event.dart
-    │   ├── services/api_service.dart
-    │   ├── providers/
-    │   ├── screens/            # Map, Timeline, Mesh, Detail, History, Education, Settings
-    │   └── widgets/            # EventCard, SeverityBadge, LayerToggle, Countdown
-    └── pubspec.yaml
+├── apps/
+│   ├── api/                    # FastAPI + Celery + PostGIS
+│   └── web/                    # Next.js App Router (Frontend)
+├── app_flutter_archive/        # Versión móvil antigua (Deprecated)
+├── docker-compose.yml          # Full stack (¡la forma recomendada!)
+├── package.json                # Turborepo workspaces
+└── turbo.json
 ```
 
-## 🚀 Quick Start
+## 🚀 Instalación y Despliegue Rápido (Docker)
 
-### Backend
+La forma más rápida de levantar toda la plataforma (Base de datos espacial, Redis, Backend FastAPI, Workers y el Frontend Web):
 
 ```bash
-cd backend
-cp .env.example .env
-# Edit .env with your AEMET API key
+# 1. Clona el repositorio
+git clone https://github.com/tu-usuario/ESPAlert.git
+cd ESPAlert
 
-docker compose up --build
+# 2. Configura las variables de entorno del backend
+cp apps/api/.env.example apps/api/.env
+# (Edita .env si tienes API Keys reales de AEMET, si no, funcionará con datos públicos)
+
+# 3. Levanta el stack completo
+npm run dev:docker
 ```
 
-Esto levanta: PostgreSQL+PostGIS, Redis, API (puerto 8000), Worker, Beat.
+La aplicación estará disponible en:
+- **Web App**: http://localhost:3000
+- **API REST**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
 
-- API docs: http://localhost:8000/docs
-- Health check: http://localhost:8000/health
+## 🛠️ Desarrollo Local (Sin Docker para el Frontend)
 
-### Meshtastic Gateway (opcional)
-
-Si tienes un dispositivo Meshtastic conectado por USB:
-
-```bash
-docker compose --profile mesh up --build
-```
-
-También puedes ejecutar el gateway directamente:
+Si prefieres desarrollar el frontend fuera de Docker (para recargas más rápidas):
 
 ```bash
-python -m app.connectors.meshtastic_gw --type serial --address /dev/ttyUSB0
-# o por TCP si usas un nodo remoto:
-python -m app.connectors.meshtastic_gw --type tcp --address 192.168.1.50
-```
+# 1. Levanta solo la base de datos y backend con Docker
+docker compose up db redis api worker beat -d
 
-### Flutter App
+# 2. Instala dependencias del monorepo
+npm install
 
-```bash
-cd app
-flutter pub get
-flutter run
+# 3. Levanta el frontend con Turborepo
+npm run dev
 ```
 
 ## 📡 Fuentes de datos

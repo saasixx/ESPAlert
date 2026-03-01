@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+# Python
 *.pyc
 *.pyo
 *.egg-info/
@@ -13,6 +14,17 @@ venv/
 htmlcov/
 .coverage
 *.cover
+
+# Next.js / Node
+node_modules/
+.next/
+out/
+build/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
 # Environment / Secrets
 .env
@@ -38,15 +50,15 @@ redisdata/
 *.sql.gz
 *.sql.gz.gpg
 
-# Flutter
-app/.dart_tool/
-app/.packages
-app/build/
-app/.flutter-plugins
-app/.flutter-plugins-dependencies
-app/pubspec.lock
-app/android/.gradle/
-app/ios/Pods/
+# Flutter Archive (Deprecated)
+app_flutter_archive/.dart_tool/
+app_flutter_archive/.packages
+app_flutter_archive/build/
+app_flutter_archive/.flutter-plugins
+app_flutter_archive/.flutter-plugins-dependencies
+app_flutter_archive/pubspec.lock
+app_flutter_archive/android/.gradle/
+app_flutter_archive/ios/Pods/
 
 # OS
 .DS_Store
