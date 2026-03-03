@@ -82,10 +82,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install ruff pytest httpx
+          pip install ruff pytest pytest-asyncio httpx
 
       - name: Lint con Ruff
         run: ruff check .
+
+      - name: Migrar base de datos
+        run: alembic upgrade head
 
       - name: Tests
         run: pytest -v
