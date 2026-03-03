@@ -1,8 +1,9 @@
-"""Database engine, session factory, and Redis connection pool."""
+"""Motor de base de datos asíncrono, fábrica de sesiones y pool de Redis."""
 
 import redis.asyncio as aioredis
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
+
 from app.config import get_settings
 
 settings = get_settings()
@@ -12,14 +13,14 @@ engine = create_async_engine(
     echo=settings.DEBUG,
     pool_size=20,
     max_overflow=10,
-    pool_recycle=1800,  # Recycle connections after 30 min
+    pool_recycle=1800,   # Reciclar conexiones cada 30 min
     pool_timeout=30,
-    pool_pre_ping=True,  # Verify connections before use
+    pool_pre_ping=True,  # Verificar conexiones antes de usarlas
 )
 
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-# ── Shared Redis connection pool ─────────────────────────────────────────────
+# ── Pool compartido de Redis ─────────────────────────────────────────────────
 
 redis_pool = aioredis.ConnectionPool.from_url(
     settings.REDIS_URL,
@@ -29,17 +30,16 @@ redis_pool = aioredis.ConnectionPool.from_url(
 
 
 def get_redis() -> aioredis.Redis:
-    """Get a Redis client from the shared connection pool."""
+    """Obtiene un cliente Redis del pool compartido."""
     return aioredis.Redis(connection_pool=redis_pool)
 
 
 class Base(DeclarativeBase):
-    """Declarative base for all models."""
-    pass
+    """Base declarativa para todos los modelos."""
 
 
-async def get_db() -> AsyncSession:
-    """FastAPI dependency — yields an async DB session."""
+async def get_db() -> AsyncSession:  # type: ignore[misc]
+    """Dependencia de FastAPI — proporciona una sesión de BD asíncrona."""
     async with async_session() as session:
         try:
             yield session

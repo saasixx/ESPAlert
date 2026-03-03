@@ -1,25 +1,24 @@
-"""Events API — list, filter, and retrieve alert events."""
+"""API de Eventos — listado, filtrado y consulta de alertas."""
 
+import json
 from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
+from geoalchemy2.functions import ST_DWithin, ST_MakePoint, ST_SetSRID, ST_AsGeoJSON
 from sqlalchemy import select, and_, func as sa_func
 from sqlalchemy.ext.asyncio import AsyncSession
-from geoalchemy2.functions import ST_Intersects, ST_DWithin, ST_MakePoint, ST_SetSRID, ST_AsGeoJSON
 
 from app.database import get_db
-from app.models.event import Event, Severity
+from app.models.event import Event
 from app.schemas import EventOut, EventListParams
-
-import json
 
 router = APIRouter(prefix="/events", tags=["events"])
 
 
 def _event_to_out(event: Event, area_geojson: str | None = None) -> EventOut:
-    """Convert SQLAlchemy Event to Pydantic EventOut."""
+    """Convierte un Event de SQLAlchemy a un EventOut de Pydantic."""
     return EventOut(
         id=event.id,
         source=event.source.value if event.source else "",
@@ -53,7 +52,7 @@ async def list_events(
     offset: int = Query(0),
     db: AsyncSession = Depends(get_db),
 ):
-    """List alert events with optional filters (type, severity, geo-radius)."""
+    """Lista eventos de alerta con filtros opcionales (tipo, severidad, geo-radio)."""
     now = datetime.now(timezone.utc)
 
     stmt = select(Event, ST_AsGeoJSON(Event.area).label("area_geojson"))
@@ -77,15 +76,15 @@ async def list_events(
     if source:
         conditions.append(Event.source == source)
 
-    # Geo-radius filter (point + distance)
+    # Filtro de geo-radio (punto + distancia)
     if lat is not None and lon is not None:
         point = ST_SetSRID(ST_MakePoint(lon, lat), 4326)
-        # ST_DWithin with geography cast for meters
+        # ST_DWithin con cast a geografía para metros
         conditions.append(
             ST_DWithin(
                 sa_func.cast(Event.area, sa_func.Geography),
                 sa_func.cast(point, sa_func.Geography),
-                radius_km * 1000,  # Convert km to meters
+                radius_km * 1000,  # Convertir km a metros
             )
         )
 
@@ -105,7 +104,7 @@ async def get_event(
     event_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    """Get a single event by ID with full geometry."""
+    """Obtiene un evento por su ID con geometría completa."""
     stmt = select(Event, ST_AsGeoJSON(Event.area).label("area_geojson")).where(
         Event.id == event_id
     )
@@ -114,14 +113,14 @@ async def get_event(
 
     if not row:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Event not found")
+        raise HTTPException(status_code=404, detail="Evento no encontrado")
 
     return _event_to_out(row.Event, row.area_geojson)
 
 
 @router.get("/active/summary")
 async def active_summary(db: AsyncSession = Depends(get_db)):
-    """Quick summary of currently active events by type and severity."""
+    """Resumen rápido de eventos activos agrupados por tipo y severidad."""
     now = datetime.now(timezone.utc)
 
     stmt = (

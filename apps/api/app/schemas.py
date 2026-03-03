@@ -1,4 +1,4 @@
-"""Pydantic schemas for API request/response serialization (hardened)."""
+"""Esquemas Pydantic para serialización de peticiones y respuestas de la API."""
 
 import re
 from datetime import datetime, time
@@ -8,10 +8,10 @@ from uuid import UUID
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
-# ── Events ───────────────────────────────────────────────────────────────────
+# ── Eventos ───────────────────────────────────────────────────────
 
 class EventOut(BaseModel):
-    """Public representation of an alert event."""
+    """Representación pública de un evento de alerta."""
     id: UUID
     source: str
     source_id: str
@@ -33,12 +33,12 @@ class EventOut(BaseModel):
 
 
 class EventListParams(BaseModel):
-    """Query parameters for filtering events."""
+    """Parámetros de consulta para filtrar eventos."""
     event_type: Optional[str] = None
     severity: Optional[str] = None
     source: Optional[str] = None
     active_only: bool = True
-    lat: Optional[float] = Field(default=None, ge=27.0, le=44.0)   # Spain bounds
+    lat: Optional[float] = Field(default=None, ge=27.0, le=44.0)   # Límites de España
     lon: Optional[float] = Field(default=None, ge=-19.0, le=5.0)
     radius_km: Optional[float] = Field(default=50.0, ge=1.0, le=500.0)
     limit: int = Field(default=50, le=200, ge=1)
@@ -104,7 +104,7 @@ class TokenOut(BaseModel):
     token_type: str = "bearer"
 
 
-# ── Zones ────────────────────────────────────────────────────────────────────
+# ── Zonas ────────────────────────────────────────────────────────────────────
 
 class ZoneCreate(BaseModel):
     label: str = Field(max_length=100, min_length=1)
@@ -117,8 +117,8 @@ class ZoneCreate(BaseModel):
 
     @field_validator("geojson")
     @classmethod
-    def validate_geojson(cls, v):
-        """Basic GeoJSON validation with size limit."""
+    def validate_geojson(cls, v: dict) -> dict:
+        """Validación básica de GeoJSON con límite de tamaño."""
         import json as _json
         serialized = _json.dumps(v)
         if len(serialized) > 100_000:  # 100 KB max
@@ -150,7 +150,7 @@ class ZoneOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# ── Filters ──────────────────────────────────────────────────────────────────
+# ── Filtros ──────────────────────────────────────────────────────────────────
 
 class FilterCreate(BaseModel):
     event_types: Optional[list[str]] = Field(default=None, max_length=10)
@@ -182,13 +182,14 @@ class FilterOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# ── Collaborative Reports ────────────────────────────────────────────────────
+# ── Reportes colaborativos ───────────────────────────────────────────
 
 class ReportCreate(BaseModel):
+    """Creación de un reporte colaborativo ('yo lo sentí / yo lo vi')."""
     event_id: Optional[UUID] = None
     report_type: str
     intensity: str
-    lat: float = Field(ge=27.0, le=44.0)    # Spain bounds
+    lat: float = Field(ge=27.0, le=44.0)    # Límites de España
     lon: float = Field(ge=-19.0, le=5.0)
     comment: Optional[str] = Field(default=None, max_length=500)
 
@@ -228,7 +229,7 @@ class ReportOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# ── Settings Update ──────────────────────────────────────────────────────────
+# ── Actualización de ajustes del usuario ───────────────────────────────────
 
 class UserSettingsUpdate(BaseModel):
     quiet_start: Optional[time] = None

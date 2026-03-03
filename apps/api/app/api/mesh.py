@@ -1,17 +1,17 @@
-"""Mesh chat API — HTTP + WebSocket endpoints for Meshtastic communication (hardened)."""
+"""API de chat Mesh — endpoints HTTP + WebSocket para comunicación Meshtastic (endurecido)."""
 
 import json
 import logging
 from datetime import datetime, timezone
 
+import redis.asyncio as aioredis
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Depends, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-import redis.asyncio as aioredis
 
+from app.api.auth import get_current_user
 from app.config import get_settings
 from app.models.user import User
-from app.api.auth import get_current_user
 
 router = APIRouter(prefix="/mesh", tags=["meshtastic"])
 settings = get_settings()
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 limiter = Limiter(key_func=get_remote_address, storage_uri=settings.REDIS_URL)
 
-# Max message length for Meshtastic
+# Longitud máxima de mensaje para Meshtastic
 MAX_MSG_LENGTH = 228
 
 
@@ -27,7 +27,7 @@ MAX_MSG_LENGTH = 228
 async def get_mesh_history(
     limit: int = Query(50, le=200, ge=1),
 ):
-    """Get recent mesh messages from history (public, read-only)."""
+    """Obtiene el historial de mensajes mesh recientes (público, solo lectura)."""
     from app.database import get_redis
     redis = get_redis()
     raw = await redis.lrange("espalert:mesh:history", 0, limit - 1)
@@ -43,7 +43,7 @@ async def get_mesh_history(
 
 @router.get("/nodes")
 async def get_mesh_nodes():
-    """Get known Meshtastic nodes (public, read-only)."""
+    """Obtiene los nodos Meshtastic conocidos (público, solo lectura)."""
     from app.database import get_redis
     redis = get_redis()
     raw = await redis.hgetall("espalert:mesh:active_nodes")
@@ -68,14 +68,14 @@ async def send_mesh_message(
     user: User = Depends(get_current_user),  # Auth required
 ):
     """
-    Queue a message to the mesh network. Requires authentication.
-    Rate limited to prevent spam.
+    Encola un mensaje hacia la red mesh. Requiere autenticación.
+    Limitado por tasa para prevenir spam.
     """
-    # Sanitize input
+    # Sanitizar entrada
     clean_text = text.strip()
     if not clean_text:
         from fastapi import HTTPException
-        raise HTTPException(status_code=400, detail="Message cannot be empty")
+        raise HTTPException(status_code=400, detail="El mensaje no puede estar vacío")
 
     from app.database import get_redis
     redis = get_redis()
@@ -91,16 +91,16 @@ async def send_mesh_message(
 
     await redis.publish("espalert:mesh:outgoing", json.dumps(message))
 
-    logger.info(f"Mesh send queued by user {user.id}: {clean_text[:50]}...")
-    return {"status": "queued", "message": message}
+    logger.info("Mensaje mesh encolado por usuario %s: %s...", user.id, clean_text[:50])
+    return {"status": "encolado", "message": message}
 
 
 @router.websocket("/ws")
 async def mesh_websocket(websocket: WebSocket):
     """
-    Real-time WebSocket for mesh chat.
-    Receives: incoming mesh messages + node updates.
-    Sends: outgoing messages (requires auth token in first message).
+    WebSocket en tiempo real para chat mesh.
+    Recibe: mensajes mesh entrantes + actualizaciones de nodos.
+    Envía: mensajes salientes (requiere token auth en el primer mensaje).
     """
     await websocket.accept()
 
@@ -115,7 +115,7 @@ async def mesh_websocket(websocket: WebSocket):
     import asyncio
     import jwt as pyjwt
 
-    authenticated_user = None  # Track if WS client has authenticated
+    authenticated_user = None  # Rastrear si el cliente WS se ha autenticado
 
     try:
         async def relay_from_mesh():
@@ -134,7 +134,7 @@ async def mesh_websocket(websocket: WebSocket):
             try:
                 client_data = await websocket.receive_json()
 
-                # Handle auth message (must authenticate before sending)
+                # Manejar mensaje de autenticación (debe autenticarse antes de enviar)
                 if client_data.get("action") == "auth":
                     token = client_data.get("token", "")
                     try:
@@ -145,10 +145,10 @@ async def mesh_websocket(websocket: WebSocket):
                         authenticated_user = payload.get("sub")
                         await websocket.send_json({"type": "auth", "status": "ok"})
                     except pyjwt.InvalidTokenError:
-                        await websocket.send_json({"type": "auth", "status": "error", "detail": "Invalid token"})
+                        await websocket.send_json({"type": "auth", "status": "error", "detail": "Token inválido"})
 
                 elif client_data.get("action") == "send":
-                    # Require authentication to send messages
+                    # Requiere autenticación para enviar mensajes
                     if not authenticated_user:
                         await websocket.send_json({
                             "type": "error",

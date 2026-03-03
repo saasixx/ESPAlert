@@ -1,48 +1,58 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test-frontend:
+  lint-frontend:
+    name: "Lint y Build frontend"
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
+      - uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: npm ci
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
 
-    - name: Build and Test Frontend
-      run: npm run turbo build --filter=web
+      - run: npm ci
 
-  test-backend:
+      - name: Lint
+        run: npx turbo lint --filter=web
+
+      - name: Build
+        run: npx turbo build --filter=web
+
+  lint-backend:
+    name: "Lint y Tests backend"
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        cache: 'pip'
-        
-    - name: Install dependencies
-      working-directory: ./apps/api
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest httpx
-        
-    - name: Test with pytest
-      working-directory: ./apps/api
-      run: |
-        pytest
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: apps/api/requirements.txt
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff pytest httpx
+
+      - name: Lint con Ruff
+        run: ruff check .
+
+      - name: Tests
+        run: pytest -v

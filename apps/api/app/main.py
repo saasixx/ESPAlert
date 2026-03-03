@@ -1,17 +1,16 @@
-"""ESPAlert — FastAPI application entry point (production-hardened)."""
+"""ESPAlert — Punto de entrada de la aplicación FastAPI."""
 
 import logging
 from contextlib import asynccontextmanager
 
+import sqlalchemy
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+from app.api import auth, events, gdpr, mesh, reports, subscriptions, ws
 from app.config import get_settings
-from app.api import events, auth, subscriptions, ws, mesh
-from app.api import gdpr, reports
 from app.middleware import (
     SecurityHeadersMiddleware,
     limiter,
@@ -21,7 +20,6 @@ from app.middleware import (
 
 settings = get_settings()
 
-# Configure logging
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -30,61 +28,59 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Startup & shutdown hooks."""
-    # Security validation
+async def lifespan(_app: FastAPI):
+    """Hooks de inicio y parada de la aplicación."""
     validate_security_config()
 
-    logger.info(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION} starting...")
-    logger.info(f"   Environment: {settings.ENVIRONMENT}")
-    logger.info(f"   Debug: {settings.DEBUG}")
-    logger.info(f"   Allowed origins: {settings.ALLOWED_ORIGINS}")
+    logger.info("🚀 %s v%s iniciando...", settings.APP_NAME, settings.APP_VERSION)
+    logger.info("   Entorno: %s | Debug: %s", settings.ENVIRONMENT, settings.DEBUG)
 
-    # Verify DB connection
+    # Verificar conexión a la base de datos
     try:
         from app.database import engine
+
         async with engine.begin() as conn:
-            await conn.execute(
-                __import__("sqlalchemy").text("SELECT 1")
-            )
-        logger.info("   ✅ Database connected")
+            await conn.execute(sqlalchemy.text("SELECT 1"))
+        logger.info("   ✅ Base de datos conectada")
     except Exception as e:
-        logger.error(f"   ❌ Database connection failed: {e}")
+        logger.error("   ❌ Error de conexión a la BD: %s", e)
 
     yield
 
-    logger.info(f"👋 {settings.APP_NAME} shutting down...")
+    logger.info("👋 %s detenido.", settings.APP_NAME)
 
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description=(
-        "Multi-hazard real-time alert system for Spain. "
-        "Aggregates weather (AEMET), earthquakes (IGN), traffic (DGT), "
-        "and European warnings (MeteoAlarm) into a unified API."
+        "Sistema de alertas multi-riesgo en tiempo real para España. "
+        "Agrega meteorología (AEMET), sismos (IGN), tráfico (DGT) "
+        "y avisos europeos (MeteoAlarm) en una API unificada."
     ),
     lifespan=lifespan,
-    docs_url="/docs" if settings.DEBUG else None,     # Disable in production
+    docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
 )
 
-# ── Middleware stack (order matters: last added = first executed) ─────────
+# ── Pila de middleware (el último añadido se ejecuta primero) ────────────
 
-# 1. Security headers (outermost)
+# 1. Cabeceras de seguridad (más externo)
 app.add_middleware(SecurityHeadersMiddleware)
 
-# 2. Trusted hosts in production
+# 2. Hosts de confianza en producción
 if settings.ENVIRONMENT == "production":
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=settings.TRUSTED_HOSTS,
     )
 
-# 3. CORS — restrictive in production
+# 3. CORS — permisivo solo en desarrollo
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS if settings.ENVIRONMENT != "development" else ["*"],
+    allow_origins=(
+        ["*"] if settings.ENVIRONMENT == "development" else settings.ALLOWED_ORIGINS
+    ),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
@@ -92,18 +88,14 @@ app.add_middleware(
     max_age=3600,
 )
 
-# 4. Rate limiting
+# 4. Limitación de peticiones
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
-# ── Register routers ─────────────────────────────────────────────────────
-app.include_router(events.router, prefix="/api/v1")
-app.include_router(auth.router, prefix="/api/v1")
-app.include_router(subscriptions.router, prefix="/api/v1")
-app.include_router(ws.router, prefix="/api/v1")
-app.include_router(mesh.router, prefix="/api/v1")
-app.include_router(gdpr.router, prefix="/api/v1")
-app.include_router(reports.router, prefix="/api/v1")
+# ── Registrar routers ────────────────────────────────────────────────────
+_API_PREFIX = "/api/v1"
+for router_module in (events, auth, subscriptions, ws, mesh, gdpr, reports):
+    app.include_router(router_module.router, prefix=_API_PREFIX)
 
 
 @app.get("/")
@@ -119,19 +111,21 @@ async def root():
 
 @app.get("/health")
 async def health(detailed: bool = False):
-    """Health check endpoint. Detailed checks only in debug mode."""
-    checks = {"api": "ok", "database": "unknown", "redis": "unknown"}
+    """Comprobación de salud de la aplicación."""
+    checks: dict[str, str] = {"api": "ok", "database": "unknown", "redis": "unknown"}
 
     try:
         from app.database import engine
+
         async with engine.begin() as conn:
-            await conn.execute(__import__("sqlalchemy").text("SELECT 1"))
+            await conn.execute(sqlalchemy.text("SELECT 1"))
         checks["database"] = "ok"
     except Exception:
         checks["database"] = "error"
 
     try:
         from app.database import get_redis
+
         r = get_redis()
         await r.ping()
         checks["redis"] = "ok"
@@ -140,7 +134,7 @@ async def health(detailed: bool = False):
 
     status = "healthy" if all(v == "ok" for v in checks.values()) else "degraded"
 
-    # Only expose component details in debug mode
+    # Solo exponer detalles en modo debug
     if settings.DEBUG and detailed:
         return {"status": status, "checks": checks}
     return {"status": status}

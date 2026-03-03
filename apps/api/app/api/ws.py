@@ -1,26 +1,25 @@
-"""WebSocket endpoint for real-time event streaming (auth-protected)."""
+"""Endpoint WebSocket para streaming de eventos en tiempo real (con autenticación)."""
 
-import json
 import asyncio
+import json
 import logging
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 import jwt
-
-from app.database import get_redis
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 
 from app.config import get_settings
+from app.database import get_redis
 
 router = APIRouter(tags=["websocket"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
-# Max concurrent WebSocket connections
+# Máximo de conexiones WebSocket concurrentes
 MAX_CONNECTIONS = 500
 
 
 class ConnectionManager:
-    """Manages active WebSocket connections with limits."""
+    """Gestiona las conexiones WebSocket activas con límites."""
 
     def __init__(self, max_connections: int = MAX_CONNECTIONS):
         self.active_connections: list[WebSocket] = []
@@ -58,9 +57,9 @@ manager = ConnectionManager()
 
 
 def _verify_ws_token(token: str) -> bool:
-    """Verify JWT token for WebSocket auth. Returns True if valid or if auth is optional."""
+    """Verifica token JWT para autenticación WebSocket. Retorna True si es válido o si la auth es opcional."""
     if not token:
-        return True  # Allow unauthenticated for public event stream
+        return True  # Permitir sin autenticación para el stream público de eventos
     try:
         jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         return True
@@ -74,12 +73,12 @@ async def websocket_events(
     token: str = Query(default=""),
 ):
     """
-    Real-time event stream via WebSocket.
-    Optional auth via ?token=JWT_TOKEN query parameter.
+    Stream de eventos en tiempo real vía WebSocket.
+    Autenticación opcional con parámetro ?token=JWT_TOKEN.
     """
-    # Validate token if provided
+    # Validar token si se proporciona
     if token and not _verify_ws_token(token):
-        await websocket.close(code=4001, reason="Invalid token")
+        await websocket.close(code=4001, reason="Token inválido")
         return
 
     if not await manager.connect(websocket):
@@ -97,7 +96,7 @@ async def websocket_events(
                         data = json.loads(message["data"])
                         await websocket.send_json(data)
                     except Exception as e:
-                        logger.debug(f"WS relay error: {e}")
+                        logger.debug("Error en relay WS: %s", e)
 
         relay_task = asyncio.create_task(relay_redis())
 

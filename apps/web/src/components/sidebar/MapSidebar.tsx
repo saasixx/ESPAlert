@@ -1,39 +1,73 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { EventCategory, AlertEvent } from "@/types/events";
+import { clsx } from "clsx";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { CloudRain, Activity, Car, Waves, MapPin, AlertTriangle } from "lucide-react";
+import { Activity, Car, CloudRain, MapPin, Waves } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
-import { clsx } from "clsx";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { AlertEvent, EventCategory } from "@/types/events";
 
 interface MapSidebarProps {
   events: AlertEvent[];
   activeCategories: Set<EventCategory>;
   toggleCategory: (category: EventCategory) => void;
+  isConnected: boolean;
 }
 
-const severityConfig = {
-  red: { color: "bg-red-500/20 text-red-500 border-red-500/50", label: "RIESGO EXTREMO" },
+/** Configuración visual por nivel de severidad. */
+const severityConfig: Record<string, { color: string; label: string }> = {
+  red:    { color: "bg-red-500/20 text-red-500 border-red-500/50",       label: "EXTREMO" },
   orange: { color: "bg-orange-500/20 text-orange-500 border-orange-500/50", label: "IMPORTANTE" },
   yellow: { color: "bg-yellow-500/20 text-yellow-500 border-yellow-500/50", label: "RIESGO" },
-  green: { color: "bg-green-500/20 text-green-500 border-green-500/50", label: "SIN RIESGO" },
+  green:  { color: "bg-green-500/20 text-green-500 border-green-500/50",   label: "SIN RIESGO" },
 };
 
-export function MapSidebar({ events, activeCategories, toggleCategory }: MapSidebarProps) {
+export function MapSidebar({ events, activeCategories, toggleCategory, isConnected }: MapSidebarProps) {
+  const summary = events.reduce(
+    (acc, event) => {
+      acc.total += 1;
+      acc[event.severity] += 1;
+      return acc;
+    },
+    { total: 0, red: 0, orange: 0, yellow: 0, green: 0 }
+  );
+
+  const recommendedActions = Array.from(
+    new Set(
+      events
+        .filter((event) => event.severity === "red" || event.severity === "orange")
+        .map((event) => event.instructions?.trim())
+        .filter((instruction): instruction is string => Boolean(instruction))
+    )
+  ).slice(0, 3);
+
   return (
     <div className="w-96 flex flex-col bg-background/90 backdrop-blur-xl border-r h-full shadow-2xl relative z-10 transition-all">
-      {/* Header */}
+      {/* Encabezado */}
       <div className="p-6 border-b bg-background/50">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          🛡️ ESPAlert 
+          🛡️ ESPAlert
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">Alertas en tiempo real</p>
+        <p className="text-sm text-muted-foreground mt-1">Alertas en tiempo real para España</p>
+        <div className="mt-3 flex items-center gap-2 text-xs">
+          <span className={clsx("h-2.5 w-2.5 rounded-full", isConnected ? "bg-green-500" : "bg-yellow-500")} />
+          <span className="text-muted-foreground">
+            {isConnected ? "Conectado a eventos en vivo" : "Modo respaldo (sin conexión en vivo)"}
+          </span>
+        </div>
       </div>
 
-      {/* Filters */}
+      <div className="p-4 border-b grid grid-cols-2 gap-2 text-xs">
+        <SummaryPill label="Alertas activas" value={summary.total} tone="default" />
+        <SummaryPill label="Extremas" value={summary.red} tone="red" />
+        <SummaryPill label="Importantes" value={summary.orange} tone="orange" />
+        <SummaryPill label="Riesgo moderado" value={summary.yellow} tone="yellow" />
+      </div>
+
+      {/* Filtros por categoría */}
       <div className="p-4 border-b grid grid-cols-2 gap-2">
         <FilterButton 
           active={activeCategories.has('meteo')} 
@@ -61,13 +95,26 @@ export function MapSidebar({ events, activeCategories, toggleCategory }: MapSide
         />
       </div>
 
-      {/* Event List */}
+      {/* Lista de eventos */}
       <ScrollArea className="flex-1 p-4">
         <div className="flex flex-col gap-3 pb-8">
+          {recommendedActions.length > 0 && (
+            <section className="rounded-xl border bg-card p-4">
+              <h2 className="text-sm font-semibold mb-2">Acciones recomendadas</h2>
+              <ul className="space-y-2 text-xs text-muted-foreground">
+                {recommendedActions.map((action) => (
+                  <li key={action} className="leading-relaxed">
+                    • {action}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           {events.length === 0 ? (
             <div className="text-center p-8 text-muted-foreground">
               <MapPin className="mx-auto mb-2 opacity-50" size={32} />
-              No hay alertas activas para los filtros seleccionados.
+              <p>No hay alertas activas para los filtros seleccionados.</p>
             </div>
           ) : (
             events.slice(0, 100).map(event => (
@@ -76,6 +123,30 @@ export function MapSidebar({ events, activeCategories, toggleCategory }: MapSide
           )}
         </div>
       </ScrollArea>
+    </div>
+  );
+}
+
+function SummaryPill({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "default" | "red" | "orange" | "yellow";
+}) {
+  const toneClass = {
+    default: "bg-muted text-foreground border-border",
+    red: "bg-red-500/15 text-red-500 border-red-500/40",
+    orange: "bg-orange-500/15 text-orange-500 border-orange-500/40",
+    yellow: "bg-yellow-500/15 text-yellow-500 border-yellow-500/40",
+  }[tone];
+
+  return (
+    <div className={clsx("rounded-lg border px-3 py-2", toneClass)}>
+      <p className="text-[11px] opacity-90">{label}</p>
+      <p className="text-lg font-semibold leading-tight">{value}</p>
     </div>
   );
 }
@@ -97,7 +168,7 @@ function FilterButton({ active, onClick, icon, label }: { active: boolean, onCli
 }
 
 function EventCard({ event }: { event: AlertEvent }) {
-  const config = severityConfig[event.severity as keyof typeof severityConfig] || severityConfig.green;
+  const config = severityConfig[event.severity] ?? severityConfig.green;
   
   return (
     <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-pointer overflow-hidden">
@@ -125,7 +196,7 @@ function EventCard({ event }: { event: AlertEvent }) {
         {event.magnitude && (
           <div className="flex items-center gap-1.5 text-xs font-medium text-purple-400 mt-1">
             <Activity size={12} />
-            Mag: {event.magnitude} {event.depth_km && `• Prof: ${event.depth_km}km`}
+            Magnitud: {event.magnitude} {event.depth_km && `• Profundidad: ${event.depth_km} km`}
           </div>
         )}
       </div>

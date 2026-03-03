@@ -1,0 +1,21 @@
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: 'apps/web/**'
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file: 'apps/api/**'
+
+ci-cd:
+  - changed-files:
+      - any-glob-to-any-file: '.github/**'
+      - any-glob-to-any-file: 'docker-compose*.yml'
+      - any-glob-to-any-file: 'scripts/**'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: '**/*.md'
+
+mobile:
+  - changed-files:
+      - any-glob-to-any-file: 'app_flutter_archive/**'

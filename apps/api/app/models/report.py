@@ -1,17 +1,18 @@
-"""Collaborative report model — crowd-sourced "I feel it" reports."""
+"""Modelo de Reporte Colaborativo — informes de tipo «Yo lo siento» por los usuarios."""
 
 import uuid
 from datetime import datetime
 
+from geoalchemy2 import Geometry
 from sqlalchemy import Column, String, DateTime, ForeignKey, func, Index
 from sqlalchemy.dialects.postgresql import UUID
-from geoalchemy2 import Geometry
 
 from app.database import Base
 
 
 class CollaborativeReport(Base):
-    """Users report what they're experiencing in real time."""
+    """Los usuarios informan en tiempo real de lo que están experimentando."""
+
     __tablename__ = "collaborative_reports"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

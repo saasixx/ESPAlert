@@ -38,13 +38,13 @@ def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> JSO
     )
 
 
-# ── Security Headers Middleware ──────────────────────────────────────────────
+# ── Middleware de cabeceras de seguridad ──────────────────────────────
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Adds security headers to all responses."""
+    """Añade cabeceras de seguridad a todas las respuestas."""
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        # Generate request ID for tracing
+        # Generar ID de petición para trazabilidad
         request_id = str(uuid.uuid4())
         request.state.request_id = request_id
 
@@ -52,7 +52,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         duration = time.time() - start
 
-        # Security headers
+        # Cabeceras de seguridad
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
@@ -62,13 +62,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "payment=(), usb=(), bluetooth=(self)"
         )
 
-        # HSTS in production
+        # HSTS solo en producción
         if settings.ENVIRONMENT == "production":
             response.headers["Strict-Transport-Security"] = (
                 "max-age=63072000; includeSubDomains; preload"
             )
 
-        # Content Security Policy
+        # Política de seguridad de contenidos
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self'; "
@@ -79,45 +79,49 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "frame-ancestors 'none'"
         )
 
-        # Timing header (debug only)
+        # Tiempo de respuesta (solo en debug)
         if settings.DEBUG:
             response.headers["X-Response-Time"] = f"{duration:.3f}s"
 
-        # Access log
+        # Registro de acceso
         logger.info(
-            f"[{request_id}] {request.method} {request.url.path} "
-            f"→ {response.status_code} ({duration:.3f}s)"
+            "[%s] %s %s → %s (%.3fs)",
+            request_id,
+            request.method,
+            request.url.path,
+            response.status_code,
+            duration,
         )
 
         return response
 
 
-# ── Startup Security Checks ─────────────────────────────────────────────────
+# ── Validación de seguridad al arranque ─────────────────────────────
 
-def validate_security_config():
-    """Run on startup to catch insecure configuration."""
-    warnings = []
-    errors = []
+def validate_security_config() -> None:
+    """Se ejecuta al inicio para detectar configuraciones inseguras."""
+    warnings: list[str] = []
+    errors: list[str] = []
 
     if len(settings.JWT_SECRET) < 32:
         if settings.ENVIRONMENT == "production":
-            errors.append("JWT_SECRET must be at least 32 characters in production!")
+            errors.append("JWT_SECRET debe tener al menos 32 caracteres en producción.")
         else:
-            warnings.append("JWT_SECRET is too short — set a strong value in .env")
+            warnings.append("JWT_SECRET es demasiado corto — configura un valor fuerte en .env")
 
     if settings.DEBUG and settings.ENVIRONMENT == "production":
-        errors.append("DEBUG must be False in production!")
+        errors.append("DEBUG debe ser False en producción.")
 
     if not settings.AEMET_API_KEY:
-        warnings.append("AEMET_API_KEY is not set — weather data will be unavailable")
+        warnings.append("AEMET_API_KEY no está configurada — los datos meteorológicos no estarán disponibles")
 
     for w in warnings:
-        logger.warning(f"⚠️  Security: {w}")
+        logger.warning("⚠️  Seguridad: %s", w)
     for e in errors:
-        logger.error(f"🔴 Security: {e}")
+        logger.error("🔴 Seguridad: %s", e)
 
     if errors:
         raise RuntimeError(
-            "Security configuration errors detected! "
-            "Fix the above errors before starting in production."
+            "Se detectaron errores de configuración de seguridad. "
+            "Corrige los errores anteriores antes de iniciar en producción."
         )

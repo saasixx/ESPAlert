@@ -1,4 +1,4 @@
-"""DGT Traffic connector — parses DATEX2 v3.6 XML for traffic incidents."""
+"""Conector DGT de Tráfico — parsea XML DATEX2 v3.6 para incidencias de tráfico."""
 
 import logging
 from datetime import datetime, timezone
@@ -12,12 +12,12 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# DGT NAP endpoint for traffic incidents (DATEX2)
-# Requires free registration at https://nap.dgt.es to obtain API credentials
+# Endpoint NAP de la DGT para incidencias de tráfico (DATEX2)
+# Requiere registro gratuito en https://nap.dgt.es para obtener credenciales API
 DGT_INCIDENTS_URL = "https://nap.dgt.es/api/datex/v3/incidents"
 DGT_INCIDENTS_FALLBACK = "https://infocar.dgt.es/datex2/dgt/SituationPublication/all/content.xml"
 
-# DATEX2 severity mapping
+# Mapeo de severidad DATEX2
 DATEX_SEVERITY_MAP = {
     "highest": "red",
     "high": "orange",
@@ -27,7 +27,7 @@ DATEX_SEVERITY_MAP = {
     "none": "green",
 }
 
-# DATEX2 situation record type → our event type
+# Tipo de registro DATEX2 → nuestro tipo de evento
 DATEX_TYPE_MAP = {
     "Accident": "traffic_accident",
     "AbnormalTraffic": "traffic_jam",
@@ -44,14 +44,14 @@ DATEX_TYPE_MAP = {
 
 class DGTConnector:
     """
-    Fetches traffic incidents from DGT's DATEX2 feeds.
+    Obtiene incidencias de tráfico de los feeds DATEX2 de la DGT.
 
-    DGT publishes situationPublication documents in DATEX2 XML format
-    containing accident, closure, and works information.
+    La DGT publica documentos situationPublication en formato XML DATEX2
+    que contienen información sobre accidentes, cortes y obras.
     """
 
     async def fetch_incidents(self) -> list[dict]:
-        """Fetch and parse all active traffic incidents."""
+        """Obtiene y parsea todas las incidencias de tráfico activas."""
         events = []
 
         try:
@@ -59,46 +59,46 @@ class DGTConnector:
             if xml_text:
                 events = self._parse_datex2(xml_text)
         except Exception as e:
-            logger.exception(f"Error fetching DGT incidents: {e}")
+            logger.exception("Error obteniendo incidencias DGT: %s", e)
 
-        logger.info(f"DGT: fetched {len(events)} traffic incidents")
+        logger.info("DGT: obtenidas %d incidencias de tráfico", len(events))
         return events
 
     async def _download_feed(self) -> Optional[str]:
-        """Download the DATEX2 XML feed."""
+        """Descarga el feed XML DATEX2."""
         async with httpx.AsyncClient(timeout=60) as client:
-            # Try primary NAP endpoint first
+            # Intentar primero el endpoint NAP principal
             try:
                 resp = await client.get(DGT_INCIDENTS_URL)
                 if resp.status_code == 200:
                     return resp.text
-                logger.warning(f"DGT NAP returned {resp.status_code}, trying fallback...")
+                logger.warning("NAP DGT devuelve %s, intentando fallback...", resp.status_code)
             except Exception as e:
-                logger.warning(f"DGT NAP failed: {e}, trying fallback...")
+                logger.warning("NAP DGT falló: %s, intentando fallback...", e)
 
-            # Fallback to infocar endpoint
+            # Fallback al endpoint de infocar
             try:
                 resp = await client.get(DGT_INCIDENTS_FALLBACK)
                 if resp.status_code == 200:
                     return resp.text
             except Exception as e:
-                logger.error(f"DGT fallback also failed: {e}")
+                logger.error("Fallback DGT también falló: %s", e)
 
         return None
 
     def _parse_datex2(self, xml_text: str) -> list[dict]:
-        """Parse DATEX2 SituationPublication XML."""
+        """Parsea XML SituationPublication DATEX2."""
         events = []
 
         try:
-            # Remove XML namespaces for easier parsing
+            # Eliminar namespaces XML para facilitar el parseo
             xml_clean = xml_text.replace('xmlns=', 'xmlns_disabled=')
             parsed = xmltodict.parse(xml_clean)
         except Exception as e:
-            logger.error(f"Failed to parse DATEX2 XML: {e}")
+            logger.error("Error al parsear XML DATEX2: %s", e)
             return events
 
-        # Navigate to situations
+        # Navegar a situaciones
         publication = parsed.get("d2LogicalModel", parsed)
         if isinstance(publication, dict):
             publication = publication.get("payloadPublication", publication)
@@ -113,12 +113,12 @@ class DGTConnector:
                 if event:
                     events.append(event)
             except Exception as e:
-                logger.warning(f"Error parsing DATEX2 situation: {e}")
+                logger.warning("Error al parsear situación DATEX2: %s", e)
 
         return events
 
     def _parse_situation(self, situation: dict) -> Optional[dict]:
-        """Parse a single DATEX2 <situation> element."""
+        """Parsea un solo elemento DATEX2 <situation>."""
         sit_id = situation.get("@id", "")
 
         records = situation.get("situationRecord", [])
@@ -128,9 +128,9 @@ class DGTConnector:
         if not records:
             return None
 
-        record = records[0]  # Primary record
+        record = records[0]  # Registro principal
 
-        # Extract type
+        # Extraer tipo
         record_type = record.get("@xsi:type", record.get("@type", ""))
         event_type = "traffic_closure"
         for key, value in DATEX_TYPE_MAP.items():
@@ -138,13 +138,13 @@ class DGTConnector:
                 event_type = value
                 break
 
-        # Extract severity
+        # Extraer severidad
         severity_str = record.get("severity", "medium")
         if isinstance(severity_str, dict):
             severity_str = severity_str.get("#text", "medium")
         severity = DATEX_SEVERITY_MAP.get(severity_str.lower(), "yellow")
 
-        # Extract location
+        # Extraer ubicación
         location = record.get("groupOfLocations", {})
         point = location.get("locationForDisplay", {})
         lat = None
@@ -153,7 +153,7 @@ class DGTConnector:
             lat = float(point.get("latitude", 0))
             lon = float(point.get("longitude", 0))
 
-        # Extract description
+        # Extraer descripción
         general_comment = record.get("generalPublicComment", {})
         comment_value = ""
         if isinstance(general_comment, dict):
@@ -166,7 +166,7 @@ class DGTConnector:
                         comment_value = val.get("#text", "")
                         break
 
-        # Extract road info
+        # Extraer información de carretera
         road_name = ""
         linear_element = location.get("linearElement", {})
         if linear_element:
@@ -174,7 +174,7 @@ class DGTConnector:
             if isinstance(road_info, dict):
                 road_name = road_info.get("value", {}).get("#text", "")
 
-        # Build title
+        # Construir título
         type_labels = {
             "traffic_accident": "🚗 Accidente",
             "traffic_closure": "🚧 Corte de carretera",
@@ -183,7 +183,7 @@ class DGTConnector:
         }
         title = f"{type_labels.get(event_type, '🚗 Incidencia')} — {road_name}" if road_name else type_labels.get(event_type, "Incidencia de tráfico")
 
-        # Timestamps
+        # Marcas de tiempo
         validity = record.get("validity", {})
         valid_period = validity.get("validityTimeSpecification", {})
         start_time = valid_period.get("overallStartTime", "")

@@ -1,0 +1,13 @@
+# Owners por defecto
+* @saasixx
+
+# Frontend
+/apps/web/ @saasixx
+
+# Backend
+/apps/api/ @saasixx
+
+# Infra / CI
+/.github/ @saasixx
+/docker-compose*.yml @saasixx
+/scripts/ @saasixx

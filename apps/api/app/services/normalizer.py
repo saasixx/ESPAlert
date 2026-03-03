@@ -1,19 +1,19 @@
-"""Normalizer service — converts raw connector output into Event records."""
+"""Servicio normalizador — convierte la salida cruda de conectores en registros Event."""
 
 import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from geoalchemy2.shape import from_shape
 from shapely import wkt as shapely_wkt
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.event import Event, EventSource, EventType, Severity
 
 logger = logging.getLogger(__name__)
 
-# String → Enum mapping
+# Mapeo Cadena → Enum
 SOURCE_MAP = {s.value: s for s in EventSource}
 TYPE_MAP = {t.value: t for t in EventType}
 SEVERITY_MAP = {s.value: s for s in Severity}
@@ -21,15 +21,15 @@ SEVERITY_MAP = {s.value: s for s in Severity}
 
 class Normalizer:
     """
-    Takes raw event dicts from connectors and upserts them into the DB.
-    Handles deduplication via source_id.
+    Toma dicts de eventos crudos de los conectores y los inserta/actualiza en la BD.
+    Gestiona la deduplicación mediante source_id.
     """
 
     def __init__(self, db: AsyncSession):
         self.db = db
 
     async def process_events(self, raw_events: list[dict]) -> list[Event]:
-        """Process a batch of raw event dicts — insert new, skip duplicates."""
+        """Procesa un lote de dicts de eventos crudos — inserta nuevos, omite duplicados."""
         created = []
 
         for raw in raw_events:
@@ -38,28 +38,28 @@ class Normalizer:
                 if event:
                     created.append(event)
             except Exception as e:
-                logger.warning(f"Failed to normalize event {raw.get('source_id', '?')}: {e}")
+                logger.warning("Error al normalizar evento %s: %s", raw.get("source_id", "?"), e)
 
         if created:
             await self.db.flush()
-            logger.info(f"Normalizer: {len(created)} new events ingested")
+            logger.info("Normalizador: %d nuevos eventos ingestados", len(created))
 
         return created
 
     async def _upsert_event(self, raw: dict) -> Optional[Event]:
-        """Insert a new event or update if source_id already exists with changes."""
+        """Inserta un nuevo evento o actualiza si source_id ya existe con cambios."""
         source_id = raw.get("source_id", "")
         if not source_id:
             return None
 
-        # Check for existing event
+        # Comprobar evento existente
         result = await self.db.execute(
             select(Event).where(Event.source_id == source_id)
         )
         existing_event = result.scalar_one_or_none()
 
         if existing_event:
-            # Update fields that may have changed
+            # Actualizar campos que puedan haber cambiado
             updated = False
             new_severity = SEVERITY_MAP.get(raw.get("severity", ""))
             new_expires = self._parse_datetime(raw.get("expires"))
@@ -77,7 +77,7 @@ class Normalizer:
 
             return existing_event if updated else None
 
-        # Parse geometry from WKT
+        # Parsear geometría desde WKT
         geometry = None
         area_wkt = raw.get("area_wkt")
         if area_wkt:
@@ -85,17 +85,17 @@ class Normalizer:
                 geom_shape = shapely_wkt.loads(area_wkt)
                 geometry = from_shape(geom_shape, srid=4326)
             except Exception as e:
-                logger.warning(f"Invalid WKT for {source_id}: {e}")
+                logger.warning("WKT inválido para %s: %s", source_id, e)
 
-        # Parse timestamps
+        # Parsear marcas de tiempo
         effective = self._parse_datetime(raw.get("effective"))
         expires = self._parse_datetime(raw.get("expires"))
 
-        # If no effective time, use now
+        # Si no hay hora efectiva, usar ahora
         if not effective:
             effective = datetime.now(timezone.utc)
 
-        # Map enums
+        # Mapear enums
         source = SOURCE_MAP.get(raw.get("source", ""), EventSource.AEMET)
         event_type = TYPE_MAP.get(raw.get("event_type", ""), EventType.OTHER)
         severity = SEVERITY_MAP.get(raw.get("severity", ""), Severity.GREEN)
@@ -123,7 +123,7 @@ class Normalizer:
 
     @staticmethod
     def _parse_datetime(value) -> Optional[datetime]:
-        """Attempt to parse a datetime from various formats."""
+        """Intenta parsear un datetime desde varios formatos."""
         if not value:
             return None
         if isinstance(value, datetime):
@@ -141,7 +141,7 @@ class Normalizer:
             except ValueError:
                 continue
 
-        # Try ISO format
+        # Intentar formato ISO
         try:
             return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
         except (ValueError, AttributeError):

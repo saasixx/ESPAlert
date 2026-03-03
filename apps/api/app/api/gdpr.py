@@ -1,4 +1,4 @@
-"""GDPR/LOPDGDD compliance API — data access, export, and deletion."""
+"""API de cumplimiento RGPD/LOPDGDD — acceso, exportación y eliminación de datos."""
 
 from datetime import datetime, timezone
 

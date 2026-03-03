@@ -1,59 +1,64 @@
-"""Application configuration — loaded from environment / .env file."""
+"""Configuración de la aplicación — cargada desde variables de entorno / .env."""
 
 import secrets
-
-from pydantic_settings import BaseSettings
-from pydantic import field_validator
 from functools import lru_cache
 
-# Auto-generated fallback for development only — NEVER use in production
+from pydantic import field_validator
+from pydantic_settings import BaseSettings
+
+# Secreto auto-generado para desarrollo; NUNCA usar en producción
 _DEV_JWT_SECRET = secrets.token_urlsafe(48)
 
 
 class Settings(BaseSettings):
-    # ── App ──────────────────────────────────────────────
+    """Configuración central de ESPAlert.
+
+    Todos los valores pueden sobrescribirse con variables de entorno
+    o con un fichero ``.env`` en la raíz del proyecto.
+    """
+
+    # ── Aplicación ───────────────────────────────────────
     APP_NAME: str = "ESPAlert"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
-    ENVIRONMENT: str = "development"  # development, staging, production
+    ENVIRONMENT: str = "development"  # development | staging | production
 
-    # ── Database ─────────────────────────────────────────
+    # ── Base de datos ────────────────────────────────────
     DATABASE_URL: str = "postgresql+asyncpg://espalert:changeme@localhost:5432/espalert"
     DATABASE_URL_SYNC: str = "postgresql+psycopg2://espalert:changeme@localhost:5432/espalert"
 
     # ── Redis ────────────────────────────────────────────
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    # ── API Keys ─────────────────────────────────────────
+    # ── Claves externas ──────────────────────────────────
     AEMET_API_KEY: str = ""
     MAPBOX_TOKEN: str = ""
 
     # ── Firebase ─────────────────────────────────────────
     FIREBASE_CREDENTIALS_PATH: str = "firebase-credentials.json"
 
-    # ── Polling Intervals (seconds) ──────────────────────
+    # ── Intervalos de sondeo (segundos) ──────────────────
     AEMET_POLL_INTERVAL: int = 300       # 5 min
     IGN_POLL_INTERVAL: int = 120         # 2 min
     DGT_POLL_INTERVAL: int = 300         # 5 min
     METEOALARM_POLL_INTERVAL: int = 300  # 5 min
 
-    # ── JWT Auth ─────────────────────────────────────────
-    JWT_SECRET: str = _DEV_JWT_SECRET  # Random per-run in dev; MUST be set via .env in production
+    # ── Autenticación JWT ────────────────────────────────
+    JWT_SECRET: str = _DEV_JWT_SECRET  # Aleatorio por ejecución en dev
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_HOURS: int = 24
 
-    # ── Security ─────────────────────────────────────────
+    # ── Seguridad ────────────────────────────────────────
     ALLOWED_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://localhost:8080",
-        "*",
     ]
-    # In production, restrict to your actual domain:
+    # En producción, restringe a tu dominio real:
     # ALLOWED_ORIGINS=["https://espalert.es","https://app.espalert.es"]
 
     TRUSTED_HOSTS: list[str] = [
         "localhost",
-        "127.0.0.1"
+        "127.0.0.1",
     ]
 
     RATE_LIMIT_DEFAULT: str = "100/minute"
@@ -66,7 +71,8 @@ class Settings(BaseSettings):
 
     @field_validator("ALLOWED_ORIGINS", "TRUSTED_HOSTS", mode="before")
     @classmethod
-    def parse_origins(cls, v):
+    def parse_origins(cls, v: str | list[str]) -> list[str]:
+        """Permite pasar orígenes como cadena separada por comas."""
         if isinstance(v, str):
             return [o.strip() for o in v.split(",") if o.strip()]
         return v
@@ -76,4 +82,5 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    """Singleton cacheado de la configuración."""
     return Settings()

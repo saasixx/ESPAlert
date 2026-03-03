@@ -1,4 +1,4 @@
-"""IGN Earthquake connector — fetches seismic data from FDSN web services."""
+"""Conector IGN de Terremotos — obtiene datos sísmicos de servicios web FDSN."""
 
 import logging
 from datetime import datetime, timedelta, timezone
@@ -11,13 +11,13 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# EMSC Seismic Portal FDSN event service (includes IGN/CSN data)
+# Portal Sísmico EMSC - servicio de eventos FDSN (incluye datos IGN/CSN)
 FDSN_BASE = "https://seismicportal.eu/fdsnws/event/1"
 
-# IGN web page for latest earthquakes (fallback scrape)
+# Página web del IGN para últimos terremotos (scrape fallback)
 IGN_LATEST_URL = "https://www.ign.es/web/ign/portal/ultimos-terremotos/-/ultimos-terremotos/getUltimosTerremotos"
 
-# Magnitude → Severity mapping
+# Mapeo Magnitud → Severidad
 MAGNITUDE_SEVERITY = [
     (5.0, "red"),
     (4.0, "orange"),
@@ -35,40 +35,40 @@ def magnitude_to_severity(mag: float) -> str:
 
 class IGNConnector:
     """
-    Fetches earthquake data from IGN's FDSN web services.
+    Obtiene datos de terremotos de los servicios web FDSN del IGN.
 
-    Primary: FDSN event query (text/csv or JSON-like formats)
-    Fallback: IGN latest earthquakes web endpoint
+    Primario: consulta de eventos FDSN (text/csv o formatos JSON)
+    Fallback: endpoint web de últimos terremotos del IGN
     """
 
     async def fetch_earthquakes(self, hours_back: int = 24) -> list[dict]:
-        """Fetch recent earthquakes from FDSN service."""
+        """Obtiene terremotos recientes del servicio FDSN."""
         events = []
 
         try:
             events = await self._fetch_fdsn(hours_back)
         except Exception as e:
-            logger.warning(f"FDSN fetch failed, trying fallback: {e}")
+            logger.warning("FDSN falló, intentando fallback: %s", e)
             try:
                 events = await self._fetch_latest_fallback()
             except Exception as e2:
-                logger.exception(f"IGN fallback also failed: {e2}")
+                logger.exception("Fallback IGN también falló: %s", e2)
 
-        logger.info(f"IGN: fetched {len(events)} earthquakes")
+        logger.info("IGN: obtenidos %d terremotos", len(events))
         return events
 
     async def _fetch_fdsn(self, hours_back: int) -> list[dict]:
-        """Fetch from FDSN event web service (text format)."""
+        """Obtiene datos del servicio web de eventos FDSN (formato texto)."""
         end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(hours=hours_back)
 
         params = {
             "starttime": start_time.strftime("%Y-%m-%dT%H:%M:%S"),
             "endtime": end_time.strftime("%Y-%m-%dT%H:%M:%S"),
-            "minlatitude": 25.0,   # Southern Canary Islands
-            "maxlatitude": 45.0,   # Northern Spain
-            "minlongitude": -20.0, # Western Canary Islands
-            "maxlongitude": 6.0,   # Eastern Mediterranean coast
+            "minlatitude": 25.0,   # Sur de Canarias
+            "maxlatitude": 45.0,   # Norte de España
+            "minlongitude": -20.0, # Oeste de Canarias
+            "maxlongitude": 6.0,   # Costa mediterránea oriental
             "format": "text",
             "orderby": "time",
         }
@@ -77,7 +77,7 @@ class IGNConnector:
             resp = await client.get(f"{FDSN_BASE}/query", params=params)
 
             if resp.status_code == 204:
-                # No content = no earthquakes in the time window
+                # Sin contenido = no hay terremotos en la ventana temporal
                 return []
 
             if resp.status_code != 200:
@@ -87,13 +87,13 @@ class IGNConnector:
 
     def _parse_fdsn_text(self, text: str) -> list[dict]:
         """
-        Parse FDSN text format:
+        Parsea formato texto FDSN:
         EventID|Time|Latitude|Longitude|Depth/km|Author|Catalog|Contributor|ContributorID|MagType|Magnitude|MagAuthor|EventLocationName
         """
         events = []
         lines = text.strip().split("\n")
 
-        for line in lines[1:]:  # Skip header
+        for line in lines[1:]:  # Saltar cabecera
             parts = line.split("|")
             if len(parts) < 13:
                 continue
@@ -108,7 +108,7 @@ class IGNConnector:
                 magnitude = float(parts[10].strip()) if parts[10].strip() else 0.0
                 location_name = parts[12].strip() if len(parts) > 12 else ""
 
-                # Parse time
+                # Parsear fecha y hora
                 try:
                     event_time = datetime.fromisoformat(time_str.replace("Z", "+00:00"))
                 except ValueError:
@@ -147,12 +147,12 @@ class IGNConnector:
                     },
                 })
             except (ValueError, IndexError) as e:
-                logger.warning(f"Failed to parse FDSN line: {e}")
+                logger.warning("Error al parsear línea FDSN: %s", e)
 
         return events
 
     async def _fetch_latest_fallback(self) -> list[dict]:
-        """Fallback: fetch from IGN's latest earthquakes web endpoint."""
+        """Fallback: obtiene datos del endpoint web de últimos terremotos del IGN."""
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.get(IGN_LATEST_URL)
             if resp.status_code != 200:
@@ -189,7 +189,7 @@ class IGNConnector:
                         "raw_data": quake,
                     })
                 except (ValueError, KeyError) as e:
-                    logger.warning(f"Failed to parse IGN fallback quake: {e}")
+                    logger.warning("Error al parsear terremoto fallback IGN: %s", e)
 
             return events
 

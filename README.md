@@ -1,81 +1,177 @@
-# ESPAlert 🛡️
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js" alt="Next.js 15" />
+  <img src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/PostGIS-16-336791?logo=postgresql" alt="PostGIS" />
+  <img src="https://img.shields.io/badge/MapLibre_GL-5-blue?logo=maplibre" alt="MapLibre" />
+  <img src="https://img.shields.io/badge/Licencia-AGPLv3-green" alt="AGPLv3 License" />
+  <img src="https://img.shields.io/github/actions/workflow/status/saasixx/ESPAlert/ci.yml?branch=main&label=CI" alt="CI" />
+  <img src="https://img.shields.io/github/actions/workflow/status/saasixx/ESPAlert/deploy.yml?branch=main&label=Deploy" alt="Deploy" />
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" />
+</p>
+
+# ESPAlert
 
 **Sistema de alertas multi-riesgo en tiempo real para España**
 
-*ESPAlert* es una plataforma Open Source diseñada para proporcionar alertas tempranas de meteorología, sismos, tráfico y avisos de protección civil en un único mapa interactivo. 
+ESPAlert es una plataforma **Open Source** que agrega alertas de meteorología,
+sismos, tráfico y protección civil en un único mapa interactivo. Consume fuentes
+oficiales (AEMET, IGN, DGT, MeteoAlarm) y las unifica en una API REST con
+WebSockets para actualizaciones instantáneas.
 
-> **Aviso de Migración:** El proyecto ha sido reescrito desde Flutter a **Next.js + MapLibre GL** para abrirlo a la comunidad web Open Source. La versión Flutter original reside en `app_flutter_archive/`.
+<p align="center">
+  <a href="CONTRIBUTING.md">Guía de contribución</a> ·
+  <a href="SECURITY.md">Seguridad</a> ·
+  <a href="TRADEMARK_POLICY.md">Política de marca</a> ·
+  <a href=".github/ISSUE_TEMPLATE/bug_report.md">Reportar bug</a>
+</p>
 
-## 📦 Arquitectura (Monorepo)
+<p align="center">
+  <em>Mapa interactivo · WebSockets en vivo · Meshtastic LoRa · RGPD/LOPDGDD</em>
+</p>
 
-| Componente | Tecnología | Ubicación |
-|---|---|---|
-| **Frontend Web** | Next.js 15, Tailwind, shadcn/ui, MapLibre GL | `/apps/web` |
-| **Backend API** | Python 3.12, FastAPI, PostGIS, Celery, Redis | `/apps/api` |
-| **Monorepo** | Turborepo | Raíz |
-| **Mesh Radio** | Meshtastic (LoRa) | `/apps/api/connectors` |
+---
 
-## 🗂️ Estructura del repositorio
+## Tabla de contenidos
+
+- [Arquitectura](#arquitectura)
+- [Inicio rápido](#inicio-rápido)
+- [Desarrollo local](#desarrollo-local)
+- [Fuentes de datos](#fuentes-de-datos)
+- [Variables de entorno](#variables-de-entorno)
+- [Despliegue en producción](#despliegue-en-producción)
+- [Contribuir](#contribuir)
+- [Licencia](#licencia)
+
+---
+
+## Arquitectura
 
 ```text
-ESPAlert/
-├── apps/
-│   ├── api/                    # FastAPI + Celery + PostGIS
-│   └── web/                    # Next.js App Router (Frontend)
-├── app_flutter_archive/        # Versión móvil antigua (Deprecated)
-├── docker-compose.yml          # Full stack (¡la forma recomendada!)
-├── package.json                # Turborepo workspaces
-└── turbo.json
+┌──────────────────────────────────────────────────────────────┐
+│                        Turborepo                             │
+│                                                              │
+│  ┌──────────────┐    WebSocket / REST    ┌────────────────┐  │
+│  │  apps/web    │◄──────────────────────►│   apps/api     │  │
+│  │  Next.js 15  │                        │   FastAPI      │  │
+│  │  MapLibre GL │                        │   Celery       │  │
+│  │  shadcn/ui   │                        │   PostGIS      │  │
+│  └──────────────┘                        └───────┬────────┘  │
+│                                              │   │   │       │
+│                              ┌───────────────┘   │   └──┐    │
+│                              ▼                   ▼      ▼    │
+│                         PostgreSQL            Redis  Mesh GW │
+│                         + PostGIS                    (LoRa)  │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-## 🚀 Instalación y Despliegue Rápido (Docker)
+| Componente       | Tecnología                                    | Ubicación          |
+|------------------|-----------------------------------------------|--------------------|
+| **Frontend Web** | Next.js 15, Tailwind CSS, shadcn/ui, MapLibre | `apps/web`         |
+| **Backend API**  | Python 3.12, FastAPI, PostGIS, Celery, Redis  | `apps/api`         |
+| **Monorepo**     | Turborepo + npm workspaces                    | Raíz               |
+| **Mesh Radio**   | Meshtastic (LoRa)                             | `apps/api/connectors` |
 
-La forma más rápida de levantar toda la plataforma (Base de datos espacial, Redis, Backend FastAPI, Workers y el Frontend Web):
+## Inicio rápido
+
+> **Requisitos**: [Docker](https://docs.docker.com/get-docker/) 24+ y
+> [Node.js](https://nodejs.org/) 20 LTS.
 
 ```bash
-# 1. Clona el repositorio
-git clone https://github.com/tu-usuario/ESPAlert.git
+# 1. Clonar el repositorio
+git clone https://github.com/saasixx/ESPAlert.git
 cd ESPAlert
 
-# 2. Configura las variables de entorno del backend
-cp apps/api/.env.example apps/api/.env
-# (Edita .env si tienes API Keys reales de AEMET, si no, funcionará con datos públicos)
+# 2. Configurar variables de entorno
+cp .env.example .env
+# Ajusta AEMET_API_KEY si dispones de una (gratuita)
 
-# 3. Levanta el stack completo
-npm run dev:docker
+# 3. Levantar toda la plataforma
+docker compose up --build
 ```
 
-La aplicación estará disponible en:
-- **Web App**: http://localhost:3000
-- **API REST**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
+| Servicio     | URL                        |
+|--------------|----------------------------|
+| **Web App**  | http://localhost:3000       |
+| **API REST** | http://localhost:8000       |
+| **Swagger**  | http://localhost:8000/docs  |
 
-## 🛠️ Desarrollo Local (Sin Docker para el Frontend)
+## Desarrollo local
 
-Si prefieres desarrollar el frontend fuera de Docker (para recargas más rápidas):
+Si prefieres trabajar en el frontend fuera de Docker (hot-reload más rápido):
 
 ```bash
-# 1. Levanta solo la base de datos y backend con Docker
+# Levantar solo infraestructura + backend
 docker compose up db redis api worker beat -d
 
-# 2. Instala dependencias del monorepo
+# Instalar dependencias del monorepo
 npm install
 
-# 3. Levanta el frontend con Turborepo
+# Arrancar el frontend con Turborepo
 npm run dev
 ```
 
-## 📡 Fuentes de datos
+## Fuentes de datos
 
-| Fuente | Tipo | Frecuencia | Formato |
-|---|---|---|---|
-| AEMET OpenData | Avisos meteo | 5 min | CAP XML |
-| IGN FDSN | Terremotos | 2 min | Text/CSV |
-| DGT NAP | Tráfico | 5 min | DATEX2 XML |
-| MeteoAlarm EDR | Avisos europeos | 5 min | GeoJSON |
+| Fuente         | Tipo             | Frecuencia | Formato      |
+|----------------|------------------|------------|--------------|
+| AEMET OpenData | Avisos meteo     | 5 min      | CAP XML      |
+| IGN FDSN       | Terremotos       | 2 min      | Text/CSV     |
+| DGT NAP        | Tráfico          | 5 min      | DATEX2 XML   |
+| MeteoAlarm     | Avisos europeos  | 5 min      | GeoJSON/CAP  |
 
-## 🔑 Claves necesarias
+## Variables de entorno
 
-1. **AEMET**: [Obtener API key](https://opendata.aemet.es/centrodedescargas/inicio) (gratuita)
-2. **Firebase**: Crear proyecto en [console.firebase.google.com](https://console.firebase.google.com)
-3. **JWT_SECRET**: Generar string aleatorio para producción
+Copia `.env.example` a `.env` y ajusta los valores. Las claves principales:
+
+| Variable             | Descripción                              | Requerida |
+|----------------------|------------------------------------------|-----------|
+| `DATABASE_URL`       | Conexión PostgreSQL (asyncpg)            | Sí        |
+| `REDIS_URL`          | Conexión Redis                           | Sí        |
+| `AEMET_API_KEY`      | Clave de [AEMET OpenData][aemet] (gratis)| No*       |
+| `JWT_SECRET`         | Secreto para tokens JWT (≥32 chars)      | Prod      |
+| `ALLOWED_ORIGINS`    | Orígenes CORS permitidos                 | Prod      |
+
+> \* Sin la clave de AEMET los avisos meteorológicos no estarán disponibles,
+> pero el resto de fuentes (IGN, DGT, MeteoAlarm) funcionan sin autenticación.
+
+[aemet]: https://opendata.aemet.es/centrodedescargas/inicio
+
+## Despliegue en producción
+
+```bash
+# En el servidor:
+git clone https://github.com/saasixx/ESPAlert.git /opt/espalert
+cd /opt/espalert
+cp .env.example .env
+# ¡Edita .env con valores reales de producción!
+
+docker compose up -d --build
+```
+
+El repositorio incluye GitHub Actions en `.github/workflows/` para CI y
+despliegue automático vía SSH. Configura los secretos del repositorio:
+
+- `SERVER_HOST` — IP o dominio del servidor.
+- `SERVER_USER` — Usuario SSH.
+- `SERVER_SSH_KEY` — Clave privada SSH.
+
+## Contribuir
+
+¡Las contribuciones son bienvenidas! Lee [CONTRIBUTING.md](CONTRIBUTING.md)
+para conocer el flujo de trabajo, las convenciones y cómo enviar un Pull Request.
+
+Este proyecto sigue el [Código de Conducta del Contribuidor](CODE_OF_CONDUCT.md).
+
+## Seguridad
+
+Si descubres una vulnerabilidad, **no abras un issue público**. Consulta
+[SECURITY.md](SECURITY.md) para saber cómo reportarla de forma responsable.
+
+## Licencia
+
+Distribuido bajo la licencia **GNU AGPL-3.0-or-later**. Ver [LICENSE](LICENSE).
+
+Para proteger la identidad del proyecto, el nombre **ESPAlert**, su logotipo y
+elementos de marca están sujetos a una política de marca separada.
+Consulta [TRADEMARK_POLICY.md](TRADEMARK_POLICY.md).
+

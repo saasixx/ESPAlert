@@ -1,18 +1,18 @@
-"""API endpoints for collaborative reports — crowd-sourced 'I feel it' data."""
+"""API de Reportes Colaborativos — datos crowdsourced de tipo «Yo lo siento»."""
 
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from geoalchemy2.shape import from_shape
 from pydantic import BaseModel, Field
+from shapely.geometry import Point
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from geoalchemy2.shape import from_shape
-from shapely.geometry import Point
 
-from app.database import get_db
 from app.api.auth import get_current_user
-from app.models.user import User
+from app.database import get_db
 from app.models.report import CollaborativeReport
+from app.models.user import User
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -43,7 +43,7 @@ async def create_report(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Submit a collaborative report (authenticated users only)."""
+    """Envía un reporte colaborativo (solo usuarios autenticados)."""
     point = from_shape(Point(body.lon, body.lat), srid=4326)
 
     report = CollaborativeReport(
@@ -78,7 +78,7 @@ async def list_reports(
     limit: int = Query(default=50, le=200),
     db: AsyncSession = Depends(get_db),
 ):
-    """List recent collaborative reports (public, read-only)."""
+    """Lista reportes colaborativos recientes (público, solo lectura)."""
     query = select(CollaborativeReport).order_by(CollaborativeReport.created_at.desc())
 
     if event_id:

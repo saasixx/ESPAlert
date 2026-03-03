@@ -1,11 +1,14 @@
 "use client";
 
-import ESPAlertMap from "./ESPAlertMap";
+import type { AlertEvent } from "@/types/events";
 import { useEventsWS } from "@/hooks/useEventsWS";
-import { AlertEvent } from "@/types/events";
+import ESPAlertMap from "./ESPAlertMap";
 
-export default function MapClientWrapper({ initialEvents } : { initialEvents: AlertEvent[] }) {
-    const { events } = useEventsWS(initialEvents);
-
-    return <ESPAlertMap events={events} />
+/**
+ * Wrapper cliente que conecta los eventos en tiempo real (WS)
+ * con el componente del mapa.
+ */
+export default function MapClientWrapper({ initialEvents }: { initialEvents: AlertEvent[] }) {
+  const { events, isConnected } = useEventsWS(initialEvents);
+  return <ESPAlertMap events={events} isConnected={isConnected} />;
 }

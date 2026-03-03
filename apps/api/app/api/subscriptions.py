@@ -1,15 +1,14 @@
-"""Subscriptions API — manage zones, filters, and settings."""
+"""API de Suscripciones — gestión de zonas, filtros y ajustes de usuario."""
 
+import json
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from geoalchemy2.functions import ST_AsGeoJSON
 from geoalchemy2.shape import from_shape
 from shapely.geometry import shape
-
-import json
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.user import User, UserZone, UserFilter
@@ -22,7 +21,7 @@ from app.schemas import (
 router = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
 
 
-# ── Zones ────────────────────────────────────────────────────────────────────
+# ── Zonas ─────────────────────────────────────────────────────────────────────
 
 @router.get("/zones", response_model=list[ZoneOut])
 async def list_zones(
@@ -46,14 +45,14 @@ async def create_zone(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # Max 4 zones per user (Yurekuru-style)
+    # Máximo 4 zonas por usuario (estilo Yurekuru)
     count_result = await db.execute(
         select(UserZone).where(UserZone.user_id == user.id)
     )
     if len(count_result.all()) >= 4:
-        raise HTTPException(status_code=400, detail="Maximum 4 zones allowed")
+        raise HTTPException(status_code=400, detail="Máximo 4 zonas permitidas")
 
-    # Convert GeoJSON to PostGIS geometry
+    # Convertir GeoJSON a geometría PostGIS
     geom = from_shape(shape(data.geojson), srid=4326)
 
     zone = UserZone(user_id=user.id, label=data.label, geometry=geom)
@@ -74,11 +73,11 @@ async def delete_zone(
     )
     zone = result.scalar_one_or_none()
     if not zone:
-        raise HTTPException(status_code=404, detail="Zone not found")
+        raise HTTPException(status_code=404, detail="Zona no encontrada")
     await db.delete(zone)
 
 
-# ── Filters ──────────────────────────────────────────────────────────────────
+# ── Filtros ───────────────────────────────────────────────────────────────────
 
 @router.get("/filters", response_model=list[FilterOut])
 async def list_filters(
@@ -118,11 +117,11 @@ async def delete_filter(
     )
     filt = result.scalar_one_or_none()
     if not filt:
-        raise HTTPException(status_code=404, detail="Filter not found")
+        raise HTTPException(status_code=404, detail="Filtro no encontrado")
     await db.delete(filt)
 
 
-# ── User Settings ────────────────────────────────────────────────────────────
+# ── Ajustes del Usuario ─────────────────────────────────────────────────────────
 
 @router.patch("/settings", response_model=UserOut)
 async def update_settings(
