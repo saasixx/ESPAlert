@@ -53,23 +53,14 @@ jobs:
       - name: Test SSH
         run: ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DO_HOST }} "echo OK && whoami && hostname"
 
-      - name: Desplegar via SSH
-        run: |
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "
-            set -e &&
-            echo '=== 1. Directorio ===' &&
-            cd /opt/espalert &&
-            echo PWD:\$(pwd) &&
-            echo '=== 2. Git pull ===' &&
-            git fetch origin main &&
-            git reset --hard origin/main &&
-            echo Commit:\$(git rev-parse --short HEAD) &&
-            echo '=== 3. .env ===' &&
-            test -f .env && echo '.env existe' &&
-            echo '=== 4. Docker compose ===' &&
-            docker compose version &&
-            docker compose -f docker-compose.deploy.yml up -d --build &&
-            echo '=== 5. Limpieza ===' &&
-            docker image prune -a -f &&
-            echo '=== Despliegue completado ===' 
-          "
+      - name: Verificar directorio
+        run: ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "ls -la /opt/espalert/.git/config && cat /opt/espalert/.git/config"
+
+      - name: Git pull
+        run: ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "cd /opt/espalert && git remote -v && git fetch origin main && git reset --hard origin/main && echo OK"
+
+      - name: Verificar env y docker
+        run: ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "cd /opt/espalert && test -f .env && echo '.env OK' && docker compose version"
+
+      - name: Docker build y deploy
+        run: ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "cd /opt/espalert && docker compose -f docker-compose.deploy.yml up -d --build && docker image prune -a -f && echo 'Deploy OK'"
