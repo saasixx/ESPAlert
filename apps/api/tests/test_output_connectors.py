@@ -1,6 +1,5 @@
 """Tests para el framework de conectores de salida."""
 
-import pytest
 from datetime import datetime, timezone
 
 from app.services.output.base import OutputMessage, OutputConnector
@@ -61,7 +60,6 @@ def test_output_message_format_html():
     assert "Terremoto M4.2" in html
 
 
-@pytest.mark.asyncio
 async def test_registry_dispatch():
     # Limpiar singleton para el test
     OutputRegistry._instance = None
@@ -81,7 +79,6 @@ async def test_registry_dispatch():
     OutputRegistry._instance = None
 
 
-@pytest.mark.asyncio
 async def test_registry_unknown_channel():
     OutputRegistry._instance = None
     registry = OutputRegistry()
@@ -93,7 +90,6 @@ async def test_registry_unknown_channel():
     OutputRegistry._instance = None
 
 
-@pytest.mark.asyncio
 async def test_registry_broadcast():
     OutputRegistry._instance = None
     registry = OutputRegistry()
