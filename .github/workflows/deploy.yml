@@ -35,7 +35,7 @@ jobs:
       - name: Lint backend
         run: |
           pip install ruff
-          ruff check apps/api/ || echo "Advertencias de lint (no bloqueante)"
+          ruff check apps/api/
 
   desplegar:
     name: "Desplegar en servidor"
@@ -44,7 +44,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: SSH y despliegue
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
