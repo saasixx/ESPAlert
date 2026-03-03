@@ -23,12 +23,10 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
 
   const isConnected = connectionState === 'connected' || connectionState === 'polling';
 
-  useEffect(() => {
-    // Sincronización inicial desde props
-    if (initialEvents.length > 0 && events.length === 0) {
-      setEvents(initialEvents);
-    }
-  }, [initialEvents]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Sync initial events from SSR props (no effect needed — just initialise state)
+  if (initialEvents.length > 0 && events.length === 0) {
+    setEvents(initialEvents);
+  }
 
   // Polling fallback — fetches events via HTTP API
   const startPolling = useCallback(() => {
