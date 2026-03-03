@@ -16,7 +16,6 @@ import {
   DrawerContent,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
 import type { AlertEvent, EventCategory } from "@/types/events";
 import { SEVERITY_CONFIG } from "@/lib/constants";
 
@@ -29,7 +28,6 @@ interface MapSidebarProps {
 }
 
 export function MapSidebar({ events, activeCategories, toggleCategory, isConnected, onEventClick }: MapSidebarProps) {
-  const isDesktop = useMediaQuery("(min-width: 768px)");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const summary = events.reduce(
@@ -138,19 +136,14 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
     </>
   );
 
-  // Desktop: panel lateral fijo
-  if (isDesktop) {
-    return (
-      <div className="w-96 flex flex-col bg-background/90 backdrop-blur-xl border-r h-full shadow-2xl relative z-10 transition-all">
-        {sidebarContent}
-      </div>
-    );
-  }
-
-  // Mobile: Drawer con botón flotante
   return (
     <>
-      {/* Botón flotante para abrir el drawer */}
+      {/* Desktop: panel lateral fijo (oculto en móvil) */}
+      <div className="hidden md:flex w-96 flex-col bg-background/90 backdrop-blur-xl border-r h-full shadow-2xl relative z-10">
+        {sidebarContent}
+      </div>
+
+      {/* Mobile: Drawer con botón flotante (oculto en desktop) */}
       <div className="absolute top-3 right-3 z-20 md:hidden">
         <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
           <DrawerTrigger asChild>
