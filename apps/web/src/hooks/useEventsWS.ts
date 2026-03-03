@@ -35,7 +35,10 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
     const connect = () => {
       if (disposed) return;
 
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/api/v1/ws/events';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const wsProtocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL
+        || (apiUrl ? apiUrl.replace(/^https?:/, wsProtocol) + '/ws/events' : `${wsProtocol}//${window.location.host}/api/v1/ws/events`);
       setConnectionState(attempt === 0 ? 'connecting' : 'reconnecting');
 
       try {

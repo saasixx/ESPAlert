@@ -51,9 +51,8 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://localhost:8080",
+        "https://esp-alert-web.vercel.app",
     ]
-    # En producción, restringe a tu dominio real:
-    # ALLOWED_ORIGINS=["https://espalert.es","https://app.espalert.es"]
 
     TRUSTED_HOSTS: list[str] = [
         "localhost",
