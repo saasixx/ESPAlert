@@ -48,34 +48,28 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.DO_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.DO_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -t ed25519,rsa -H ${{ secrets.DO_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Test SSH
+        run: ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DO_HOST }} "echo OK && whoami && hostname"
 
       - name: Desplegar via SSH
         run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DO_HOST }} << 'DEPLOY_SCRIPT'
-            set -e
-            echo "=== 1. Verificar directorio ==="
-            cd /opt/espalert || { echo "FAIL: /opt/espalert no existe"; exit 1; }
-            echo "PWD: $(pwd)"
-
-            echo "=== 2. Git pull ==="
-            git fetch origin main
-            git reset --hard origin/main
-            echo "Commit: $(git rev-parse --short HEAD)"
-
-            echo "=== 3. Verificar .env ==="
-            if [ ! -f .env ]; then
-              echo "FAIL: Falta .env en /opt/espalert"
-              exit 1
-            fi
-            echo ".env existe"
-
-            echo "=== 4. Docker compose ==="
-            docker compose version
-            docker compose -f docker-compose.deploy.yml up -d --build
-
-            echo "=== 5. Limpieza ==="
-            docker image prune -a -f
-
-            echo "=== Despliegue completado: $(date) ==="
-          DEPLOY_SCRIPT
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "
+            set -e &&
+            echo '=== 1. Directorio ===' &&
+            cd /opt/espalert &&
+            echo PWD:\$(pwd) &&
+            echo '=== 2. Git pull ===' &&
+            git fetch origin main &&
+            git reset --hard origin/main &&
+            echo Commit:\$(git rev-parse --short HEAD) &&
+            echo '=== 3. .env ===' &&
+            test -f .env && echo '.env existe' &&
+            echo '=== 4. Docker compose ===' &&
+            docker compose version &&
+            docker compose -f docker-compose.deploy.yml up -d --build &&
+            echo '=== 5. Limpieza ===' &&
+            docker image prune -a -f &&
+            echo '=== Despliegue completado ===' 
+          "
