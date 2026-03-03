@@ -90,5 +90,8 @@ jobs:
       - name: Migrar base de datos
         run: alembic upgrade head
 
+      - name: Verificar imports
+        run: python -c "from app.main import app; print('✅ App importada correctamente')"
+
       - name: Tests
-        run: pytest -v
+        run: pytest -v --tb=long -x
