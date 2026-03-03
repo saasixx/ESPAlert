@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<d2LogicalModel xmlns="http://datex2.eu/schema/3/d2Payload" modelBaseVersion="3.6">
+  <payloadPublication>
+    <publicationTime>2024-06-15T10:00:00+02:00</publicationTime>
+    <publicationCreator>
+      <country>es</country>
+      <nationalIdentifier>DGT</nationalIdentifier>
+    </publicationCreator>
+    <situation id="DGT-SIT-001" version="1">
+      <situationRecord xsi:type="Accident" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <situationRecordCreationTime>2024-06-15T08:30:00+02:00</situationRecordCreationTime>
+        <situationRecordVersionTime>2024-06-15T09:00:00+02:00</situationRecordVersionTime>
+        <severity>high</severity>
+        <groupOfLocations>
+          <locationForDisplay>
+            <latitude>40.4168</latitude>
+            <longitude>-3.7038</longitude>
+          </locationForDisplay>
+        </groupOfLocations>
+        <generalPublicComment>
+          <comment>
+            <value lang="es">Accidente múltiple en la A-6, km 15. Dos carriles cortados dirección salida.</value>
+          </comment>
+        </generalPublicComment>
+      </situationRecord>
+    </situation>
+    <situation id="DGT-SIT-002" version="1">
+      <situationRecord xsi:type="MaintenanceWorks" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <situationRecordCreationTime>2024-06-14T22:00:00+02:00</situationRecordCreationTime>
+        <severity>low</severity>
+        <groupOfLocations>
+          <locationForDisplay>
+            <latitude>41.3874</latitude>
+            <longitude>2.1686</longitude>
+          </locationForDisplay>
+        </groupOfLocations>
+        <generalPublicComment>
+          <comment>
+            <value lang="es">Obras de mantenimiento nocturno en la B-20, km 8.</value>
+          </comment>
+        </generalPublicComment>
+      </situationRecord>
+    </situation>
+  </payloadPublication>
+</d2LogicalModel>

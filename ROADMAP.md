@@ -94,3 +94,82 @@ Ideas para versiones futuras (sin priorizar):
 - Integración con Protección Civil (sistema ES-Alert oficial).
 - Soporte multi-país (Portugal, Francia, Italia).
 - API GraphQL como alternativa a REST.
+
+---
+
+## Propuestas de APIs futuras
+
+Listado de fuentes de datos públicas investigadas que podrían integrarse a
+ESPAlert como nuevos conectores. Clasificadas por dominio.
+
+### Meteorología y clima (extensiones de AEMET OpenData)
+
+| API | Endpoint base | Descripción | Prioridad |
+|-----|---------------|-------------|-----------|
+| **AEMET — Índices de incendios** | `GET /api/incendios/mapasriesgo/estimado/area/{area}` | Mapas de riesgo meteorológico de incendios forestales (estimado y previsto). | Alta |
+| **AEMET — Red de Rayos** | `GET /api/red/rayos/mapa` | Registro de impactos de rayos en tiempo real; útil para tormentas eléctricas. | Media |
+| **AEMET — UVI (ultravioleta)** | `GET /api/prediccion/especifica/uvi/{dia}` | Predicción diaria de radiación UV por zonas. | Baja |
+| **AEMET — Nivología / avalanchas** | `GET /api/prediccion/especifica/nivologica/{area}` | Información nivológica y riesgo de avalanchas en zonas de montaña. | Media |
+| **AEMET — Predicción playas** | `GET /api/prediccion/especifica/playa/{playa}` | Estado y predicción para playas; oleaje, viento, UV. | Baja |
+| **AEMET — Radar nacional** | `GET /api/red/radar/nacional` | Composición radar de precipitación a nivel nacional en tiempo real. | Media |
+| **AEMET — Contaminación de fondo** | `GET /api/red/especial/contaminacionfondo/estacion/{nombre}` | Datos de estaciones de contaminación atmosférica de fondo. | Baja |
+
+> **Nota:** Todos los endpoints de AEMET requieren la misma API key que ya
+> usamos para avisos CAP (`opendata.aemet.es`).
+
+### Hidrología e inundaciones
+
+| API | URL | Descripción | Prioridad |
+|-----|-----|-------------|-----------|
+| **EFAS — European Flood Awareness System** | `european-flood.emergency.copernicus.eu` | Alertas de inundación fluvial en toda Europa, con niveles de previsión de caudal y mapas de riesgo. Acceso gratuito previa solicitud de cuenta Copernicus. | Alta |
+| **SAIH — Sistema Automático de Información Hidrológica** | Varía por Confederación (Ebro, Tajo, Guadalquivir…) | Datos en tiempo real de nivel de ríos, embalses y pluviometría. Cada confederación publica los datos en su portal SAIH; requiere scraping o negociar acceso API. | Media |
+
+### Incendios forestales
+
+| API | URL | Descripción | Prioridad |
+|-----|-----|-------------|-----------|
+| **EFFIS — European Forest Fire Information System** | `maps.effis.emergency.copernicus.eu/effis` (WFS/WMS) | Detección de puntos calientes activos (MODIS/VIIRS), perímetros de áreas quemadas y Fire Weather Index. Datos descargables como Shapefile / SpatiaLite vía WFS. | Alta |
+| **AEMET — Índices de incendios** | Ver sección Meteorología | Riesgo meteorológico de incendio por zonas. | Alta |
+
+### Actividad volcánica y sísmica (extensiones de IGN)
+
+| API | URL | Descripción | Prioridad |
+|-----|-----|-------------|-----------|
+| **IGN — Catálogo volcánico** | `www.ign.es/web/resources/volcanologia/` | Información de vigilancia volcánica en Canarias (La Palma, El Hierro, Tenerife). No tiene API REST formal; probablemente requiere scraping de datos sísmicos + comunicados. | Media |
+| **CSIC / INVOLCAN** | `involcan.com` | Instituto Volcanológico de Canarias; datos y boletines sobre actividad volcánica. | Baja |
+
+### Energía
+
+| API | URL | Descripción | Prioridad |
+|-----|-----|-------------|-----------|
+| **Red Eléctrica (REE) — REData API** | `apidatos.ree.es/es/datos/{category}/{widget}` | Datos de demanda, generación y balance eléctrico en tiempo real. Permite detectar picos de demanda o situaciones de estrés en la red. API REST pública, JSON, sin autenticación. | Media |
+
+### Marítimo y oceanográfico
+
+| API | URL | Descripción | Prioridad |
+|-----|-----|-------------|-----------|
+| **Puertos del Estado — PORTUS** | `portus.puertos.es` | Red de boyas oceánicas, mareógrafos y radares HF. Datos de oleaje, nivel del mar, temperatura del agua y corrientes en tiempo real. | Media |
+| **AEMET — Predicción marítima** | `GET /api/prediccion/maritima/costera/costa/{costa}` | Predicción de oleaje y viento para costas y alta mar. | Media |
+
+### Calidad del aire
+
+| API | URL | Descripción | Prioridad |
+|-----|-----|-------------|-----------|
+| **MITECO — Red de vigilancia** | `www.miteco.gob.es` (evaluación y datos de calidad del aire) | Red nacional de estaciones de calidad del aire: PM10, PM2.5, NO₂, O₃, SO₂. Algunas CCAA publican APIs propias (Madrid, Barcelona, País Vasco). | Media |
+| **European Air Quality Index** | `airindex.eea.europa.eu` | Datos consolidados de la Agencia Europea del Medio Ambiente con cobertura española. | Baja |
+
+### Protección Civil y emergencias
+
+| API | URL | Descripción | Prioridad |
+|-----|-----|-------------|-----------|
+| **DGPCE — Dirección General de Protección Civil** | `www.proteccioncivil.es` | Alertas oficiales del sistema ES-Alert (Cell Broadcast EU). Actualmente no tiene API pública formal; se podría monitorizar vía RSS/scraping de comunicados. | Alta |
+| **Generalitat de Catalunya — Protecció Civil** | `datos.gob.es` (dataset abierto) | Planes de protección civil activos (prealerta, alerta, emergencia). Formato CSV/JSON accesible en datos.gob.es. | Media |
+| **Copernicus EMS — Rapid Mapping** | `emergency.copernicus.eu/mapping` | Cartografía rápida de desastres (inundaciones, terremotos, incendios). Activaciones con mapas vectoriales. | Baja |
+
+### Criterios para incorporar una nueva fuente
+
+1. **Datos abiertos o gratuitos** — Priorizar APIs sin coste.
+2. **Formato estructurado** — JSON, XML, CAP, GeoJSON, WFS; evitar PDFs.
+3. **Actualización frecuente** — Mínimo cada hora para alertas en vivo.
+4. **Cobertura nacional** — Preferir fuentes que cubran toda España.
+5. **Geolocalización** — Datos con coordenadas o polígonos para mapear.

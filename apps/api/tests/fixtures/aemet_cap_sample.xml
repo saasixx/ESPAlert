@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <identifier>AEMET-ESP-2024-001</identifier>
+  <sender>cap-alerts@aemet.es</sender>
+  <sent>2024-06-15T08:00:00+02:00</sent>
+  <status>Actual</status>
+  <msgType>Alert</msgType>
+  <scope>Public</scope>
+  <info>
+    <language>es-ES</language>
+    <category>Met</category>
+    <event>Viento</event>
+    <responseType>Monitor</responseType>
+    <urgency>Expected</urgency>
+    <severity>Moderate</severity>
+    <certainty>Likely</certainty>
+    <effective>2024-06-15T08:00:00+02:00</effective>
+    <expires>2024-06-16T08:00:00+02:00</expires>
+    <senderName>AEMET</senderName>
+    <headline>Aviso de vientos de nivel amarillo. Madrid</headline>
+    <description>Se esperan rachas de viento de hasta 80 km/h en la sierra de Madrid durante las próximas 24 horas.</description>
+    <instruction>Precaución al circular por zonas forestales y de montaña. Asegure objetos en terrazas y balcones.</instruction>
+    <area>
+      <areaDesc>Sierra de Madrid</areaDesc>
+      <polygon>40.85,-3.95 40.85,-3.70 40.70,-3.70 40.70,-3.95 40.85,-3.95</polygon>
+    </area>
+  </info>
+</alert>

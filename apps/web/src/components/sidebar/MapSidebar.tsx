@@ -1,14 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { clsx } from "clsx";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { Activity, Car, CloudRain, MapPin, Waves } from "lucide-react";
+import { Activity, Car, CloudRain, MapPin, Waves, Menu } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import type { AlertEvent, EventCategory } from "@/types/events";
 import { SEVERITY_CONFIG } from "@/lib/constants";
 
@@ -21,6 +29,9 @@ interface MapSidebarProps {
 }
 
 export function MapSidebar({ events, activeCategories, toggleCategory, isConnected, onEventClick }: MapSidebarProps) {
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   const summary = events.reduce(
     (acc, event) => {
       acc.total += 1;
@@ -39,15 +50,20 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
     )
   ).slice(0, 3);
 
-  return (
-    <div className="w-96 flex flex-col bg-background/90 backdrop-blur-xl border-r h-full shadow-2xl relative z-10 transition-all">
+  const handleEventClick = (event: AlertEvent) => {
+    setDrawerOpen(false);
+    onEventClick?.(event);
+  };
+
+  const sidebarContent = (
+    <>
       {/* Encabezado */}
-      <div className="p-6 border-b bg-background/50">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Image src="/espalert-logo.svg" alt="ESPAlert" width={36} height={36} className="dark:invert" />
+      <div className="p-4 md:p-6 border-b bg-background/50">
+        <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <Image src="/espalert-logo.svg" alt="ESPAlert" width={32} height={32} className="dark:invert" />
           ESPAlert
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">Alertas en tiempo real para España</p>
+        <p className="text-xs md:text-sm text-muted-foreground mt-1">Alertas en tiempo real para España</p>
         <div className="mt-3 flex items-center gap-2 text-xs">
           <span className={clsx("h-2.5 w-2.5 rounded-full", isConnected ? "bg-green-500" : "bg-yellow-500")} />
           <span className="text-muted-foreground">
@@ -56,7 +72,7 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
         </div>
       </div>
 
-      <div className="p-4 border-b grid grid-cols-2 gap-2 text-xs">
+      <div className="p-3 md:p-4 border-b grid grid-cols-2 gap-2 text-xs">
         <SummaryPill label="Alertas activas" value={summary.total} tone="default" />
         <SummaryPill label="Extremas" value={summary.red} tone="red" />
         <SummaryPill label="Importantes" value={summary.orange} tone="orange" />
@@ -64,7 +80,7 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
       </div>
 
       {/* Filtros por categoría */}
-      <div className="p-4 border-b grid grid-cols-2 gap-2">
+      <div className="p-3 md:p-4 border-b grid grid-cols-4 md:grid-cols-2 gap-2">
         <FilterButton 
           active={activeCategories.has('meteo')} 
           onClick={() => toggleCategory('meteo')}
@@ -92,7 +108,7 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
       </div>
 
       {/* Lista de eventos */}
-      <ScrollArea className="flex-1 min-h-0 p-4">
+      <ScrollArea className="flex-1 min-h-0 p-3 md:p-4">
         <div className="flex flex-col gap-3 pb-8">
           {recommendedActions.length > 0 && (
             <section className="rounded-xl border bg-card p-4">
@@ -114,12 +130,48 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
             </div>
           ) : (
             events.slice(0, 100).map(event => (
-              <EventCard key={event.id} event={event} onClick={() => onEventClick?.(event)} />
+              <EventCard key={event.id} event={event} onClick={() => handleEventClick(event)} />
             ))
           )}
         </div>
       </ScrollArea>
-    </div>
+    </>
+  );
+
+  // Desktop: panel lateral fijo
+  if (isDesktop) {
+    return (
+      <div className="w-96 flex flex-col bg-background/90 backdrop-blur-xl border-r h-full shadow-2xl relative z-10 transition-all">
+        {sidebarContent}
+      </div>
+    );
+  }
+
+  // Mobile: Drawer con botón flotante
+  return (
+    <>
+      {/* Botón flotante para abrir el drawer */}
+      <div className="absolute top-3 right-3 z-20 md:hidden">
+        <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+          <DrawerTrigger asChild>
+            <Button size="icon" variant="secondary" className="shadow-lg rounded-full h-12 w-12">
+              <Menu size={22} />
+              {summary.total > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {summary.total > 99 ? "99+" : summary.total}
+                </span>
+              )}
+              <span className="sr-only">Ver alertas</span>
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="max-h-[85dvh]">
+            <div className="flex flex-col h-full max-h-[85dvh]">
+              {sidebarContent}
+            </div>
+          </DrawerContent>
+        </Drawer>
+      </div>
+    </>
   );
 }
 
@@ -201,6 +253,14 @@ function EventCard({ event, onClick }: { event: AlertEvent; onClick?: () => void
             Magnitud: {event.magnitude} {event.depth_km && `• Profundidad: ${event.depth_km} km`}
           </div>
         )}
+
+        <Link
+          href={`/alerts/${event.id}`}
+          className="text-xs text-primary hover:underline mt-1 self-end"
+          onClick={(e) => e.stopPropagation()}
+        >
+          Ver detalle →
+        </Link>
       </div>
     </div>
   );
