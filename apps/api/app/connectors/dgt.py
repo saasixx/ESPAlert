@@ -1,7 +1,6 @@
 """Conector DGT de Tráfico — parsea XML DATEX2 v3.6 para incidencias de tráfico."""
 
 import logging
-from datetime import datetime, timezone
 from typing import Optional
 
 import httpx

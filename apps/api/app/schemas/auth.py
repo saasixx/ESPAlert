@@ -1,6 +1,5 @@
 """Esquemas Pydantic para autenticación y usuarios."""
 
-import re
 from datetime import datetime, time
 from typing import Optional
 from uuid import UUID

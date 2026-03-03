@@ -1,7 +1,6 @@
 """Conector AEMET OpenData — obtiene avisos meteorológicos (formato CAP)."""
 
 import logging
-from datetime import datetime, timezone
 from typing import Optional
 
 import httpx
@@ -200,7 +199,7 @@ class AemetConnector:
             "area_name": area_desc,
             "effective": effective,
             "expires": expires,
-            "source_url": f"https://www.aemet.es/es/eltiempo/prediccion/avisos",
+            "source_url": "https://www.aemet.es/es/eltiempo/prediccion/avisos",
             "raw_data": {"alert": alert, "info": info},
         }
 

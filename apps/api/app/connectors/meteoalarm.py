@@ -1,7 +1,6 @@
 """Conector MeteoAlarm — obtiene avisos meteorológicos europeos vía API de feeds CAP/JSON."""
 
 import logging
-from datetime import datetime, timezone
 from typing import Optional
 
 import httpx

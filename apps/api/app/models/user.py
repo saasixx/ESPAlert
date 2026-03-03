@@ -1,7 +1,6 @@
 """Modelo de Usuario — cuentas, zonas de interés y preferencias de notificación."""
 
 import uuid
-from datetime import datetime, time
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (

@@ -1,7 +1,6 @@
 """Conector de salida Telegram — envía alertas a canales/grupos/usuarios de Telegram."""
 
 import logging
-from typing import Optional
 
 import httpx
 

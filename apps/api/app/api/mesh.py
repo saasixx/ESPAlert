@@ -4,7 +4,6 @@ import json
 import logging
 from datetime import datetime, timezone
 
-import redis.asyncio as aioredis
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Depends, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address

@@ -2,7 +2,6 @@
 
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 
 import httpx
 
@@ -133,7 +132,7 @@ class IGNConnector:
                     "area_name": location_name,
                     "effective": event_time.isoformat(),
                     "expires": (event_time + timedelta(hours=24)).isoformat(),
-                    "source_url": f"https://www.ign.es/web/ign/portal/sis-catalogo-terremotos",
+                    "source_url": "https://www.ign.es/web/ign/portal/sis-catalogo-terremotos",
                     "magnitude": str(magnitude),
                     "depth_km": str(depth),
                     "raw_data": {

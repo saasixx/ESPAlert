@@ -1,7 +1,6 @@
 """Esquemas Pydantic para zonas y filtros de suscripción."""
 
 import json as _json
-import re
 from typing import Optional
 from uuid import UUID
 

@@ -14,9 +14,8 @@ import {
   MapControls,
   MapPopup,
   MapClusterLayer,
-  useMap,
 } from "@/components/ui/map";
-import type { AlertEvent, EventCategory } from "@/types/events";
+import type { AlertEvent } from "@/types/events";
 import { useMapFilters } from "@/hooks/useMapFilters";
 import { MapSidebar } from "@/components/sidebar/MapSidebar";
 import { AlertPopup } from "@/components/map/AlertPopup";

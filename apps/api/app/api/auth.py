@@ -4,16 +4,17 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 import jwt
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_current_user  # noqa: F401  # Re-exportar para compatibilidad
 from app.config import get_settings
 from app.database import get_db
 from app.middleware import limiter
 from app.models.user import User
-from app.schemas import UserCreate, UserLogin, UserOut, TokenOut
+from app.schemas import UserCreate, UserLogin, TokenOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 settings = get_settings()
@@ -72,7 +73,3 @@ async def login(request: Request, data: UserLogin, db: AsyncSession = Depends(ge
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
     return TokenOut(access_token=_create_token(user.id))
-
-
-# Re-exportar get_current_user desde deps para compatibilidad
-from app.api.deps import get_current_user  # noqa: F401

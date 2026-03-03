@@ -3,12 +3,10 @@
 import logging
 from datetime import datetime, timezone
 
-from geoalchemy2.functions import ST_Intersects
-from sqlalchemy import select, and_, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.event import Event, Severity
-from app.models.user import User, UserZone, UserFilter
 
 logger = logging.getLogger(__name__)
 

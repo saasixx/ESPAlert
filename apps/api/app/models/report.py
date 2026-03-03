@@ -1,7 +1,6 @@
 """Modelo de Reporte Colaborativo — informes de tipo «Yo lo siento» por los usuarios."""
 
 import uuid
-from datetime import datetime
 
 from geoalchemy2 import Geometry
 from sqlalchemy import Column, String, DateTime, ForeignKey, func, Index

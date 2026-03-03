@@ -1,6 +1,5 @@
 """Unit tests for the normalizer service."""
 
-import pytest
 from datetime import datetime, timezone
 
 from app.services.normalizer import Normalizer, SEVERITY_MAP, TYPE_MAP

@@ -3,8 +3,8 @@
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.auth import UserCreate, UserLogin, UserSettingsUpdate
-from app.schemas.event import EventOut, EventListParams
+from app.schemas.auth import UserCreate
+from app.schemas.event import EventListParams
 from app.schemas.subscription import ZoneCreate, FilterCreate
 from app.schemas.report import ReportCreate
 

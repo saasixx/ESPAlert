@@ -2,7 +2,6 @@
 
 import enum
 import uuid
-from datetime import datetime
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (
