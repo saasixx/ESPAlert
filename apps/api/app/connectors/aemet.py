@@ -1,6 +1,8 @@
 """Conector AEMET OpenData — obtiene avisos meteorológicos (formato CAP)."""
 
+import io
 import logging
+import tarfile
 from typing import Optional
 
 import httpx
@@ -90,19 +92,21 @@ class AemetConnector:
             data = resp.json()
             return data.get("datos")
 
-    async def _fetch_data(self, data_url: str) -> Optional[str]:
-        """Paso 2: Obtener datos reales de la URL temporal."""
-        async with httpx.AsyncClient(timeout=30) as client:
+    async def _fetch_data(self, data_url: str) -> Optional[bytes]:
+        """Paso 2: Obtener datos reales de la URL temporal (puede ser XML o tar)."""
+        async with httpx.AsyncClient(timeout=60) as client:
             resp = await client.get(data_url)
             if resp.status_code != 200:
                 logger.error("Descarga de datos AEMET fallida: %s", resp.status_code)
                 return None
-            return resp.text
+            return resp.content
 
     async def fetch_warnings(self) -> list[dict]:
         """
         Obtiene todos los avisos meteorológicos activos en España.
-        Retorna una lista de dicts de eventos normalizados listos para el normalizador.
+
+        AEMET devuelve un archivo tar con múltiples XMLs CAP individuales
+        (uno por aviso). Extraemos cada XML y lo parseamos por separado.
         """
         all_warnings = []
 
@@ -114,18 +118,55 @@ class AemetConnector:
                 if not data_url:
                     continue
 
-                raw_xml = await self._fetch_data(data_url)
-                if not raw_xml:
+                raw_data = await self._fetch_data(data_url)
+                if not raw_data:
                     continue
 
-                warnings = self._parse_cap_xml(raw_xml, area_code)
-                all_warnings.extend(warnings)
+                xml_texts = self._extract_cap_xmls(raw_data)
+                for xml_text in xml_texts:
+                    warnings = self._parse_cap_xml(xml_text, area_code)
+                    all_warnings.extend(warnings)
 
             except Exception as e:
                 logger.exception("Error obteniendo área AEMET %s: %s", area_code, e)
 
         logger.info("AEMET: obtenidos %d avisos", len(all_warnings))
         return all_warnings
+
+    @staticmethod
+    def _extract_cap_xmls(raw_data: bytes) -> list[str]:
+        """
+        Extrae XMLs CAP del contenido descargado.
+
+        AEMET puede devolver un tar con múltiples XMLs o un XML suelto.
+        """
+        # Intentar como tar primero
+        try:
+            buf = io.BytesIO(raw_data)
+            if tarfile.is_tarfile(buf):
+                buf.seek(0)
+                xmls = []
+                with tarfile.open(fileobj=buf, mode="r:*") as tf:
+                    for member in tf.getmembers():
+                        if member.isfile() and member.name.endswith(".xml"):
+                            f = tf.extractfile(member)
+                            if f:
+                                xmls.append(f.read().decode("utf-8", errors="replace"))
+                if xmls:
+                    return xmls
+        except (tarfile.TarError, Exception):
+            pass
+
+        # Si no es tar, tratar como XML directo
+        try:
+            text = raw_data.decode("utf-8", errors="replace")
+            if text.strip().startswith("<?xml") or text.strip().startswith("<alert"):
+                return [text]
+        except Exception:
+            pass
+
+        logger.warning("AEMET: datos no reconocidos como tar ni XML (%d bytes)", len(raw_data))
+        return []
 
     def _parse_cap_xml(self, xml_text: str, area_code: str) -> list[dict]:
         """Parsea XML CAP en dicts de eventos normalizados."""

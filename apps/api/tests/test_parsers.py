@@ -175,39 +175,59 @@ class TestMagnitudeToSeverity:
 
 
 class TestDGTParser:
-    """Tests del parser XML DATEX2 de la DGT."""
+    """Tests del parser XML DATEX2 v3.6 de la DGT."""
 
     def setup_method(self):
         self.connector = DGTConnector()
-        self.xml = (FIXTURES_DIR / "dgt_datex2_sample.xml").read_text(encoding="utf-8")
+        self.xml_bytes = (FIXTURES_DIR / "dgt_datex2_sample.xml").read_bytes()
 
     def test_parse_returns_events(self):
-        """Debe parsear las 2 situaciones del fixture."""
-        events = self.connector._parse_datex2(self.xml)
+        """Debe parsear las 2 situaciones del fixture v3.6."""
+        events = self.connector._parse_datex2_v36(self.xml_bytes)
         assert len(events) == 2
 
     def test_event_has_required_fields(self):
         """Los eventos tienen los campos obligatorios."""
-        events = self.connector._parse_datex2(self.xml)
+        events = self.connector._parse_datex2_v36(self.xml_bytes)
         required = ["source", "source_id", "event_type", "severity", "title"]
         for field in required:
             assert field in events[0], f"Falta campo: {field}"
 
     def test_source_is_dgt(self):
         """La fuente debe ser 'dgt'."""
-        events = self.connector._parse_datex2(self.xml)
+        events = self.connector._parse_datex2_v36(self.xml_bytes)
         assert all(e["source"] == "dgt" for e in events)
 
     def test_accident_severity(self):
         """Un accidente con severidad 'high' se mapea a 'orange'."""
-        events = self.connector._parse_datex2(self.xml)
-        accident = next((e for e in events if "accident" in e["event_type"]), None)
-        if accident:
-            assert accident["severity"] == "orange"
+        events = self.connector._parse_datex2_v36(self.xml_bytes)
+        accident = next((e for e in events if e["event_type"] == "traffic_accident"), None)
+        assert accident is not None, "Debe haber un accidente"
+        assert accident["severity"] == "orange"
 
-    def test_event_types(self):
-        """Los tipos de evento se mapean correctamente desde DATEX2."""
-        events = self.connector._parse_datex2(self.xml)
-        types = {e["event_type"] for e in events}
-        # Debe contener accident y works
-        assert any("accident" in t for t in types) or any("works" in t for t in types) or any("closure" in t for t in types)
+    def test_works_type(self):
+        """Una situación con causeType roadMaintenance se mapea a traffic_works."""
+        events = self.connector._parse_datex2_v36(self.xml_bytes)
+        works = next((e for e in events if e["event_type"] == "traffic_works"), None)
+        assert works is not None, "Debe haber obras"
+        assert works["severity"] == "green"
+
+    def test_coordinates_extracted(self):
+        """Las coordenadas se extraen correctamente."""
+        events = self.connector._parse_datex2_v36(self.xml_bytes)
+        accident = next(e for e in events if e["event_type"] == "traffic_accident")
+        assert accident["area_wkt"] is not None
+        assert "40.4168" in accident["area_wkt"]
+        assert "-3.7038" in accident["area_wkt"]
+
+    def test_road_name_extracted(self):
+        """El nombre de carretera se extrae de roadInformation."""
+        events = self.connector._parse_datex2_v36(self.xml_bytes)
+        assert any("A-6" in (e.get("area_name") or "") for e in events)
+        assert any("GR-5202" in (e.get("area_name") or "") for e in events)
+
+    def test_province_in_area_name(self):
+        """La provincia se incluye en area_name."""
+        events = self.connector._parse_datex2_v36(self.xml_bytes)
+        assert any("Madrid" in (e.get("area_name") or "") for e in events)
+        assert any("Granada" in (e.get("area_name") or "") for e in events)

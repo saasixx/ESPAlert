@@ -1,45 +1,114 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<d2LogicalModel xmlns="http://datex2.eu/schema/3/d2Payload" modelBaseVersion="3.6">
-  <payloadPublication>
-    <publicationTime>2024-06-15T10:00:00+02:00</publicationTime>
-    <publicationCreator>
-      <country>es</country>
-      <nationalIdentifier>DGT</nationalIdentifier>
-    </publicationCreator>
-    <situation id="DGT-SIT-001" version="1">
-      <situationRecord xsi:type="Accident" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        <situationRecordCreationTime>2024-06-15T08:30:00+02:00</situationRecordCreationTime>
-        <situationRecordVersionTime>2024-06-15T09:00:00+02:00</situationRecordVersionTime>
-        <severity>high</severity>
-        <groupOfLocations>
-          <locationForDisplay>
-            <latitude>40.4168</latitude>
-            <longitude>-3.7038</longitude>
-          </locationForDisplay>
-        </groupOfLocations>
-        <generalPublicComment>
-          <comment>
-            <value lang="es">Accidente múltiple en la A-6, km 15. Dos carriles cortados dirección salida.</value>
-          </comment>
-        </generalPublicComment>
-      </situationRecord>
-    </situation>
-    <situation id="DGT-SIT-002" version="1">
-      <situationRecord xsi:type="MaintenanceWorks" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        <situationRecordCreationTime>2024-06-14T22:00:00+02:00</situationRecordCreationTime>
-        <severity>low</severity>
-        <groupOfLocations>
-          <locationForDisplay>
-            <latitude>41.3874</latitude>
-            <longitude>2.1686</longitude>
-          </locationForDisplay>
-        </groupOfLocations>
-        <generalPublicComment>
-          <comment>
-            <value lang="es">Obras de mantenimiento nocturno en la B-20, km 8.</value>
-          </comment>
-        </generalPublicComment>
-      </situationRecord>
-    </situation>
-  </payloadPublication>
-</d2LogicalModel>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<d2:payload xsi:type="sit:SituationPublication" lang="es" modelBaseVersion="3" profileName="DGT (Spain) Profile RTTI SituationPublication" profileVersion="3.6_2.0"
+  xmlns:com="http://levelC/schema/3/common"
+  xmlns:loc="http://levelC/schema/3/locationReferencing"
+  xmlns:d2="http://levelC/schema/3/d2Payload"
+  xmlns:sit="http://levelC/schema/3/situation"
+  xmlns:lse="http://levelC/schema/3/locationReferencingSpanishExtension"
+  xmlns:sse="http://levelC/schema/3/situationSpanishExtension"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <com:publicationTime>2026-03-03T10:00:00.000+01:00</com:publicationTime>
+  <com:publicationCreator>
+    <com:country>es</com:country>
+    <com:nationalIdentifier>DGT</com:nationalIdentifier>
+  </com:publicationCreator>
+  <!-- Situación 1: Accidente en A-6 Madrid -->
+  <sit:situation id="10001">
+    <sit:overallSeverity>high</sit:overallSeverity>
+    <sit:headerInformation>
+      <com:informationStatus>real</com:informationStatus>
+    </sit:headerInformation>
+    <sit:situationRecord xsi:type="sit:GenericSituationRecord" id="20001" version="1">
+      <sit:situationRecordCreationTime>2026-03-03T08:30:00.000+01:00</sit:situationRecordCreationTime>
+      <sit:situationRecordVersionTime>2026-03-03T09:00:00.000+01:00</sit:situationRecordVersionTime>
+      <sit:probabilityOfOccurrence>certain</sit:probabilityOfOccurrence>
+      <sit:severity>high</sit:severity>
+      <sit:source>
+        <com:sourceIdentification>DGT</com:sourceIdentification>
+      </sit:source>
+      <sit:validity>
+        <com:validityStatus>active</com:validityStatus>
+        <com:validityTimeSpecification>
+          <com:overallStartTime>2026-03-03T08:30:00.000+01:00</com:overallStartTime>
+        </com:validityTimeSpecification>
+      </sit:validity>
+      <sit:cause>
+        <sit:causeType>accident</sit:causeType>
+      </sit:cause>
+      <sit:locationReference xsi:type="loc:SingleRoadLinearLocation">
+        <loc:supplementaryPositionalDescription>
+          <loc:roadInformation>
+            <loc:roadName>A-6</loc:roadName>
+          </loc:roadInformation>
+        </loc:supplementaryPositionalDescription>
+        <loc:tpegLinearLocation>
+          <loc:tpegDirection>unknown</loc:tpegDirection>
+          <loc:tpegLinearLocationType>segment</loc:tpegLinearLocationType>
+          <loc:from xsi:type="loc:TpegNonJunctionPoint">
+            <loc:pointCoordinates>
+              <loc:latitude>40.4168</loc:latitude>
+              <loc:longitude>-3.7038</loc:longitude>
+            </loc:pointCoordinates>
+            <loc:_tpegNonJunctionPointExtension>
+              <loc:extendedTpegNonJunctionPoint>
+                <lse:province>Madrid</lse:province>
+                <lse:municipality>Madrid</lse:municipality>
+              </loc:extendedTpegNonJunctionPoint>
+            </loc:_tpegNonJunctionPointExtension>
+          </loc:from>
+        </loc:tpegLinearLocation>
+      </sit:locationReference>
+    </sit:situationRecord>
+  </sit:situation>
+  <!-- Situación 2: Obras en GR-5202 Granada -->
+  <sit:situation id="10002">
+    <sit:overallSeverity>low</sit:overallSeverity>
+    <sit:headerInformation>
+      <com:informationStatus>real</com:informationStatus>
+    </sit:headerInformation>
+    <sit:situationRecord xsi:type="sit:RoadOrCarriagewayOrLaneManagement" id="20002" version="1">
+      <sit:situationRecordCreationTime>2026-03-01T14:00:00.000+01:00</sit:situationRecordCreationTime>
+      <sit:situationRecordVersionTime>2026-03-01T14:00:00.000+01:00</sit:situationRecordVersionTime>
+      <sit:probabilityOfOccurrence>certain</sit:probabilityOfOccurrence>
+      <sit:severity>low</sit:severity>
+      <sit:source>
+        <com:sourceIdentification>DGT</com:sourceIdentification>
+      </sit:source>
+      <sit:validity>
+        <com:validityStatus>active</com:validityStatus>
+        <com:validityTimeSpecification>
+          <com:overallStartTime>2026-03-01T14:00:00.000+01:00</com:overallStartTime>
+        </com:validityTimeSpecification>
+      </sit:validity>
+      <sit:cause>
+        <sit:causeType>roadMaintenance</sit:causeType>
+        <sit:detailedCauseType>
+          <sit:roadMaintenanceType>roadworks</sit:roadMaintenanceType>
+        </sit:detailedCauseType>
+      </sit:cause>
+      <sit:locationReference xsi:type="loc:SingleRoadLinearLocation">
+        <loc:supplementaryPositionalDescription>
+          <loc:roadInformation>
+            <loc:roadName>GR-5202</loc:roadName>
+          </loc:roadInformation>
+        </loc:supplementaryPositionalDescription>
+        <loc:tpegLinearLocation>
+          <loc:tpegDirection>unknown</loc:tpegDirection>
+          <loc:tpegLinearLocationType>segment</loc:tpegLinearLocationType>
+          <loc:from xsi:type="loc:TpegNonJunctionPoint">
+            <loc:pointCoordinates>
+              <loc:latitude>36.909466</loc:latitude>
+              <loc:longitude>-3.108543</loc:longitude>
+            </loc:pointCoordinates>
+            <loc:_tpegNonJunctionPointExtension>
+              <loc:extendedTpegNonJunctionPoint>
+                <lse:province>Granada</lse:province>
+                <lse:municipality>Murtas</lse:municipality>
+              </loc:extendedTpegNonJunctionPoint>
+            </loc:_tpegNonJunctionPointExtension>
+          </loc:from>
+        </loc:tpegLinearLocation>
+      </sit:locationReference>
+    </sit:situationRecord>
+  </sit:situation>
+</d2:payload>
