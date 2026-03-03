@@ -31,7 +31,9 @@ services:
 
   # ── FastAPI Backend (Production) ─────────────────────
   api:
-    build: .
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
     env_file:
       - .env
     environment:
@@ -59,7 +61,9 @@ services:
 
   # ── Celery Worker ────────────────────────────────────
   worker:
-    build: .
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
     env_file:
       - .env
     environment:
@@ -76,7 +80,9 @@ services:
 
   # ── Celery Beat ──────────────────────────────────────
   beat:
-    build: .
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
     env_file:
       - .env
     environment:

@@ -73,7 +73,7 @@ jobs:
 
             echo "=== 4. Docker compose ==="
             docker compose version 2>&1
-            docker compose up -d --build 2>&1
+            docker compose -f docker-compose.deploy.yml up -d --build 2>&1
 
             echo "=== 5. Limpieza ==="
             docker image prune -a -f 2>&1
