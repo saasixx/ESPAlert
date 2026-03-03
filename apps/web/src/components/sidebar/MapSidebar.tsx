@@ -9,23 +9,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { AlertEvent, EventCategory } from "@/types/events";
+import { SEVERITY_CONFIG } from "@/lib/constants";
 
 interface MapSidebarProps {
   events: AlertEvent[];
   activeCategories: Set<EventCategory>;
   toggleCategory: (category: EventCategory) => void;
   isConnected: boolean;
+  onEventClick?: (event: AlertEvent) => void;
 }
 
-/** Configuración visual por nivel de severidad. */
-const severityConfig: Record<string, { color: string; label: string }> = {
-  red:    { color: "bg-red-500/20 text-red-500 border-red-500/50",       label: "EXTREMO" },
-  orange: { color: "bg-orange-500/20 text-orange-500 border-orange-500/50", label: "IMPORTANTE" },
-  yellow: { color: "bg-yellow-500/20 text-yellow-500 border-yellow-500/50", label: "RIESGO" },
-  green:  { color: "bg-green-500/20 text-green-500 border-green-500/50",   label: "SIN RIESGO" },
-};
-
-export function MapSidebar({ events, activeCategories, toggleCategory, isConnected }: MapSidebarProps) {
+export function MapSidebar({ events, activeCategories, toggleCategory, isConnected, onEventClick }: MapSidebarProps) {
   const summary = events.reduce(
     (acc, event) => {
       acc.total += 1;
@@ -118,7 +112,7 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
             </div>
           ) : (
             events.slice(0, 100).map(event => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} onClick={() => onEventClick?.(event)} />
             ))
           )}
         </div>
@@ -167,11 +161,17 @@ function FilterButton({ active, onClick, icon, label }: { active: boolean, onCli
   );
 }
 
-function EventCard({ event }: { event: AlertEvent }) {
-  const config = severityConfig[event.severity] ?? severityConfig.green;
+function EventCard({ event, onClick }: { event: AlertEvent; onClick?: () => void }) {
+  const config = SEVERITY_CONFIG[event.severity] ?? SEVERITY_CONFIG.green;
   
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-pointer overflow-hidden">
+    <div
+      className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-pointer overflow-hidden"
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(); }}
+    >
       <div className="p-4 flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
           <Badge variant="outline" className={clsx("font-semibold text-xs border uppercase tracking-wider", config.color)}>

@@ -11,6 +11,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.api import auth, events, gdpr, mesh, reports, subscriptions, ws
 from app.config import get_settings
+from app.logging_config import setup_logging
 from app.middleware import (
     SecurityHeadersMiddleware,
     limiter,
@@ -19,11 +20,7 @@ from app.middleware import (
 )
 
 settings = get_settings()
-
-logging.basicConfig(
-    level=logging.DEBUG if settings.DEBUG else logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
+setup_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -111,30 +108,62 @@ async def root():
 
 @app.get("/health")
 async def health(detailed: bool = False):
-    """Comprobación de salud de la aplicación."""
-    checks: dict[str, str] = {"api": "ok", "database": "unknown", "redis": "unknown"}
+    """Comprobación de salud de la aplicación con latencia de componentes."""
+    import time as _time
 
+    checks: dict[str, dict] = {
+        "api": {"status": "ok"},
+        "database": {"status": "unknown"},
+        "redis": {"status": "unknown"},
+    }
+
+    # --- Base de datos ---
     try:
         from app.database import engine
 
+        start = _time.monotonic()
         async with engine.begin() as conn:
             await conn.execute(sqlalchemy.text("SELECT 1"))
-        checks["database"] = "ok"
-    except Exception:
-        checks["database"] = "error"
+        latency_ms = round((_time.monotonic() - start) * 1000, 1)
+        checks["database"] = {"status": "ok", "latency_ms": latency_ms}
+    except Exception as e:
+        checks["database"] = {"status": "error", "error": str(e)[:120]}
 
+    # --- Redis ---
     try:
         from app.database import get_redis
 
         r = get_redis()
+        start = _time.monotonic()
         await r.ping()
-        checks["redis"] = "ok"
-    except Exception:
-        checks["redis"] = "error"
+        latency_ms = round((_time.monotonic() - start) * 1000, 1)
+        checks["redis"] = {"status": "ok", "latency_ms": latency_ms}
+    except Exception as e:
+        checks["redis"] = {"status": "error", "error": str(e)[:120]}
 
-    status = "healthy" if all(v == "ok" for v in checks.values()) else "degraded"
+    # --- Estadísticas de ingesta (si hay datos en Redis) ---
+    ingest_stats = None
+    if detailed:
+        try:
+            import json
 
-    # Solo exponer detalles en modo debug
-    if settings.DEBUG and detailed:
-        return {"status": status, "checks": checks}
-    return {"status": status}
+            r = get_redis()
+            raw = await r.get("espalert:stats:ingest_1h")
+            if raw:
+                ingest_stats = json.loads(raw)
+        except Exception:
+            pass
+
+    all_ok = all(c["status"] == "ok" for c in checks.values())
+    status = "healthy" if all_ok else "degraded"
+
+    result: dict = {"status": status}
+
+    if settings.DEBUG or detailed:
+        result["checks"] = checks
+        if ingest_stats:
+            result["ingest_last_hour"] = ingest_stats
+        result["version"] = settings.APP_VERSION
+        result["environment"] = settings.ENVIRONMENT
+
+    return result

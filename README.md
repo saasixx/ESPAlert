@@ -7,27 +7,51 @@
   <img src="https://img.shields.io/github/actions/workflow/status/saasixx/ESPAlert/ci.yml?branch=main&label=CI" alt="CI" />
   <img src="https://img.shields.io/github/actions/workflow/status/saasixx/ESPAlert/deploy.yml?branch=main&label=Deploy" alt="Deploy" />
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" />
+  <img src="https://img.shields.io/badge/Docker-ready-2496ED?logo=docker" alt="Docker Ready" />
 </p>
 
 # ESPAlert
 
 **Sistema de alertas multi-riesgo en tiempo real para España**
 
-ESPAlert es una plataforma **Open Source** que agrega alertas de meteorología,
-sismos, tráfico y protección civil en un único mapa interactivo. Consume fuentes
-oficiales (AEMET, IGN, DGT, MeteoAlarm) y las unifica en una API REST con
-WebSockets para actualizaciones instantáneas.
+🇪🇸 ESPAlert es una plataforma **Open Source** que agrega alertas de
+meteorología, sismos, tráfico y protección civil en un único mapa interactivo
+centrado en España. Consume datos públicos de AEMET, IGN, DGT y MeteoAlarm y
+los unifica en una API REST con WebSockets para actualizaciones instantáneas.
+
+🇬🇧 ESPAlert is an **Open Source** platform that aggregates weather, earthquake,
+traffic, and civil protection alerts into a single interactive map focused on
+Spain. It consumes public data from official Spanish and European sources and
+delivers real-time updates via REST API and WebSockets.
+
+> ⚠️ **Aviso legal**: ESPAlert es un proyecto comunitario Open Source
+> independiente. **No está afiliado, patrocinado ni vinculado de ninguna forma
+> con el sistema ES-Alert del Gobierno de España** ni con la Dirección General
+> de Protección Civil y Emergencias. ESPAlert consume exclusivamente datos
+> públicos abiertos publicados por AEMET, IGN, DGT y MeteoAlarm bajo sus
+> respectivas licencias. El nombre "ESPAlert" hace referencia a "España +
+> Alertas" y no pretende crear confusión con ES-Alert.
 
 <p align="center">
-  <a href="CONTRIBUTING.md">Guía de contribución</a> ·
+  <a href="ROADMAP.md">Roadmap</a> ·
+  <a href="CHANGELOG.md">Changelog</a> ·
+  <a href="CONTRIBUTING.md">Contribuir</a> ·
   <a href="SECURITY.md">Seguridad</a> ·
-  <a href="TRADEMARK_POLICY.md">Política de marca</a> ·
+  <a href="TRADEMARK_POLICY.md">Marca</a> ·
   <a href=".github/ISSUE_TEMPLATE/bug_report.md">Reportar bug</a>
 </p>
 
 <p align="center">
   <em>Mapa interactivo · WebSockets en vivo · Meshtastic LoRa · RGPD/LOPDGDD</em>
 </p>
+
+<!-- TODO: Añadir screenshots reales del mapa con alertas
+### Screenshots
+
+| Mapa con avisos AEMET | Detalle de sismo IGN | Modo oscuro |
+|---|---|---|
+| ![meteo](docs/screenshots/meteo.png) | ![sismo](docs/screenshots/sismo.png) | ![dark](docs/screenshots/dark.png) |
+-->
 
 ---
 
@@ -39,6 +63,7 @@ WebSockets para actualizaciones instantáneas.
 - [Fuentes de datos](#fuentes-de-datos)
 - [Variables de entorno](#variables-de-entorno)
 - [Despliegue en producción](#despliegue-en-producción)
+- [Roadmap](#roadmap)
 - [Contribuir](#contribuir)
 - [Licencia](#licencia)
 
@@ -154,6 +179,17 @@ despliegue automático vía SSH. Configura los secretos del repositorio:
 - `SERVER_HOST` — IP o dominio del servidor.
 - `SERVER_USER` — Usuario SSH.
 - `SERVER_SSH_KEY` — Clave privada SSH.
+
+## Roadmap
+
+Consulta [ROADMAP.md](ROADMAP.md) para ver el plan de desarrollo y las próximas
+versiones. Los cambios publicados se registran en [CHANGELOG.md](CHANGELOG.md).
+
+| Versión | Objetivo | Estado |
+|---------|----------|--------|
+| **v0.1.0** | MVP público — mapa interactivo + ingesta + WebSocket | 🚧 En desarrollo |
+| **v0.2.0** | Alertas personalizadas — zonas, filtros, notificaciones | 📋 Planificado |
+| **v0.3.0** | Plataforma abierta — app Flutter, observabilidad, i18n | 📋 Planificado |
 
 ## Contribuir
 

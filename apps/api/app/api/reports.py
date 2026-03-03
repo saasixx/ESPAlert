@@ -2,42 +2,22 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from geoalchemy2.shape import from_shape
-from pydantic import BaseModel, Field
 from shapely.geometry import Point
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.auth import get_current_user
+from app.api.deps import get_current_user
 from app.database import get_db
 from app.models.report import CollaborativeReport
 from app.models.user import User
+from app.schemas import ReportCreate, ReportOut
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
-class ReportCreate(BaseModel):
-    report_type: str = Field(..., max_length=50, pattern=r"^(rain|wind|hail|smoke|shaking|flood|fire|other)$")
-    intensity: str = Field(..., max_length=20, pattern=r"^(none|light|moderate|strong|extreme)$")
-    lat: float = Field(..., ge=-90, le=90)
-    lon: float = Field(..., ge=-180, le=180)
-    comment: str | None = Field(None, max_length=500)
-    event_id: UUID | None = None
-
-
-class ReportResponse(BaseModel):
-    id: str
-    report_type: str
-    intensity: str
-    lat: float
-    lon: float
-    comment: str | None
-    event_id: str | None
-    created_at: str
-
-
-@router.post("/", status_code=201, response_model=ReportResponse)
+@router.post("/", status_code=201, response_model=ReportOut)
 async def create_report(
     body: ReportCreate,
     user: User = Depends(get_current_user),
@@ -56,18 +36,17 @@ async def create_report(
     )
 
     db.add(report)
-    await db.commit()
-    await db.refresh(report)
+    await db.flush()
 
-    return ReportResponse(
-        id=str(report.id),
+    return ReportOut(
+        id=report.id,
         report_type=report.report_type,
         intensity=report.intensity,
         lat=body.lat,
         lon=body.lon,
         comment=report.comment,
-        event_id=str(report.event_id) if report.event_id else None,
-        created_at=report.created_at.isoformat(),
+        event_id=report.event_id,
+        created_at=report.created_at,
     )
 
 

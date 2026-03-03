@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.user import User, UserZone, UserFilter
-from app.api.auth import get_current_user
+from app.api.deps import get_current_user
 from app.schemas import (
     ZoneCreate, ZoneOut, FilterCreate, FilterOut,
     UserSettingsUpdate, UserOut,

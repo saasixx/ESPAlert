@@ -74,20 +74,5 @@ async def login(request: Request, data: UserLogin, db: AsyncSession = Depends(ge
     return TokenOut(access_token=_create_token(user.id))
 
 
-# ── Dependencia para obtener el usuario actual ──────────────────────────────────────
-
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-
-security = HTTPBearer()
-
-
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    user_id = _verify_token(credentials.credentials)
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=401, detail="Usuario no encontrado")
-    return user
+# Re-exportar get_current_user desde deps para compatibilidad
+from app.api.deps import get_current_user  # noqa: F401

@@ -32,7 +32,6 @@ class Settings(BaseSettings):
 
     # ── Claves externas ──────────────────────────────────
     AEMET_API_KEY: str = ""
-    MAPBOX_TOKEN: str = ""
 
     # ── Firebase ─────────────────────────────────────────
     FIREBASE_CREDENTIALS_PATH: str = "firebase-credentials.json"

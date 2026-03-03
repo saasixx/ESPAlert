@@ -36,6 +36,39 @@ jobs:
     defaults:
       run:
         working-directory: apps/api
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: espalert
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: espalert_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U espalert"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: "postgresql+asyncpg://espalert:testpass@localhost:5432/espalert_test"
+      DATABASE_URL_SYNC: "postgresql+psycopg2://espalert:testpass@localhost:5432/espalert_test"
+      REDIS_URL: "redis://localhost:6379/0"
+      ENVIRONMENT: "testing"
+      DEBUG: "false"
+
     steps:
       - uses: actions/checkout@v4
 

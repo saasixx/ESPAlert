@@ -1,16 +1,24 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import type { AlertEvent } from '@/types/events';
+
+/** Estado de la conexión WebSocket. */
+export type ConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
 
 /**
  * Hook de WebSocket para recibir eventos de alerta en tiempo real.
  *
  * Se conecta al endpoint WS del backend y actualiza la lista de eventos
- * automáticamente. Incluye reconexión con backoff exponencial.
+ * automáticamente. Incluye:
+ * - Reconexión con backoff exponencial (1s → 30s).
+ * - Heartbeat bidireccional (responde pong a pings del server).
+ * - Estado de conexión granular (connecting, connected, reconnecting, disconnected).
  */
 export function useEventsWS(initialEvents: AlertEvent[]) {
   const [events, setEvents] = useState<AlertEvent[]>(initialEvents);
-  const [isConnected, setIsConnected] = useState(false);
+  const [connectionState, setConnectionState] = useState<ConnectionState>('disconnected');
   const wsRef = useRef<WebSocket | null>(null);
+
+  const isConnected = connectionState === 'connected';
 
   useEffect(() => {
     // Sincronización inicial desde props
@@ -22,25 +30,37 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
   useEffect(() => {
     let reconnectTimeout: ReturnType<typeof setTimeout>;
     let attempt = 0;
+    let disposed = false;
 
     const connect = () => {
+      if (disposed) return;
+
       const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/api/v1/ws/events';
-      
+      setConnectionState(attempt === 0 ? 'connecting' : 'reconnecting');
+
       try {
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
         ws.onopen = () => {
-          setIsConnected(true);
+          if (disposed) { ws.close(); return; }
+          setConnectionState('connected');
           attempt = 0;
         };
 
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            if (data.type === 'ping') return;
+
+            // Responder heartbeats del servidor
+            if (data.type === 'ping') {
+              ws.send(JSON.stringify({ type: 'pong', timestamp: new Date().toISOString() }));
+              return;
+            }
 
             const newEvent = data as AlertEvent;
+            if (!newEvent.id) return;
+
             setEvents(prev => {
               // Evitar duplicados
               if (prev.some(e => e.id === newEvent.id)) return prev;
@@ -53,7 +73,8 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
         };
 
         ws.onclose = () => {
-          setIsConnected(false);
+          if (disposed) return;
+          setConnectionState('disconnected');
           // Reconexión con backoff exponencial
           const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
           attempt++;
@@ -66,12 +87,18 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
         };
       } catch (err) {
         console.error('Fallo de conexión WS:', err);
+        if (!disposed) {
+          const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
+          attempt++;
+          reconnectTimeout = setTimeout(connect, delay);
+        }
       }
     };
 
     connect();
 
     return () => {
+      disposed = true;
       clearTimeout(reconnectTimeout);
       if (wsRef.current) {
         wsRef.current.close();
@@ -79,5 +106,5 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
     };
   }, []);
 
-  return { events, isConnected };
+  return { events, isConnected, connectionState };
 }

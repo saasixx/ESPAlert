@@ -9,7 +9,7 @@ celery_app = Celery(
     "espalert",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
-    include=["app.tasks.ingest"],
+    include=["app.tasks.ingest", "app.tasks.cleanup"],
 )
 
 celery_app.conf.update(
@@ -40,5 +40,13 @@ celery_app.conf.beat_schedule = {
     "ingest-meteoalarm": {
         "task": "app.tasks.ingest.ingest_meteoalarm",
         "schedule": settings.METEOALARM_POLL_INTERVAL,
+    },
+    "cleanup-expired": {
+        "task": "app.tasks.cleanup.cleanup_expired_events",
+        "schedule": 3600,  # Cada hora
+    },
+    "update-stats": {
+        "task": "app.tasks.cleanup.update_source_stats",
+        "schedule": 600,  # Cada 10 minutos
     },
 }
