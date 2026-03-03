@@ -54,3 +54,5 @@ redisdata/
 .DS_Store
 Thumbs.db
 desktop.ini
+.vercel
+.env*.local

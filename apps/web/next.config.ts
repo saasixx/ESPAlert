@@ -3,8 +3,8 @@ import type { NextConfig } from "next";
 const API_URL = process.env.API_URL || "http://127.0.0.1:8000";
 
 const nextConfig: NextConfig = {
-  // Habilitar standalone output para optimizar la imagen Docker
-  output: "standalone",
+  // standalone output solo para Docker (Vercel usa su propio sistema de builds)
+  ...(process.env.VERCEL ? {} : { output: "standalone" }),
 
   // Permitir imágenes de mapas base
   images: {

@@ -5,7 +5,9 @@ export const revalidate = 60; // Revalidar cada minuto
 /** Obtiene los eventos activos desde el backend (SSR). */
 async function getActiveEvents() {
   try {
-    const apiBase = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+    // NEXT_PUBLIC_API_URL incluye /api/v1; API_URL es solo el host base
+    const host = process.env.API_URL || "http://127.0.0.1:8000";
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || `${host}/api/v1`;
     const res = await fetch(`${apiBase}/events/`, {
       next: { revalidate: 60 },
     });
