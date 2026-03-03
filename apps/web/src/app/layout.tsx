@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "ESPAlert - Sistema de alertas multi-riesgo",
   description: "Alertas tempranas de meteorología, sismos y tráfico para España en tiempo real.",
+  icons: {
+    icon: "/espalert-logo.svg",
+  },
 };
 
 export default function RootLayout({

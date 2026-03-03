@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="apps/web/public/espalert-logo.svg" alt="ESPAlert Logo" width="120" />
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js" alt="Next.js 15" />
   <img src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi" alt="FastAPI" />
   <img src="https://img.shields.io/badge/PostGIS-16-336791?logo=postgresql" alt="PostGIS" />

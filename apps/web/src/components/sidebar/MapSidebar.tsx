@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { clsx } from "clsx";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -43,7 +44,8 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
       {/* Encabezado */}
       <div className="p-6 border-b bg-background/50">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          🛡️ ESPAlert
+          <Image src="/espalert-logo.svg" alt="ESPAlert" width={36} height={36} className="dark:invert" />
+          ESPAlert
         </h1>
         <p className="text-sm text-muted-foreground mt-1">Alertas en tiempo real para España</p>
         <div className="mt-3 flex items-center gap-2 text-xs">
