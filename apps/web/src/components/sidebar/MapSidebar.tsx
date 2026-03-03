@@ -51,7 +51,7 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
         <div className="mt-3 flex items-center gap-2 text-xs">
           <span className={clsx("h-2.5 w-2.5 rounded-full", isConnected ? "bg-green-500" : "bg-yellow-500")} />
           <span className="text-muted-foreground">
-            {isConnected ? "Conectado a eventos en vivo" : "Modo respaldo (sin conexión en vivo)"}
+            {isConnected ? "Conectado a eventos en vivo" : "Conectando…"}
           </span>
         </div>
       </div>
@@ -92,7 +92,7 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
       </div>
 
       {/* Lista de eventos */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 min-h-0 p-4">
         <div className="flex flex-col gap-3 pb-8">
           {recommendedActions.length > 0 && (
             <section className="rounded-xl border bg-card p-4">

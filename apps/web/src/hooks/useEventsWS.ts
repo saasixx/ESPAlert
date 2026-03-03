@@ -1,8 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import type { AlertEvent } from '@/types/events';
 
 /** Estado de la conexión WebSocket. */
-export type ConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
+export type ConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'polling' | 'disconnected';
 
 /**
  * Hook de WebSocket para recibir eventos de alerta en tiempo real.
@@ -11,14 +11,17 @@ export type ConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'dis
  * automáticamente. Incluye:
  * - Reconexión con backoff exponencial (1s → 30s).
  * - Heartbeat bidireccional (responde pong a pings del server).
- * - Estado de conexión granular (connecting, connected, reconnecting, disconnected).
+ * - Fallback a polling HTTP cuando WS no está disponible (ej. Vercel).
+ * - Estado de conexión granular.
  */
 export function useEventsWS(initialEvents: AlertEvent[]) {
   const [events, setEvents] = useState<AlertEvent[]>(initialEvents);
   const [connectionState, setConnectionState] = useState<ConnectionState>('disconnected');
   const wsRef = useRef<WebSocket | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const wsFailCount = useRef(0);
 
-  const isConnected = connectionState === 'connected';
+  const isConnected = connectionState === 'connected' || connectionState === 'polling';
 
   useEffect(() => {
     // Sincronización inicial desde props
@@ -27,19 +30,54 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
     }
   }, [initialEvents]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Polling fallback — fetches events via HTTP API
+  const startPolling = useCallback(() => {
+    if (pollingRef.current) return; // Already polling
+
+    setConnectionState('polling');
+
+    const poll = async () => {
+      try {
+        const resp = await fetch('/api/v1/events/?limit=200');
+        if (resp.ok) {
+          const data: AlertEvent[] = await resp.json();
+          setEvents(data);
+        }
+      } catch (err) {
+        console.error('Error polling events:', err);
+      }
+    };
+
+    // Poll immediately then every 60 seconds
+    poll();
+    pollingRef.current = setInterval(poll, 60_000);
+  }, []);
+
+  const stopPolling = useCallback(() => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     let reconnectTimeout: ReturnType<typeof setTimeout>;
-    let attempt = 0;
     let disposed = false;
 
     const connect = () => {
       if (disposed) return;
 
+      // After 3 WS failures, switch to polling permanently
+      if (wsFailCount.current >= 3) {
+        startPolling();
+        return;
+      }
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       const wsProtocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = process.env.NEXT_PUBLIC_WS_URL
         || (apiUrl ? apiUrl.replace(/^https?:/, wsProtocol) + '/ws/events' : `${wsProtocol}//${window.location.host}/api/v1/ws/events`);
-      setConnectionState(attempt === 0 ? 'connecting' : 'reconnecting');
+      setConnectionState(wsFailCount.current === 0 ? 'connecting' : 'reconnecting');
 
       try {
         const ws = new WebSocket(wsUrl);
@@ -48,7 +86,8 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
         ws.onopen = () => {
           if (disposed) { ws.close(); return; }
           setConnectionState('connected');
-          attempt = 0;
+          wsFailCount.current = 0;
+          stopPolling();
         };
 
         ws.onmessage = (event) => {
@@ -77,11 +116,16 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
 
         ws.onclose = () => {
           if (disposed) return;
-          setConnectionState('disconnected');
-          // Reconexión con backoff exponencial
-          const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
-          attempt++;
-          reconnectTimeout = setTimeout(connect, delay);
+          wsFailCount.current++;
+
+          if (wsFailCount.current >= 3) {
+            // Switch to polling after 3 failures
+            startPolling();
+          } else {
+            setConnectionState('reconnecting');
+            const delay = Math.min(1000 * Math.pow(2, wsFailCount.current), 15000);
+            reconnectTimeout = setTimeout(connect, delay);
+          }
         };
 
         ws.onerror = (err) => {
@@ -90,10 +134,14 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
         };
       } catch (err) {
         console.error('Fallo de conexión WS:', err);
+        wsFailCount.current++;
         if (!disposed) {
-          const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
-          attempt++;
-          reconnectTimeout = setTimeout(connect, delay);
+          if (wsFailCount.current >= 3) {
+            startPolling();
+          } else {
+            const delay = Math.min(1000 * Math.pow(2, wsFailCount.current), 15000);
+            reconnectTimeout = setTimeout(connect, delay);
+          }
         }
       }
     };
@@ -103,11 +151,12 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
     return () => {
       disposed = true;
       clearTimeout(reconnectTimeout);
+      stopPolling();
       if (wsRef.current) {
         wsRef.current.close();
       }
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { events, isConnected, connectionState };
 }

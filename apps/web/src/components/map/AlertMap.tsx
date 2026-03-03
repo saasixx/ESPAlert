@@ -27,6 +27,7 @@ import {
   SPAIN_ZOOM,
   SPAIN_MIN_ZOOM,
 } from "@/lib/constants";
+import { resolveAreaCentroid } from "@/lib/area-centroids";
 
 interface AlertMapProps {
   events: AlertEvent[];
@@ -52,27 +53,59 @@ export default function AlertMap({
     [events, activeCategories, getCategoryFromType],
   );
 
-  // GeoJSON para eventos tipo punto (sismos, tráfico, etc.)
+  // GeoJSON para eventos tipo punto (sismos, tráfico, etc.) + fallback centroide
   const pointsGeoJSON = useMemo(
     (): GeoJSON.FeatureCollection<GeoJSON.Point> => ({
       type: "FeatureCollection",
       features: visibleEvents
-        .filter((e) => e.area_geojson?.type === "Point")
-        .map((e) => ({
-          type: "Feature" as const,
-          geometry: e.area_geojson as GeoJSON.Point,
-          properties: {
-            id: e.id,
-            severity: e.severity,
-            event_type: e.event_type,
-            title: e.title,
-            area_name: e.area_name ?? "",
-            magnitude: e.magnitude ?? "",
-            depth_km: e.depth_km ?? "",
-            created_at: e.created_at,
-            color: SEVERITY_COLORS[e.severity] ?? SEVERITY_COLORS.green,
-          },
-        })),
+        .map((e) => {
+          // Evento con geometría Point nativa
+          if (e.area_geojson?.type === "Point") {
+            return {
+              type: "Feature" as const,
+              geometry: e.area_geojson as GeoJSON.Point,
+              properties: {
+                id: e.id,
+                severity: e.severity,
+                event_type: e.event_type,
+                title: e.title,
+                area_name: e.area_name ?? "",
+                magnitude: e.magnitude ?? "",
+                depth_km: e.depth_km ?? "",
+                created_at: e.created_at,
+                color: SEVERITY_COLORS[e.severity] ?? SEVERITY_COLORS.green,
+              },
+            };
+          }
+
+          // Evento sin geometría → resolver centroide por area_name
+          if (!e.area_geojson) {
+            const centroid = resolveAreaCentroid(e.area_name);
+            if (centroid) {
+              return {
+                type: "Feature" as const,
+                geometry: {
+                  type: "Point" as const,
+                  coordinates: centroid,
+                },
+                properties: {
+                  id: e.id,
+                  severity: e.severity,
+                  event_type: e.event_type,
+                  title: e.title,
+                  area_name: e.area_name ?? "",
+                  magnitude: e.magnitude ?? "",
+                  depth_km: e.depth_km ?? "",
+                  created_at: e.created_at,
+                  color: SEVERITY_COLORS[e.severity] ?? SEVERITY_COLORS.green,
+                },
+              };
+            }
+          }
+
+          return null;
+        })
+        .filter((f): f is NonNullable<typeof f> => f !== null),
     }),
     [visibleEvents],
   );
@@ -155,7 +188,7 @@ export default function AlertMap({
           )}
 
           {/* Popup de alerta seleccionada */}
-          {selectedEvent && selectedEvent.area_geojson && (
+          {selectedEvent && (
             <SelectedEventPopup
               event={selectedEvent}
               onClose={() => setSelectedEvent(null)}
@@ -200,28 +233,30 @@ function SelectedEventPopup({
 /** Extrae coordenadas [lon, lat] de un evento para posicionar el popup. */
 function getEventCoords(event: AlertEvent): [number, number] | null {
   const geojson = event.area_geojson;
-  if (!geojson) return null;
 
-  if (geojson.type === "Point") {
-    return geojson.coordinates as [number, number];
+  if (geojson) {
+    if (geojson.type === "Point") {
+      return geojson.coordinates as [number, number];
+    }
+
+    // Para polígonos, calcular centroide aproximado
+    if (geojson.type === "Polygon") {
+      const coords = geojson.coordinates[0];
+      if (!coords?.length) return null;
+      const lon = coords.reduce((s, c) => s + c[0], 0) / coords.length;
+      const lat = coords.reduce((s, c) => s + c[1], 0) / coords.length;
+      return [lon, lat];
+    }
+
+    if (geojson.type === "MultiPolygon") {
+      const first = geojson.coordinates[0]?.[0];
+      if (!first?.length) return null;
+      const lon = first.reduce((s, c) => s + c[0], 0) / first.length;
+      const lat = first.reduce((s, c) => s + c[1], 0) / first.length;
+      return [lon, lat];
+    }
   }
 
-  // Para polígonos, calcular centroide aproximado
-  if (geojson.type === "Polygon") {
-    const coords = geojson.coordinates[0];
-    if (!coords?.length) return null;
-    const lon = coords.reduce((s, c) => s + c[0], 0) / coords.length;
-    const lat = coords.reduce((s, c) => s + c[1], 0) / coords.length;
-    return [lon, lat];
-  }
-
-  if (geojson.type === "MultiPolygon") {
-    const first = geojson.coordinates[0]?.[0];
-    if (!first?.length) return null;
-    const lon = first.reduce((s, c) => s + c[0], 0) / first.length;
-    const lat = first.reduce((s, c) => s + c[1], 0) / first.length;
-    return [lon, lat];
-  }
-
-  return null;
+  // Fallback: resolver centroide por area_name
+  return resolveAreaCentroid(event.area_name);
 }

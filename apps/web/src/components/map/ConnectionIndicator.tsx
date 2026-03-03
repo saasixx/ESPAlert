@@ -32,10 +32,15 @@ export function ConnectionIndicator({
       text: "text-yellow-700 dark:text-yellow-400",
       label: "Reconectando…",
     },
+    polling: {
+      dot: "bg-blue-500",
+      text: "text-blue-700 dark:text-blue-400",
+      label: "Actualización periódica",
+    },
     disconnected: {
-      dot: "bg-red-500",
-      text: "text-red-700 dark:text-red-400",
-      label: "Desconectado",
+      dot: "bg-yellow-500",
+      text: "text-yellow-700 dark:text-yellow-400",
+      label: "Conectando…",
     },
   };
 
