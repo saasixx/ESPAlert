@@ -6,7 +6,7 @@ from httpx import AsyncClient, ASGITransport
 from app.main import app
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(loop_scope="session")
 async def client():
     """Async HTTP client for testing FastAPI endpoints."""
     transport = ASGITransport(app=app)
