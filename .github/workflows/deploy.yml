@@ -54,16 +54,28 @@ jobs:
           command_timeout: 10m
           debug: true
           script: |
-            cd /opt/espalert || exit 1
+            set -e
+            echo "=== 1. Verificar directorio ==="
+            cd /opt/espalert || { echo "FAIL: /opt/espalert no existe"; exit 1; }
+            echo "PWD: $(pwd)"
 
-            git fetch origin main
-            git reset --hard origin/main
+            echo "=== 2. Git pull ==="
+            git fetch origin main 2>&1
+            git reset --hard origin/main 2>&1
+            echo "Commit: $(git rev-parse --short HEAD)"
 
+            echo "=== 3. Verificar .env ==="
             if [ ! -f .env ]; then
-              echo "ERROR: Falta el archivo .env en /opt/espalert"
+              echo "FAIL: Falta .env en /opt/espalert"
               exit 1
             fi
+            echo ".env existe"
 
-            docker compose up -d --build
-            docker image prune -a -f
-            echo "Despliegue completado: $(date)"
+            echo "=== 4. Docker compose ==="
+            docker compose version 2>&1
+            docker compose up -d --build 2>&1
+
+            echo "=== 5. Limpieza ==="
+            docker image prune -a -f 2>&1
+
+            echo "=== Despliegue completado: $(date) ==="
