@@ -53,14 +53,29 @@ jobs:
       - name: Test SSH
         run: ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DO_HOST }} "echo OK && whoami && hostname"
 
-      - name: Verificar directorio
-        run: ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "ls -la /opt/espalert/.git/config && cat /opt/espalert/.git/config"
-
-      - name: Git pull
-        run: ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "cd /opt/espalert && git remote -v && git fetch origin main && git reset --hard origin/main && echo OK"
-
-      - name: Verificar env y docker
-        run: ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "cd /opt/espalert && test -f .env && echo '.env OK' && docker compose version"
+      - name: Preparar directorio
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "
+            echo 'Contenido de /opt:' && ls -la /opt/ &&
+            if [ -d /opt/espalert/.git ]; then
+              echo 'Repo existe, actualizando...' &&
+              cd /opt/espalert && git remote -v && git fetch origin main && git reset --hard origin/main
+            else
+              echo 'Repo no existe, clonando...' &&
+              rm -rf /opt/espalert &&
+              git clone https://github.com/saasixx/ESPAlert.git /opt/espalert &&
+              cd /opt/espalert
+            fi &&
+            echo 'Commit:' && git -C /opt/espalert rev-parse --short HEAD
+          "
 
       - name: Docker build y deploy
-        run: ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "cd /opt/espalert && docker compose -f docker-compose.deploy.yml up -d --build && docker image prune -a -f && echo 'Deploy OK'"
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.DO_HOST }} "
+            cd /opt/espalert &&
+            test -f .env || echo 'AVISO: No hay .env, se usaran defaults' &&
+            docker compose version &&
+            docker compose -f docker-compose.deploy.yml up -d --build &&
+            docker image prune -a -f &&
+            echo 'Deploy completado'
+          "
