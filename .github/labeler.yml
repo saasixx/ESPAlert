@@ -15,7 +15,3 @@ ci-cd:
 documentation:
   - changed-files:
       - any-glob-to-any-file: '**/*.md'
-
-mobile:
-  - changed-files:
-      - any-glob-to-any-file: 'app_flutter_archive/**'

@@ -50,16 +50,6 @@ redisdata/
 *.sql.gz
 *.sql.gz.gpg
 
-# Flutter Archive (Deprecated)
-app_flutter_archive/.dart_tool/
-app_flutter_archive/.packages
-app_flutter_archive/build/
-app_flutter_archive/.flutter-plugins
-app_flutter_archive/.flutter-plugins-dependencies
-app_flutter_archive/pubspec.lock
-app_flutter_archive/android/.gradle/
-app_flutter_archive/ios/Pods/
-
 # OS
 .DS_Store
 Thumbs.db

@@ -151,7 +151,7 @@ class NotificationService:
                         "event_type": type_val,
                         "severity": severity_val,
                         "source": event.source.value if event.source else "",
-                        "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                        "click_action": "OPEN_WEB_ALERT",
                     },
                     android=messaging.AndroidConfig(
                         priority="high",
