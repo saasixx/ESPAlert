@@ -43,25 +43,24 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: SSH y despliegue
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ secrets.DO_HOST }}
-          username: root
-          key: ${{ secrets.DO_SSH_KEY }}
-          port: 22
-          timeout: 30s
-          command_timeout: 10m
-          debug: true
-          script: |
+      - name: Configurar SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DO_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DO_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Desplegar via SSH
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DO_HOST }} << 'DEPLOY_SCRIPT'
             set -e
             echo "=== 1. Verificar directorio ==="
             cd /opt/espalert || { echo "FAIL: /opt/espalert no existe"; exit 1; }
             echo "PWD: $(pwd)"
 
             echo "=== 2. Git pull ==="
-            git fetch origin main 2>&1
-            git reset --hard origin/main 2>&1
+            git fetch origin main
+            git reset --hard origin/main
             echo "Commit: $(git rev-parse --short HEAD)"
 
             echo "=== 3. Verificar .env ==="
@@ -72,10 +71,11 @@ jobs:
             echo ".env existe"
 
             echo "=== 4. Docker compose ==="
-            docker compose version 2>&1
-            docker compose -f docker-compose.deploy.yml up -d --build 2>&1
+            docker compose version
+            docker compose -f docker-compose.deploy.yml up -d --build
 
             echo "=== 5. Limpieza ==="
-            docker image prune -a -f 2>&1
+            docker image prune -a -f
 
             echo "=== Despliegue completado: $(date) ==="
+          DEPLOY_SCRIPT
