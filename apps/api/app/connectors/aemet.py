@@ -1,4 +1,4 @@
-"""Conector AEMET OpenData — obtiene avisos meteorológicos (formato CAP)."""
+"""AEMET OpenData connector — fetches weather warnings (CAP format)."""
 
 import io
 import logging
@@ -15,15 +15,15 @@ settings = get_settings()
 
 AEMET_BASE = "https://opendata.aemet.es/opendata/api"
 
-# Códigos de área AEMET para España (península + islas + Ceuta/Melilla)
+# AEMET area codes for Spain (mainland + islands + Ceuta/Melilla)
 AEMET_AREAS = [
-    "61",  # España peninsular y Baleares
-    "62",  # Canarias
+    "61",  # Mainland Spain and Balearic Islands
+    "62",  # Canary Islands
     "63",  # Ceuta
     "64",  # Melilla
 ]
 
-# Mapeo de códigos de severidad AEMET a nuestros niveles
+# AEMET severity codes to our severity levels
 AEMET_SEVERITY_MAP = {
     "Extreme": "red",
     "Severe": "orange",
@@ -32,7 +32,7 @@ AEMET_SEVERITY_MAP = {
     "Unknown": "green",
 }
 
-# Mapeo de códigos de evento AEMET a nuestros tipos de evento
+# AEMET event codes to our event types
 AEMET_EVENT_MAP = {
     "Wind": "wind",
     "Viento": "wind",
@@ -67,11 +67,11 @@ AEMET_EVENT_MAP = {
 
 class AemetConnector:
     """
-    Obtiene avisos meteorológicos de AEMET OpenData.
+    Fetch weather warnings from AEMET OpenData.
 
-    AEMET usa un patrón de obtención en dos pasos:
-    1. Solicitar endpoint de metadatos → obtener URL temporal de datos
-    2. Obtener los datos reales de la URL temporal
+    AEMET uses a two-step fetch pattern:
+    1. Request metadata endpoint → get temporary data URL
+    2. Fetch actual data from the temporary URL
     """
 
     def __init__(self):
@@ -79,34 +79,34 @@ class AemetConnector:
         self.headers = {"api_key": self.api_key}
 
     async def _fetch_data_url(self, endpoint: str) -> Optional[str]:
-        """Paso 1: Obtener la URL temporal de datos de AEMET."""
+        """Step 1: Get the temporary data URL from AEMET."""
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.get(
                 f"{AEMET_BASE}/{endpoint}",
                 headers=self.headers,
             )
             if resp.status_code != 200:
-                logger.error("Solicitud de metadatos AEMET fallida: %s — %s", resp.status_code, resp.text)
+                logger.error("AEMET metadata request failed: %s — %s", resp.status_code, resp.text)
                 return None
 
             data = resp.json()
             return data.get("datos")
 
     async def _fetch_data(self, data_url: str) -> Optional[bytes]:
-        """Paso 2: Obtener datos reales de la URL temporal (puede ser XML o tar)."""
+        """Step 2: Fetch actual data from the temporary URL (may be XML or tar)."""
         async with httpx.AsyncClient(timeout=60) as client:
             resp = await client.get(data_url)
             if resp.status_code != 200:
-                logger.error("Descarga de datos AEMET fallida: %s", resp.status_code)
+                logger.error("AEMET data download failed: %s", resp.status_code)
                 return None
             return resp.content
 
     async def fetch_warnings(self) -> list[dict]:
         """
-        Obtiene todos los avisos meteorológicos activos en España.
+        Fetch all active weather warnings in Spain.
 
-        AEMET devuelve un archivo tar con múltiples XMLs CAP individuales
-        (uno por aviso). Extraemos cada XML y lo parseamos por separado.
+        AEMET returns a tar file with multiple individual CAP XMLs
+        (one per warning). We extract each XML and parse it separately.
         """
         all_warnings = []
 
@@ -128,19 +128,19 @@ class AemetConnector:
                     all_warnings.extend(warnings)
 
             except Exception as e:
-                logger.exception("Error obteniendo área AEMET %s: %s", area_code, e)
+                logger.exception("Error fetching AEMET area %s: %s", area_code, e)
 
-        logger.info("AEMET: obtenidos %d avisos", len(all_warnings))
+        logger.info("AEMET: fetched %d warnings", len(all_warnings))
         return all_warnings
 
     @staticmethod
     def _extract_cap_xmls(raw_data: bytes) -> list[str]:
         """
-        Extrae XMLs CAP del contenido descargado.
+        Extract CAP XMLs from downloaded content.
 
-        AEMET puede devolver un tar con múltiples XMLs o un XML suelto.
+        AEMET may return a tar with multiple XMLs or a single XML.
         """
-        # Intentar como tar primero
+        # Try as tar first
         try:
             buf = io.BytesIO(raw_data)
             if tarfile.is_tarfile(buf):
@@ -157,7 +157,7 @@ class AemetConnector:
         except (tarfile.TarError, Exception):
             pass
 
-        # Si no es tar, tratar como XML directo
+        # If not tar, try as direct XML
         try:
             text = raw_data.decode("utf-8", errors="replace")
             if text.strip().startswith("<?xml") or text.strip().startswith("<alert"):
@@ -169,16 +169,16 @@ class AemetConnector:
         return []
 
     def _parse_cap_xml(self, xml_text: str, area_code: str) -> list[dict]:
-        """Parsea XML CAP en dicts de eventos normalizados."""
+        """Parse CAP XML into normalized event dicts."""
         events = []
 
         try:
             parsed = xmltodict.parse(xml_text)
         except Exception as e:
-            logger.error("Error al parsear XML CAP de AEMET: %s", e)
+            logger.error("Error parsing AEMET CAP XML: %s", e)
             return events
 
-        # CAP puede tener una o múltiples alertas
+        # CAP can have one or multiple alerts
         alerts = parsed.get("alert", parsed)
         if isinstance(alerts, dict):
             alerts = [alerts]
@@ -195,12 +195,12 @@ class AemetConnector:
                         events.append(event)
 
             except Exception as e:
-                logger.warning("Error al parsear alerta CAP: %s", e)
+                logger.warning("Error parsing CAP alert: %s", e)
 
         return events
 
     def _normalize_cap_info(self, alert: dict, info: dict, area_code: str) -> Optional[dict]:
-        """Convierte un bloque CAP <info> a nuestro dict de evento."""
+        """Convert a CAP <info> block to our event dict."""
         identifier = alert.get("identifier", "")
         event_name = info.get("event", "")
         severity_str = info.get("severity", "Unknown")
@@ -210,7 +210,7 @@ class AemetConnector:
         expires = info.get("expires", "")
         headline = info.get("headline", event_name)
 
-        # Parsear área / polígono
+        # Parse area / polygon
         area_info = info.get("area", {})
         if isinstance(area_info, list):
             area_info = area_info[0] if area_info else {}
@@ -218,10 +218,10 @@ class AemetConnector:
         polygon_str = area_info.get("polygon", "")
         area_desc = area_info.get("areaDesc", "")
 
-        # Convertir polígono "lat,lon lat,lon ..." a WKT
+        # Convert polygon "lat,lon lat,lon ..." to WKT
         wkt_polygon = self._cap_polygon_to_wkt(polygon_str) if polygon_str else None
 
-        # Mapear tipo de evento
+        # Map event type
         event_type = "other"
         for key, value in AEMET_EVENT_MAP.items():
             if key.lower() in event_name.lower():
@@ -247,8 +247,8 @@ class AemetConnector:
     @staticmethod
     def _cap_polygon_to_wkt(polygon_str: str) -> Optional[str]:
         """
-        Convierte cadena de polígono CAP "lat,lon lat,lon ..." a WKT POLYGON.
-        CAP usa lat,lon — WKT usa lon lat.
+        Convert CAP polygon string "lat,lon lat,lon ..." to WKT POLYGON.
+        CAP uses lat,lon — WKT uses lon lat.
         """
         if not polygon_str or not polygon_str.strip():
             return None
@@ -263,14 +263,14 @@ class AemetConnector:
         if len(coords) < 3:
             return None
 
-        # Cerrar el polígono si es necesario
+        # Close polygon if needed
         if coords[0] != coords[-1]:
             coords.append(coords[0])
 
         return f"POLYGON(({', '.join(coords)}))"
 
     async def fetch_municipal_prediction(self, municipio_code: str) -> Optional[dict]:
-        """Obtiene la predicción horaria para un municipio (para pantallas de detalle)."""
+        """Get hourly prediction for a municipality (for detail screens)."""
         data_url = await self._fetch_data_url(
             f"prediccion/especifica/municipio/horaria/{municipio_code}"
         )

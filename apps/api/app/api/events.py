@@ -1,4 +1,4 @@
-"""API de Eventos — listado, filtrado y consulta de alertas."""
+"""Events API — listing, filtering, and alert querying."""
 
 import json
 from datetime import datetime, timezone
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/events", tags=["events"])
 
 
 def _event_to_out(event: Event, area_geojson: str | None = None) -> EventOut:
-    """Convierte un Event de SQLAlchemy a un EventOut de Pydantic."""
+    """Convert a SQLAlchemy Event to a Pydantic EventOut."""
     return EventOut(
         id=event.id,
         source=event.source.value if event.source else "",
@@ -52,7 +52,7 @@ async def list_events(
     offset: int = Query(0),
     db: AsyncSession = Depends(get_db),
 ):
-    """Lista eventos de alerta con filtros opcionales (tipo, severidad, geo-radio)."""
+    """List alert events with optional filters (type, severity, geo-radius)."""
     now = datetime.now(timezone.utc)
 
     stmt = select(Event, ST_AsGeoJSON(Event.area).label("area_geojson"))
@@ -76,15 +76,15 @@ async def list_events(
     if source:
         conditions.append(Event.source == source)
 
-    # Filtro de geo-radio (punto + distancia)
+    # Geo-radius filter (point + distance)
     if lat is not None and lon is not None:
         point = ST_SetSRID(ST_MakePoint(lon, lat), 4326)
-        # ST_DWithin con cast a geografía para metros
+        # ST_DWithin with geography cast for meters
         conditions.append(
             ST_DWithin(
                 sa_func.cast(Event.area, sa_func.Geography),
                 sa_func.cast(point, sa_func.Geography),
-                radius_km * 1000,  # Convertir km a metros
+                radius_km * 1000,  # Convert km to meters
             )
         )
 
@@ -104,7 +104,7 @@ async def get_event(
     event_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    """Obtiene un evento por su ID con geometría completa."""
+    """Get an event by its ID with full geometry."""
     stmt = select(Event, ST_AsGeoJSON(Event.area).label("area_geojson")).where(
         Event.id == event_id
     )
@@ -120,7 +120,7 @@ async def get_event(
 
 @router.get("/active/summary")
 async def active_summary(db: AsyncSession = Depends(get_db)):
-    """Resumen rápido de eventos activos agrupados por tipo y severidad."""
+    """Quick summary of active events grouped by type and severity."""
     now = datetime.now(timezone.utc)
 
     stmt = (

@@ -21,7 +21,7 @@ async def test_health(client):
 async def test_events_list(client):
     """Events endpoint returns a list (may be empty without DB)."""
     resp = await client.get("/api/v1/events/")
-    # Puede degradar sin DB disponible, pero no debe romper el test runner.
+    # May degrade without DB available, but should not break the test runner.
     assert resp.status_code in (200, 500, 503)
 
 

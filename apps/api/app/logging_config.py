@@ -1,6 +1,6 @@
-"""Configuración de logging estructurado para ESPAlert.
+"""Structured logging configuration for ESPAlert.
 
-En producción, emite JSON. En desarrollo, emite texto coloreado legible.
+In production, emits JSON. In development, emits colorized readable text.
 """
 
 import logging
@@ -11,7 +11,7 @@ from app.config import get_settings
 
 
 def setup_logging(level: Optional[str] = None) -> None:
-    """Configura logging para toda la aplicación."""
+    """Configure logging for the entire application."""
     settings = get_settings()
     log_level = level or ("DEBUG" if settings.DEBUG else "INFO")
     is_production = settings.ENVIRONMENT == "production"
@@ -19,7 +19,7 @@ def setup_logging(level: Optional[str] = None) -> None:
     root = logging.getLogger()
     root.setLevel(log_level)
 
-    # Eliminar handlers previos
+    # Remove previous handlers
     for handler in root.handlers[:]:
         root.removeHandler(handler)
 
@@ -33,7 +33,7 @@ def setup_logging(level: Optional[str] = None) -> None:
 
     root.addHandler(handler)
 
-    # Reducir ruido de librerías externas
+    # Reduce noise from external libraries
     for noisy in ("uvicorn.access", "httpx", "httpcore", "asyncio", "sqlalchemy.engine"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
@@ -41,7 +41,7 @@ def setup_logging(level: Optional[str] = None) -> None:
 
 
 class _JsonFormatter(logging.Formatter):
-    """Formateador JSON para producción — compatible con Loki/ELK/CloudWatch."""
+    """JSON formatter for production — compatible with Loki/ELK/CloudWatch."""
 
     def format(self, record: logging.LogRecord) -> str:
         import json
@@ -57,7 +57,7 @@ class _JsonFormatter(logging.Formatter):
         if record.exc_info and record.exc_info[1]:
             log_entry["exception"] = self.formatException(record.exc_info)
 
-        # Incluir campos extra si están en el record
+        # Include extra fields if present in the record
         for key in ("request_id", "user_id", "source", "event_id", "duration_ms"):
             val = getattr(record, key, None)
             if val is not None:
@@ -67,7 +67,7 @@ class _JsonFormatter(logging.Formatter):
 
 
 class _ColorFormatter(logging.Formatter):
-    """Formateador con colores ANSI para desarrollo."""
+    """ANSI color formatter for development."""
 
     COLORS = {
         "DEBUG": "\033[36m",    # Cyan

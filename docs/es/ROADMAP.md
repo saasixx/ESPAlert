@@ -1,5 +1,7 @@
 # Roadmap ESPAlert
 
+> 🇪🇸 **Español** | [🇬🇧 English](../ROADMAP.md)
+
 Este documento describe el plan de desarrollo de ESPAlert organizado en
 releases incrementales. Cada versión tiene un objetivo claro, épicas
 concretas y criterios de finalización.

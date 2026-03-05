@@ -1,4 +1,4 @@
-"""Tests para el framework de conectores de salida."""
+"""Tests for the output connectors framework."""
 
 from datetime import datetime, timezone
 
@@ -7,7 +7,7 @@ from app.services.output.registry import OutputRegistry
 
 
 class FakeConnector(OutputConnector):
-    """Conector ficticio para tests."""
+    """Fake connector for tests."""
 
     def __init__(self):
         self.sent: list[tuple[OutputMessage, str]] = []
@@ -61,7 +61,7 @@ def test_output_message_format_html():
 
 
 async def test_registry_dispatch():
-    # Limpiar singleton para el test
+    # Clear singleton for test
     OutputRegistry._instance = None
     registry = OutputRegistry()
 
@@ -75,7 +75,7 @@ async def test_registry_dispatch():
     assert len(fake.sent) == 1
     assert fake.sent[0][1] == "@test"
 
-    # Limpiar
+    # Cleanup
     OutputRegistry._instance = None
 
 

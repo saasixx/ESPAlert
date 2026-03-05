@@ -1,4 +1,4 @@
-"""API de cumplimiento RGPD/LOPDGDD — acceso, exportación y eliminación de datos."""
+"""GDPR/LOPDGDD compliance API — data access, export, and deletion."""
 
 from datetime import datetime, timezone
 
@@ -20,8 +20,8 @@ async def export_my_data(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    RGPD Art. 15 — Derecho de acceso.
-    Exporta todos los datos personales del usuario en formato JSON.
+    GDPR Art. 15 — Right of access.
+    Export all user personal data in JSON format.
     """
     # Zones
     zones_result = await db.execute(
@@ -88,8 +88,8 @@ async def delete_my_account(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    RGPD Art. 17 — Derecho de supresión.
-    Elimina la cuenta del usuario y todos sus datos asociados.
+    GDPR Art. 17 — Right to erasure.
+    Delete the user account and all associated data.
     """
     # Delete all user data in order (foreign keys)
     await db.execute(sa_delete(CollaborativeReport).where(CollaborativeReport.user_id == user.id))
@@ -106,7 +106,7 @@ async def delete_my_account(
 
 @router.get("/privacy")
 async def privacy_policy():
-    """Política de Privacidad — RGPD/LOPDGDD."""
+    """Privacy Policy — GDPR/LOPDGDD."""
     return {
         "title": "Política de Privacidad — ESPAlert",
         "last_updated": "2026-02-24",
@@ -182,7 +182,7 @@ async def privacy_policy():
 
 @router.get("/terms")
 async def terms_of_service():
-    """Términos y condiciones de uso."""
+    """Terms and conditions of use."""
     return {
         "title": "Términos de Uso — ESPAlert",
         "last_updated": "2026-02-24",

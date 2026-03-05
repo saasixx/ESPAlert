@@ -14,7 +14,7 @@ import { AlertDetailMap } from "@/components/map/AlertDetailMap";
 
 export const revalidate = 60;
 
-/** Obtiene un evento individual desde el backend (SSR). */
+/** Fetches a single event from the backend (SSR). */
 async function getEvent(id: string): Promise<AlertEvent | null> {
   try {
     const host = process.env.API_URL || "http://127.0.0.1:8000";
@@ -30,7 +30,7 @@ async function getEvent(id: string): Promise<AlertEvent | null> {
   }
 }
 
-/** Formatea una fecha ISO a formato legible. */
+/** Formats an ISO date to a readable format. */
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";
   try {
@@ -40,7 +40,7 @@ function formatDate(iso: string | null | undefined): string {
   }
 }
 
-/** Mapeo de event_type a etiqueta legible. */
+/** Mapping of event_type to readable label. */
 const EVENT_TYPE_LABELS: Record<string, string> = {
   wind: "Viento",
   rain: "Lluvia",
@@ -65,7 +65,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   other: "Otro",
 };
 
-/** Mapeo de source a nombre legible. */
+/** Mapping of source to readable name. */
 const SOURCE_LABELS: Record<string, string> = {
   aemet: "AEMET",
   ign: "IGN",
@@ -90,7 +90,7 @@ export default async function AlertDetailPage({
 
   return (
     <main className="min-h-dvh bg-background">
-      {/* Cabecera con barra de navegación */}
+      {/* Header with navigation bar */}
       <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur-sm">
         <div className="mx-auto max-w-4xl flex items-center gap-3 px-4 py-3">
           <Link href="/">
@@ -117,7 +117,7 @@ export default async function AlertDetailPage({
       </header>
 
       <div className="mx-auto max-w-4xl px-4 py-6 space-y-6">
-        {/* Mini mapa con la geometría del evento */}
+        {/* Mini map with event geometry */}
         {(event.area_geojson || event.area_name) && (
           <Card>
             <CardContent className="p-0 overflow-hidden rounded-xl">
@@ -128,9 +128,9 @@ export default async function AlertDetailPage({
           </Card>
         )}
 
-        {/* Información principal */}
+        {/* Main information */}
         <div className="grid gap-4 md:grid-cols-2">
-          {/* Línea temporal */}
+          {/* Timeline */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
@@ -156,7 +156,7 @@ export default async function AlertDetailPage({
             </CardContent>
           </Card>
 
-          {/* Ubicación y datos */}
+          {/* Location and data */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
@@ -203,7 +203,7 @@ export default async function AlertDetailPage({
           </Card>
         </div>
 
-        {/* Descripción */}
+        {/* Description */}
         {event.description && (
           <Card>
             <CardHeader className="pb-3">
@@ -220,7 +220,7 @@ export default async function AlertDetailPage({
           </Card>
         )}
 
-        {/* Instrucciones de seguridad */}
+        {/* Safety instructions */}
         {event.instructions && (
           <Card className="border-yellow-500/30">
             <CardHeader className="pb-3">
@@ -237,7 +237,7 @@ export default async function AlertDetailPage({
           </Card>
         )}
 
-        {/* Enlace a fuente oficial */}
+        {/* Link to official source */}
         {event.source_url && (
           <div className="flex justify-center">
             <a href={event.source_url} target="_blank" rel="noopener noreferrer">

@@ -1,4 +1,4 @@
-"""Endpoint WebSocket para streaming de eventos en tiempo real (con autenticación)."""
+"""WebSocket endpoint for real-time event streaming (with authentication)."""
 
 import asyncio
 import json
@@ -14,12 +14,12 @@ router = APIRouter(tags=["websocket"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
-# Máximo de conexiones WebSocket concurrentes
+# Maximum concurrent WebSocket connections
 MAX_CONNECTIONS = 500
 
 
 class ConnectionManager:
-    """Gestiona las conexiones WebSocket activas con límites."""
+    """Manage active WebSocket connections with limits."""
 
     def __init__(self, max_connections: int = MAX_CONNECTIONS):
         self.active_connections: list[WebSocket] = []
@@ -57,9 +57,9 @@ manager = ConnectionManager()
 
 
 def _verify_ws_token(token: str) -> bool:
-    """Verifica token JWT para autenticación WebSocket. Retorna True si es válido o si la auth es opcional."""
+    """Verify JWT token for WebSocket authentication. Returns True if valid or if auth is optional."""
     if not token:
-        return True  # Permitir sin autenticación para el stream público de eventos
+        return True  # Allow unauthenticated access for public event stream
     try:
         jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         return True
@@ -73,10 +73,10 @@ async def websocket_events(
     token: str = Query(default=""),
 ):
     """
-    Stream de eventos en tiempo real vía WebSocket.
-    Autenticación opcional con parámetro ?token=JWT_TOKEN.
+    Real-time event stream via WebSocket.
+    Optional authentication with ?token=JWT_TOKEN parameter.
     """
-    # Validar token si se proporciona
+    # Validate token if provided
     if token and not _verify_ws_token(token):
         await websocket.close(code=4001, reason="Token inválido")
         return
@@ -96,7 +96,7 @@ async def websocket_events(
                         data = json.loads(message["data"])
                         await websocket.send_json(data)
                     except Exception as e:
-                        logger.debug("Error en relay WS: %s", e)
+                        logger.debug("WS relay error: %s", e)
 
         relay_task = asyncio.create_task(relay_redis())
 

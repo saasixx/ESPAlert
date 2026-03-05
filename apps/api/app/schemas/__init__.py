@@ -1,4 +1,4 @@
-"""Paquete de esquemas Pydantic — re-exporta todo para compatibilidad con imports existentes."""
+"""Pydantic schemas package — re-exports everything for backward-compatible imports."""
 
 from app.schemas.event import EventOut, EventListParams
 from app.schemas.auth import (

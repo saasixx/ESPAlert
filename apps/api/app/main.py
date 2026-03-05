@@ -1,4 +1,4 @@
-"""ESPAlert — Punto de entrada de la aplicación FastAPI."""
+"""ESPAlert — FastAPI application entry point."""
 
 import logging
 from contextlib import asynccontextmanager
@@ -26,25 +26,25 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    """Hooks de inicio y parada de la aplicación."""
+    """Application startup and shutdown hooks."""
     validate_security_config()
 
-    logger.info("🚀 %s v%s iniciando...", settings.APP_NAME, settings.APP_VERSION)
-    logger.info("   Entorno: %s | Debug: %s", settings.ENVIRONMENT, settings.DEBUG)
+    logger.info("🚀 %s v%s starting...", settings.APP_NAME, settings.APP_VERSION)
+    logger.info("   Environment: %s | Debug: %s", settings.ENVIRONMENT, settings.DEBUG)
 
-    # Verificar conexión a la base de datos
+    # Verify database connection
     try:
         from app.database import engine
 
         async with engine.begin() as conn:
             await conn.execute(sqlalchemy.text("SELECT 1"))
-        logger.info("   ✅ Base de datos conectada")
+        logger.info("   ✅ Database connected")
     except Exception as e:
-        logger.error("   ❌ Error de conexión a la BD: %s", e)
+        logger.error("   ❌ Database connection error: %s", e)
 
     yield
 
-    logger.info("👋 %s detenido.", settings.APP_NAME)
+    logger.info("👋 %s stopped.", settings.APP_NAME)
 
 
 app = FastAPI(
@@ -60,19 +60,19 @@ app = FastAPI(
     redoc_url="/redoc" if settings.DEBUG else None,
 )
 
-# ── Pila de middleware (el último añadido se ejecuta primero) ────────────
+# ── Middleware stack (last added runs first) ────────────────────────────
 
-# 1. Cabeceras de seguridad (más externo)
+# 1. Security headers (outermost)
 app.add_middleware(SecurityHeadersMiddleware)
 
-# 2. Hosts de confianza en producción
+# 2. Trusted hosts in production
 if settings.ENVIRONMENT == "production":
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=settings.TRUSTED_HOSTS,
     )
 
-# 3. CORS — permisivo solo en desarrollo
+# 3. CORS — permissive in development only
 app.add_middleware(
     CORSMiddleware,
     allow_origins=(
@@ -85,11 +85,11 @@ app.add_middleware(
     max_age=3600,
 )
 
-# 4. Limitación de peticiones
+# 4. Rate limiting
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
-# ── Registrar routers ────────────────────────────────────────────────────
+# ── Register routers ─────────────────────────────────────────────────────
 _API_PREFIX = "/api/v1"
 for router_module in (events, auth, subscriptions, ws, mesh, gdpr, reports):
     app.include_router(router_module.router, prefix=_API_PREFIX)
@@ -108,7 +108,7 @@ async def root():
 
 @app.get("/health")
 async def health(detailed: bool = False):
-    """Comprobación de salud de la aplicación con latencia de componentes."""
+    """Application health check with component latency."""
     import time as _time
 
     checks: dict[str, dict] = {
@@ -117,7 +117,7 @@ async def health(detailed: bool = False):
         "redis": {"status": "unknown"},
     }
 
-    # --- Base de datos ---
+    # --- Database ---
     try:
         from app.database import engine
 
@@ -141,7 +141,7 @@ async def health(detailed: bool = False):
     except Exception as e:
         checks["redis"] = {"status": "error", "error": str(e)[:120]}
 
-    # --- Estadísticas de ingesta (si hay datos en Redis) ---
+    # --- Ingest statistics (if data exists in Redis) ---
     ingest_stats = None
     if detailed:
         try:

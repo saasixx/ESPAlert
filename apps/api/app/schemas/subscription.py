@@ -1,4 +1,4 @@
-"""Esquemas Pydantic para zonas y filtros de suscripción."""
+"""Pydantic schemas for subscription zones and filters."""
 
 import json as _json
 from typing import Optional
@@ -21,7 +21,7 @@ class ZoneCreate(BaseModel):
     @field_validator("geojson")
     @classmethod
     def validate_geojson(cls, v: dict) -> dict:
-        """Validación básica de GeoJSON con límite de tamaño."""
+        """Basic GeoJSON validation with size limit."""
         serialized = _json.dumps(v)
         if len(serialized) > 100_000:
             raise ValueError("GeoJSON payload too large (max 100 KB)")

@@ -6,7 +6,7 @@
  */
 
 const AREA_CENTROIDS: Record<string, [number, number]> = {
-  // ── Islas Canarias ─────────────────────────────────────────────────
+  // ── Canary Islands ─────────────────────────────────────────────────
   "lanzarote": [-13.63, 29.05],
   "fuerteventura": [-14.02, 28.40],
   "gran canaria": [-15.45, 27.96],
@@ -15,17 +15,17 @@ const AREA_CENTROIDS: Record<string, [number, number]> = {
   "la palma": [-17.87, 28.68],
   "el hierro": [-18.00, 27.74],
 
-  // ── Islas Baleares ─────────────────────────────────────────────────
+  // ── Balearic Islands ────────────────────────────────────────────────
   "mallorca": [2.98, 39.62],
   "menorca": [4.08, 39.95],
   "ibiza": [1.43, 38.91],
   "formentera": [1.43, 38.70],
 
-  // ── Ciudades autónomas ─────────────────────────────────────────────
+  // ── Autonomous cities ──────────────────────────────────────────────
   "ceuta": [-5.31, 35.89],
   "melilla": [-2.94, 35.29],
 
-  // ── Provincias (por nombre) ────────────────────────────────────────
+  // ── Provinces (by name) ────────────────────────────────────────────
   "a coruña": [-8.40, 43.37],
   "coruña": [-8.40, 43.37],
   "álava": [-2.67, 42.85],
@@ -75,7 +75,7 @@ const AREA_CENTROIDS: Record<string, [number, number]> = {
   "zamora": [-5.75, 41.50],
   "zaragoza": [-0.88, 41.65],
 
-  // ── Sub-regiones frecuentes en alertas ─────────────────────────────
+  // ── Frequently alerted sub-regions ─────────────────────────────────
   "axarquía": [-4.10, 36.78],
   "sol y guadalhorce": [-4.60, 36.72],
   "costa granadina": [-3.50, 36.73],
@@ -123,7 +123,7 @@ const AREA_CENTROIDS: Record<string, [number, number]> = {
   "litoral norte de tarragona": [1.30, 41.10],
   "litoral sur de tarragona": [0.80, 40.80],
 
-  // ── Galicia (sub-zonas) ────────────────────────────────────────────
+  // ── Galicia (sub-zones) ────────────────────────────────────────────
   "a mariña": [-7.60, 43.40],
   "rias baixas": [-8.70, 42.30],
   "miño de pontevedra": [-8.60, 42.10],
@@ -131,7 +131,7 @@ const AREA_CENTROIDS: Record<string, [number, number]> = {
   "oeste de a coruña": [-8.60, 43.00],
   "suroeste de a coruña": [-8.90, 42.80],
 
-  // ── Canarias (sub-zonas) ───────────────────────────────────────────
+  // ── Canary Islands (sub-zones) ─────────────────────────────────────
   "norte de gran canaria": [-15.50, 28.10],
   "cumbres de gran canaria": [-15.55, 27.96],
   "este, sur y oeste de gran canaria": [-15.45, 27.85],

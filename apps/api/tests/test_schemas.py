@@ -1,4 +1,4 @@
-"""Tests para validación de esquemas Pydantic."""
+"""Tests for Pydantic schema validation."""
 
 import pytest
 from pydantic import ValidationError
@@ -16,7 +16,7 @@ class TestUserCreate:
 
     def test_weak_password_rejected(self):
         with pytest.raises(ValidationError):
-            UserCreate(email="test@example.com", password="12345678")  # Sin mayúscula ni minúscula
+            UserCreate(email="test@example.com", password="12345678")  # No uppercase or lowercase
 
     def test_short_password_rejected(self):
         with pytest.raises(ValidationError):
@@ -47,7 +47,7 @@ class TestEventListParams:
 
     def test_lat_out_of_range(self):
         with pytest.raises(ValidationError):
-            EventListParams(lat=80.0)  # Fuera de España
+            EventListParams(lat=80.0)  # Outside Spain
 
 
 class TestZoneCreate:

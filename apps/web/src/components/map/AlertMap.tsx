@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * AlertMap — Componente de mapa principal basado en mapcn.
+ * AlertMap — Main map component based on mapcn.
  *
- * Utiliza componentes de mapcn (https://github.com/AnmolSaini16/mapcn)
- * que se integran nativamente con shadcn/ui y Tailwind CSS.
+ * Uses mapcn components (https://github.com/AnmolSaini16/mapcn)
+ * that integrate natively with shadcn/ui and Tailwind CSS.
  */
 
 import { useCallback, useMemo, useState } from "react";
@@ -43,7 +43,7 @@ export default function AlertMap({
     useMapFilters();
   const [selectedEvent, setSelectedEvent] = useState<AlertEvent | null>(null);
 
-  // Filtrar eventos según las categorías activas
+  // Filter events based on active categories
   const visibleEvents = useMemo(
     () =>
       events.filter((e) =>
@@ -52,13 +52,13 @@ export default function AlertMap({
     [events, activeCategories, getCategoryFromType],
   );
 
-  // GeoJSON para eventos tipo punto (sismos, tráfico, etc.) + fallback centroide
+  // GeoJSON for point-type events (earthquakes, traffic, etc.) + centroid fallback
   const pointsGeoJSON = useMemo(
     (): GeoJSON.FeatureCollection<GeoJSON.Point> => ({
       type: "FeatureCollection",
       features: visibleEvents
         .map((e) => {
-          // Evento con geometría Point nativa
+          // Event with native Point geometry
           if (e.area_geojson?.type === "Point") {
             return {
               type: "Feature" as const,
@@ -77,7 +77,7 @@ export default function AlertMap({
             };
           }
 
-          // Evento sin geometría → resolver centroide por area_name
+          // Event without geometry → resolve centroid by area_name
           if (!e.area_geojson) {
             const centroid = resolveAreaCentroid(e.area_name);
             if (centroid) {
@@ -109,7 +109,7 @@ export default function AlertMap({
     [visibleEvents],
   );
 
-  // Eventos con geometría de polígono (AEMET, MeteoAlarm)
+  // Events with polygon geometry (AEMET, MeteoAlarm)
   const polygonEvents = useMemo(
     () =>
       visibleEvents.filter(
@@ -120,7 +120,7 @@ export default function AlertMap({
     [visibleEvents],
   );
 
-  // Callback cuando se hace clic en un punto del cluster layer
+  // Callback when a cluster layer point is clicked
   const handlePointClick = useCallback(
     (feature: GeoJSON.Feature<GeoJSON.Point>) => {
       const props = feature.properties;
@@ -131,7 +131,7 @@ export default function AlertMap({
     [events],
   );
 
-  // Callback cuando se hace clic en un polígono
+  // Callback when a polygon is clicked
   const handlePolygonClick = useCallback(
     (eventId: string) => {
       const event = events.find((e) => e.id === eventId);
@@ -167,13 +167,13 @@ export default function AlertMap({
             showFullscreen
           />
 
-          {/* Capa de polígonos (avisos meteo, áreas de alerta) */}
+          {/* Polygon layer (meteo warnings, alert areas) */}
           <AlertPolygonLayer
             events={polygonEvents}
             onEventClick={handlePolygonClick}
           />
 
-          {/* Capa de puntos con clustering (sismos, tráfico) */}
+          {/* Point layer with clustering (earthquakes, traffic) */}
           {pointsGeoJSON.features.length > 0 && (
             <MapClusterLayer
               data={pointsGeoJSON}
@@ -186,7 +186,7 @@ export default function AlertMap({
             />
           )}
 
-          {/* Popup de alerta seleccionada */}
+          {/* Selected alert popup */}
           {selectedEvent && (
             <SelectedEventPopup
               event={selectedEvent}
@@ -194,7 +194,7 @@ export default function AlertMap({
             />
           )}
 
-          {/* Indicador de conexión */}
+          {/* Connection indicator */}
           <ConnectionIndicator
             isConnected={isConnected}
             connectionState={connectionState}
@@ -238,7 +238,7 @@ function getEventCoords(event: AlertEvent): [number, number] | null {
       return geojson.coordinates as [number, number];
     }
 
-    // Para polígonos, calcular centroide aproximado
+    // For polygons, compute approximate centroid
     if (geojson.type === "Polygon") {
       const coords = geojson.coordinates[0];
       if (!coords?.length) return null;

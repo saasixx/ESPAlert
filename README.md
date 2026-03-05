@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi" alt="FastAPI" />
   <img src="https://img.shields.io/badge/PostGIS-16-336791?logo=postgresql" alt="PostGIS" />
   <img src="https://img.shields.io/badge/MapLibre_GL-5-blue?logo=maplibre" alt="MapLibre" />
-  <img src="https://img.shields.io/badge/Licencia-AGPLv3-green" alt="AGPLv3 License" />
+  <img src="https://img.shields.io/badge/License-AGPLv3-green" alt="AGPLv3 License" />
   <img src="https://img.shields.io/github/actions/workflow/status/saasixx/ESPAlert/ci.yml?branch=main&label=CI" alt="CI" />
   <img src="https://img.shields.io/github/actions/workflow/status/saasixx/ESPAlert/deploy.yml?branch=main&label=Deploy" alt="Deploy" />
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" />
@@ -16,56 +16,55 @@
 
 # ESPAlert
 
-**Sistema de alertas multi-riesgo en tiempo real para España**
+> 🇬🇧 **English** | [🇪🇸 Español](docs/es/README.md)
 
-> 🇪🇸 [Español](README.md) | 🇬🇧 **[English](README.en.md)**
+**Multi-risk real-time alert system for Spain**
 
-🇪🇸 ESPAlert es una plataforma **Open Source** que agrega alertas de
-meteorología, sismos, tráfico y protección civil en un único mapa interactivo
-centrado en España. Consume datos públicos de AEMET, IGN, DGT y MeteoAlarm y
-los unifica en una API REST con WebSockets para actualizaciones instantáneas.
+ESPAlert is an **Open Source** platform that aggregates weather, earthquake,
+traffic, and civil protection alerts into a single interactive map focused on
+Spain. It consumes public data from official Spanish and European sources (AEMET,
+IGN, DGT, MeteoAlarm) and delivers real-time updates via REST API and WebSockets.
 
-> ⚠️ **Aviso legal**: ESPAlert es un proyecto comunitario Open Source
-> independiente. **No está afiliado, patrocinado ni vinculado de ninguna forma
-> con el sistema ES-Alert del Gobierno de España** ni con la Dirección General
-> de Protección Civil y Emergencias. ESPAlert consume exclusivamente datos
-> públicos abiertos publicados por AEMET, IGN, DGT y MeteoAlarm bajo sus
-> respectivas licencias. El nombre "ESPAlert" hace referencia a "España +
-> Alertas" y no pretende crear confusión con ES-Alert.
+> ⚠️ **Legal Notice**: ESPAlert is an independent Open Source community project.
+> **It is not affiliated, sponsored, or linked in any way with the Spain
+> Government's ES-Alert system** or the Directorate General of Civil Protection
+> and Emergencies. ESPAlert consumes exclusively open public data published by
+> AEMET, IGN, DGT, and MeteoAlarm under their respective licenses. The name
+> "ESPAlert" refers to "España + Alertas" and does not intend to create
+> confusion with ES-Alert.
 
 <p align="center">
-  <a href="ROADMAP.md">Roadmap</a> ·
-  <a href="CHANGELOG.md">Changelog</a> ·
-  <a href="CONTRIBUTING.md">Contribuir</a> ·
-  <a href="SECURITY.md">Seguridad</a> ·
-  <a href="TRADEMARK_POLICY.md">Marca</a> ·
-  <a href=".github/ISSUE_TEMPLATE/bug_report.md">Reportar bug</a> ·
-  <a href="DOCS.md">📚 Docs Bilingüe</a> ·
-  <a href="README.en.md">📖 English</a>
+  <a href="docs/ROADMAP.md">Roadmap</a> ·
+  <a href="docs/CHANGELOG.md">Changelog</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a> ·
+  <a href="SECURITY.md">Security</a> ·
+  <a href="docs/TRADEMARK_POLICY.md">Trademark</a> ·
+  <a href=".github/ISSUE_TEMPLATE/bug_report.md">Report Bug</a> ·
+  <a href="DOCS.md">📚 Bilingual Docs</a> ·
+  <a href="docs/es/README.md">📖 Español</a>
 </p>
 
 <p align="center">
-  <em>Mapa interactivo · WebSockets en vivo · Meshtastic LoRa · RGPD/LOPDGDD</em>
+  <em>Interactive Map · Live WebSockets · Meshtastic LoRa · GDPR/LOPDGDD</em>
 </p>
-
 
 ---
 
-## Tabla de contenidos
+## Table of Contents
 
-- [Arquitectura](#arquitectura)
-- [Inicio rápido](#inicio-rápido)
-- [Desarrollo local](#desarrollo-local)
-- [Fuentes de datos](#fuentes-de-datos)
-- [Variables de entorno](#variables-de-entorno)
-- [Despliegue en producción](#despliegue-en-producción)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Local Development](#local-development)
+- [Data Sources](#data-sources)
+- [Environment Variables](#environment-variables)
+- [Production Deployment](#production-deployment)
 - [Roadmap](#roadmap)
-- [Contribuir](#contribuir)
-- [Licencia](#licencia)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## Arquitectura
+## Architecture
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐
@@ -85,145 +84,144 @@ los unifica en una API REST con WebSockets para actualizaciones instantáneas.
 └──────────────────────────────────────────────────────────────┘
 ```
 
-| Componente       | Tecnología                                    | Ubicación          |
+| Component        | Technology                                    | Location           |
 |------------------|-----------------------------------------------|--------------------|
-| **Frontend Web** | Next.js 16, Tailwind CSS, shadcn/ui, MapLibre | `apps/web`         |
-| **Backend API**  | Python 3.12, FastAPI, PostGIS, Celery, Redis  | `apps/api`         |
-| **Monorepo**     | Turborepo + npm workspaces                    | Raíz               |
+| **Web Frontend** | Next.js 16, Tailwind CSS, shadcn/ui, MapLibre | `apps/web`         |
+| **API Backend**  | Python 3.12, FastAPI, PostGIS, Celery, Redis  | `apps/api`         |
+| **Monorepo**     | Turborepo + npm workspaces                    | Root               |
 | **Mesh Radio**   | Meshtastic (LoRa)                             | `apps/api/connectors` |
 
-## Inicio rápido
+## Quick Start
 
-> **Requisitos**: [Docker](https://docs.docker.com/get-docker/) 24+ y
+> **Requirements**: [Docker](https://docs.docker.com/get-docker/) 24+ and
 > [Node.js](https://nodejs.org/) 20 LTS.
 
 ```bash
-# 1. Clonar el repositorio
+# 1. Clone the repository
 git clone https://github.com/saasixx/ESPAlert.git
 cd ESPAlert
 
-# 2. Configurar variables de entorno
+# 2. Configure environment variables
 cp .env.example .env
-# Ajusta AEMET_API_KEY si dispones de una (gratuita)
+# Adjust AEMET_API_KEY if you have one (free)
 
-# 3. Levantar toda la plataforma
+# 3. Start the entire platform
 docker compose up --build
 ```
 
-| Servicio     | URL                        |
+| Service      | URL                         |
 |--------------|----------------------------|
 | **Web App**  | http://localhost:3000       |
 | **API REST** | http://localhost:8000       |
 | **Swagger**  | http://localhost:8000/docs  |
 
-## Desarrollo local
+## Local Development
 
-Si prefieres trabajar en el frontend fuera de Docker (hot-reload más rápido):
+If you prefer to run the frontend outside Docker (faster hot-reload):
 
 ```bash
-# Levantar solo infraestructura + backend
+# Start only infrastructure + backend
 docker compose up db redis api worker beat -d
 
-# Instalar dependencias del monorepo
+# Install monorepo dependencies
 npm install
 
-# Arrancar el frontend con Turborepo
+# Start frontend with Turborepo
 npm run dev
 ```
 
-## Fuentes de datos
+## Data Sources
 
-| Fuente         | Tipo             | Frecuencia | Formato      |
-|----------------|------------------|------------|--------------|
-| AEMET OpenData | Avisos meteo     | 5 min      | CAP XML      |
-| IGN FDSN       | Terremotos       | 2 min      | Text/CSV     |
-| DGT NAP        | Tráfico          | 5 min      | DATEX2 XML   |
-| MeteoAlarm     | Avisos europeos  | 5 min      | GeoJSON/CAP  |
+| Source        | Type             | Frequency | Format      |
+|---------------|------------------|-----------|-------------|
+| AEMET OpenData | Weather alerts   | 5 min     | CAP XML     |
+| IGN FDSN      | Earthquakes      | 2 min     | Text/CSV    |
+| DGT NAP       | Traffic          | 5 min     | DATEX2 XML  |
+| MeteoAlarm    | European alerts  | 5 min     | GeoJSON/CAP |
 
-## Variables de entorno
+## Environment Variables
 
-Copia `.env.example` a `.env` y ajusta los valores. Las claves principales:
+Copy `.env.example` to `.env` and adjust values. Key variables:
 
-| Variable             | Descripción                              | Requerida |
-|----------------------|------------------------------------------|-----------|
-| `DATABASE_URL`       | Conexión PostgreSQL (asyncpg)            | Sí        |
-| `REDIS_URL`          | Conexión Redis                           | Sí        |
-| `AEMET_API_KEY`      | Clave de [AEMET OpenData][aemet] (gratis)| No*       |
-| `JWT_SECRET`         | Secreto para tokens JWT (≥32 chars)      | Prod      |
-| `ALLOWED_ORIGINS`    | Orígenes CORS permitidos                 | Prod      |
+| Variable             | Description                              | Required |
+|----------------------|------------------------------------------|----------|
+| `DATABASE_URL`       | PostgreSQL connection (asyncpg)          | Yes      |
+| `REDIS_URL`          | Redis connection                         | Yes      |
+| `AEMET_API_KEY`      | [AEMET OpenData][aemet] key (free)       | No*      |
+| `JWT_SECRET`         | Secret for JWT tokens (≥32 chars)        | Prod     |
+| `ALLOWED_ORIGINS`    | Allowed CORS origins                     | Prod     |
 
-> \* Sin la clave de AEMET los avisos meteorológicos no estarán disponibles,
-> pero el resto de fuentes (IGN, DGT, MeteoAlarm) funcionan sin autenticación.
+> \* Without AEMET key, weather alerts won't be available, but other sources
+> (IGN, DGT, MeteoAlarm) work without authentication.
 
 [aemet]: https://opendata.aemet.es/centrodedescargas/inicio
 
-## Despliegue en producción
+## Production Deployment
 
 ```bash
-# En el servidor:
+# On the server:
 git clone https://github.com/saasixx/ESPAlert.git /opt/espalert
 cd /opt/espalert
 cp .env.example .env
-# ¡Edita .env con valores reales de producción!
+# Edit .env with real production values!
 
 docker compose up -d --build
 ```
 
-El repositorio incluye GitHub Actions en `.github/workflows/` para CI y
-despliegue automático vía SSH. Configura los secretos del repositorio:
+The repository includes GitHub Actions in `.github/workflows/` for CI and
+automatic SSH deployment. Configure repository secrets:
 
-- `SERVER_HOST` — IP o dominio del servidor.
-- `SERVER_USER` — Usuario SSH.
-- `SERVER_SSH_KEY` — Clave privada SSH.
+- `SERVER_HOST` — Server IP or domain.
+- `SERVER_USER` — SSH user.
+- `SERVER_SSH_KEY` — Private SSH key.
 
 ## Roadmap
 
-Consulta [ROADMAP.md](ROADMAP.md) para ver el plan de desarrollo y las próximas
-versiones. Los cambios publicados se registran en [CHANGELOG.md](CHANGELOG.md).
+Check [ROADMAP.md](docs/ROADMAP.md) for the development plan and upcoming
+releases. Published changes are recorded in [CHANGELOG.md](docs/CHANGELOG.md).
 
-| Versión | Objetivo | Estado |
-|---------|----------|--------|
-| **v0.1.0** | MVP público — mapa interactivo + ingesta + WebSocket | 🚧 En desarrollo |
-| **v0.2.0** | Alertas personalizadas — zonas, filtros, notificaciones | 📋 Planificado |
-| **v0.3.0** | Plataforma abierta — app Flutter, observabilidad, i18n | 📋 Planificado |
+| Version  | Goal | Status |
+|----------|------|--------|
+| **v0.1.0** | Public MVP — interactive map + ingestion + WebSocket | 🚧 In Development |
+| **v0.2.0** | Personalized Alerts — zones, filters, notifications | 📋 Planned |
+| **v0.3.0** | Open Platform — Flutter app, observability, i18n | 📋 Planned |
 
-## Contribuir
+## Contributing
 
-¡Las contribuciones son bienvenidas! Lee [CONTRIBUTING.md](CONTRIBUTING.md)
-para conocer el flujo de trabajo, las convenciones y cómo enviar un Pull Request.
+Contributions are welcome! Read [CONTRIBUTING.md](CONTRIBUTING.md)
+for the workflow, conventions, and how to send a Pull Request.
 
-**¿Nuevo en el proyecto?** Busca issues con el label
-[`good first issue`](../../issues?q=label%3A%22good+first+issue%22) — tareas pequeñas y bien definidas para principiantes.
+**New to the project?** Look for issues with the
+[`good first issue`](../../issues?q=label%3A%22good+first+issue%22) label — small, well-defined tasks for beginners.
 
-Este proyecto sigue el [Código de Conducta del Contribuidor](CODE_OF_CONDUCT.md).
+This project follows the [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Seguridad
+## Security
 
-Si descubres una vulnerabilidad, **no abras un issue público**. Consulta
-[SECURITY.md](SECURITY.md) para saber cómo reportarla de forma responsable.
+If you discover a vulnerability, **do not open a public issue**. See
+[SECURITY.md](SECURITY.md) for responsible disclosure.
 
-## Créditos y Dependencias
+## Credits and Dependencies
 
-ESPAlert está construido sobre software libre de calidad:
+ESPAlert is built on quality free software:
 
-- **mapcn** — Componentes React para MapLibre GL (MIT)
-- **MapLibre GL** — Motor de mapas interactivos (BSD-3-Clause)
-- **FastAPI** — Framework web asincrónico (MIT)
-- **PostgreSQL + PostGIS** — Base de datos geoespacial (PostgreSQL License)
-- **Next.js** — Framework React con SSR (MIT)
-- **Tailwind CSS** — Utilidades CSS (MIT)
-- **shadcn/ui** — Componentes UI (MIT)
-- **Redis** — Cache in-memory (BSD-3-Clause)
-- **Celery** — Cola de tareas distribuida (BSD)
+- **mapcn** — React components for MapLibre GL (MIT)
+- **MapLibre GL** — Interactive map engine (BSD-3-Clause)
+- **FastAPI** — Asynchronous web framework (MIT)
+- **PostgreSQL + PostGIS** — Geospatial database (PostgreSQL License)
+- **Next.js** — React framework with SSR (MIT)
+- **Tailwind CSS** — CSS utilities (MIT)
+- **shadcn/ui** — UI components (MIT)
+- **Redis** — In-memory cache (BSD-3-Clause)
+- **Celery** — Distributed task queue (BSD)
 
-Agradecemos especialmente a [AnmolSaini16](https://github.com/AnmolSaini16/) por mapcn
-y a todos los proyectos Open Source que hacen posible ESPAlert.
+Special thanks to [AnmolSaini16](https://github.com/AnmolSaini16/) for mapcn
+and to all the Open Source projects that make ESPAlert possible.
 
-## Licencia
+## License
 
-Distribuido bajo la licencia **GNU AGPL-3.0-or-later**. Ver [LICENSE](LICENSE).
+Distributed under the **GNU AGPL-3.0-or-later** license. See [LICENSE](LICENSE).
 
-Para proteger la identidad del proyecto, el nombre **ESPAlert**, su logotipo y
-elementos de marca están sujetos a una política de marca separada.
-Consulta [TRADEMARK_POLICY.md](TRADEMARK_POLICY.md).
-
+To protect the project's identity, the name **ESPAlert**, its logo, and
+brand elements are subject to a separate trademark policy.
+See [TRADEMARK_POLICY.md](docs/TRADEMARK_POLICY.md).

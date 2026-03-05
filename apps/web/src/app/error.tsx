@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Error boundary para la ruta raíz — captura errores en la página principal.
+ * Error boundary for the root route — catches errors on the main page.
  */
 export default function Error({
   error,

@@ -8,18 +8,18 @@ const nextConfig: NextConfig = {
     root: path.resolve(__dirname, "../.."),
   },
 
-  // standalone output solo para Docker (Vercel usa su propio sistema de builds)
+  // standalone output only for Docker (Vercel uses its own build system)
   ...(process.env.VERCEL ? {} : { output: "standalone" }),
 
-  // Permitir imágenes de mapas base
+  // Allow map tile images
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.basemaps.cartocdn.com" },
     ],
   },
 
-  // Proxy /api/v1/* hacia el backend para evitar CORS en desarrollo
-  // y como fallback en producción si no se usa NEXT_PUBLIC_API_URL
+  // Proxy /api/v1/* to the backend to avoid CORS in development
+  // and as a fallback in production if NEXT_PUBLIC_API_URL is not used
   async rewrites() {
     return [
       {

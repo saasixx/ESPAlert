@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * AlertPolygonLayer — Renderiza polígonos de avisos meteorológicos y áreas de alerta.
+ * AlertPolygonLayer — Renders weather warning and alert area polygons.
  *
- * Usa useMap() de mapcn para acceder al MapLibre map instance directamente
- * y añade sources/layers de GeoJSON de polígonos con colores por severidad.
+ * Uses useMap() from mapcn to access the MapLibre map instance directly
+ * and adds GeoJSON polygon sources/layers with severity-based colors.
  */
 
 import { useEffect, useMemo, useRef } from "react";
@@ -29,7 +29,7 @@ export function AlertPolygonLayer({
   const onClickRef = useRef(onEventClick);
   onClickRef.current = onEventClick;
 
-  // Construir GeoJSON FeatureCollection
+  // Build GeoJSON FeatureCollection
   const geojson = useMemo(
     (): GeoJSON.FeatureCollection => ({
       type: "FeatureCollection",
@@ -55,17 +55,17 @@ export function AlertPolygonLayer({
     [events],
   );
 
-  // Inicializar source y layers
+  // Initialize source and layers
   useEffect(() => {
     if (!isLoaded || !map) return;
 
-    // Añadir source
+    // Add source
     map.addSource(SOURCE_ID, {
       type: "geojson",
       data: geojson,
     });
 
-    // Capa de relleno
+    // Fill layer
     map.addLayer({
       id: FILL_LAYER_ID,
       type: "fill",
@@ -76,7 +76,7 @@ export function AlertPolygonLayer({
       },
     });
 
-    // Capa de borde
+    // Border layer
     map.addLayer({
       id: LINE_LAYER_ID,
       type: "line",
@@ -94,13 +94,13 @@ export function AlertPolygonLayer({
         if (map.getLayer(FILL_LAYER_ID)) map.removeLayer(FILL_LAYER_ID);
         if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
       } catch {
-        // El mapa puede haber sido destruido
+        // Map may have been destroyed
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, map]);
 
-  // Actualizar datos cuando cambian los eventos
+  // Update data when events change
   useEffect(() => {
     if (!isLoaded || !map) return;
     const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource;
@@ -109,7 +109,7 @@ export function AlertPolygonLayer({
     }
   }, [isLoaded, map, geojson]);
 
-  // Manejar clicks en polígonos
+  // Handle polygon clicks
   useEffect(() => {
     if (!isLoaded || !map) return;
 

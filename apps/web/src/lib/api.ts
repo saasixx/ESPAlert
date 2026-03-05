@@ -1,19 +1,19 @@
-/** Wrapper para llamadas a la API del backend. */
+/** Wrapper for backend API calls. */
 
-/** URL base de la API: SSR usa variable interna, cliente usa proxy o URL pública. */
+/** API base URL: SSR uses internal variable, client uses proxy or public URL. */
 const API_BASE =
   typeof window === "undefined"
     ? process.env.NEXT_PUBLIC_API_URL || `${process.env.API_URL || "http://127.0.0.1:8000"}/api/v1`
     : process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 interface FetchOptions extends RequestInit {
-  /** Token JWT para autenticación. */
+  /** JWT token for authentication. */
   token?: string;
 }
 
 /**
- * Fetch wrapper con base URL y auth headers automáticos.
- * En SSR usa la URL interna (API_URL), en cliente usa proxy relativo.
+ * Fetch wrapper with base URL and automatic auth headers.
+ * In SSR uses internal URL (API_URL), in client uses relative proxy.
  */
 export async function apiFetch<T = unknown>(
   path: string,

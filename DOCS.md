@@ -15,13 +15,13 @@ Bienvenido a la documentación de ESPAlert. Este proyecto proporciona documentac
 
 | Documento | Descripción |
 |-----------|-------------|
-| [**README.md**](README.md) | Introducción al proyecto, arquitectura, instalación rápida y guía de desarrollo |
-| [**CONTRIBUTING.md**](CONTRIBUTING.md) | Guía para contribuidores: flujo de trabajo, convenciones y cómo enviar un PR |
-| [**ROADMAP.md**](ROADMAP.md) | Plan de desarrollo, épicas por versión y criterios de finalización |
-| [**CHANGELOG.md**](CHANGELOG.md) | Registro de cambios notables en cada release |
-| [**CODE_OF_CONDUCT.md**](CODE_OF_CONDUCT.md) | Código de conducta del proyecto |
-| [**SECURITY.md**](SECURITY.md) | Política de seguridad y cómo reportar vulnerabilidades |
-| [**TRADEMARK_POLICY.md**](TRADEMARK_POLICY.md) | Política de marca y uso del logotipo |
+| [**docs/es/README.md**](docs/es/README.md) | Introducción al proyecto, arquitectura, instalación rápida y guía de desarrollo |
+| [**docs/es/CONTRIBUTING.md**](docs/es/CONTRIBUTING.md) | Guía para contribuidores: flujo de trabajo, convenciones y cómo enviar un PR |
+| [**docs/es/ROADMAP.md**](docs/es/ROADMAP.md) | Plan de desarrollo, épicas por versión y criterios de finalización |
+| [**docs/es/CHANGELOG.md**](docs/es/CHANGELOG.md) | Registro de cambios notables en cada release |
+| [**docs/es/CODE_OF_CONDUCT.md**](docs/es/CODE_OF_CONDUCT.md) | Código de conducta del proyecto |
+| [**docs/es/SECURITY.md**](docs/es/SECURITY.md) | Política de seguridad y cómo reportar vulnerabilidades |
+| [**docs/es/TRADEMARK_POLICY.md**](docs/es/TRADEMARK_POLICY.md) | Política de marca y uso del logotipo |
 
 ### Documentación por Módulo
 
@@ -37,13 +37,13 @@ Bienvenido a la documentación de ESPAlert. Este proyecto proporciona documentac
 
 | Document | Description |
 |----------|-------------|
-| [**README.en.md**](README.en.md) | Project introduction, architecture, quick start, and development guide |
-| [**CONTRIBUTING.en.md**](CONTRIBUTING.en.md) | Contributor guide: workflow, conventions, and how to submit a PR |
-| [**ROADMAP.en.md**](ROADMAP.en.md) | Development plan, epics by version, and completion criteria |
-| [**CHANGELOG.en.md**](CHANGELOG.en.md) | Notable changes in each release |
-| [**CODE_OF_CONDUCT.en.md**](CODE_OF_CONDUCT.en.md) | Project code of conduct |
-| [**SECURITY.en.md**](SECURITY.en.md) | Security policy and vulnerability reporting |
-| [**TRADEMARK_POLICY.en.md**](TRADEMARK_POLICY.en.md) | Trademark policy and logo usage |
+| [**README.md**](README.md) | Project introduction, architecture, quick start, and development guide |
+| [**CONTRIBUTING.md**](CONTRIBUTING.md) | Contributor guide: workflow, conventions, and how to submit a PR |
+| [**docs/ROADMAP.md**](docs/ROADMAP.md) | Development plan, epics by version, and completion criteria |
+| [**docs/CHANGELOG.md**](docs/CHANGELOG.md) | Notable changes in each release |
+| [**CODE_OF_CONDUCT.md**](CODE_OF_CONDUCT.md) | Project code of conduct |
+| [**SECURITY.md**](SECURITY.md) | Security policy and vulnerability reporting |
+| [**docs/TRADEMARK_POLICY.md**](docs/TRADEMARK_POLICY.md) | Trademark policy and logo usage |
 
 ### Module Documentation
 
@@ -57,17 +57,17 @@ Bienvenido a la documentación de ESPAlert. Este proyecto proporciona documentac
 
 ### Para Desarrolladores Españoles
 
-1. Comienza con [README.md](README.md) — Overview del proyecto y requisitos.
+1. Comienza con [docs/es/README.md](docs/es/README.md) — Overview del proyecto y requisitos.
 2. Busca issues con label [`good first issue`](../../issues?q=label%3A%22good+first+issue%22) — Encuentra tu primer issue.
-3. Consulta [CONTRIBUTING.md](CONTRIBUTING.md) — Flujo de trabajo y convenciones.
-4. Revisa [ROADMAP.md](ROADMAP.md) — Conoce las próximas features.
+3. Consulta [docs/es/CONTRIBUTING.md](docs/es/CONTRIBUTING.md) — Flujo de trabajo y convenciones.
+4. Revisa [docs/es/ROADMAP.md](docs/es/ROADMAP.md) — Conoce las próximas features.
 
 ### For English-Speaking Developers
 
-1. Start with [README.en.md](README.en.md) — Project overview and requirements.
+1. Start with [README.md](README.md) — Project overview and requirements.
 2. Look for issues with [`good first issue`](../../issues?q=label%3A%22good+first+issue%22) label — Find your first issue.
-3. Read [CONTRIBUTING.en.md](CONTRIBUTING.en.md) — Workflow and conventions.
-4. Review [ROADMAP.en.md](ROADMAP.en.md) — Upcoming features.
+3. Read [CONTRIBUTING.md](CONTRIBUTING.md) — Workflow and conventions.
+4. Review [docs/ROADMAP.md](docs/ROADMAP.md) — Upcoming features.
 
 ---
 

@@ -1,4 +1,4 @@
-"""Motor de geo-intersección — encuentra usuarios afectados por el área de un evento."""
+"""Geo-intersection engine — finds users affected by an event's area."""
 
 import logging
 from datetime import datetime, timezone
@@ -10,7 +10,7 @@ from app.models.event import Event, Severity
 
 logger = logging.getLogger(__name__)
 
-# Orden de severidad para comparación
+# Severity order for comparison
 SEVERITY_ORDER = {
     Severity.GREEN: 0,
     Severity.YELLOW: 1,
@@ -22,8 +22,8 @@ SEVERITY_STR_ORDER = {s.value: i for s, i in SEVERITY_ORDER.items()}
 
 class GeoEngine:
     """
-    Usa PostGIS para determinar qué usuarios están afectados por un evento
-    según sus zonas configuradas, filtros y horas de silencio.
+    Uses PostGIS to determine which users are affected by an event
+    based on their configured zones, filters, and quiet hours.
     """
 
     def __init__(self, db: AsyncSession):
@@ -31,17 +31,17 @@ class GeoEngine:
 
     async def find_affected_users(self, event: Event) -> list[dict]:
         """
-        Encuentra todos los usuarios cuyas zonas intersecan con el área del evento
-        y cuyos filtros coinciden con el tipo/severidad del evento.
+        Find all users whose zones intersect the event area
+        and whose filters match the event type/severity.
 
-        Retorna lista de dicts: {user_id, email, fcm_token, zone_label}
+        Returns list of dicts: {user_id, email, fcm_token, zone_label}
         """
         if event.area is None:
             return []
 
         now = datetime.now(timezone.utc).time()
 
-        # SQL crudo para consulta compleja PostGIS + filtro + horas de silencio
+        # Raw SQL for complex PostGIS query + filter + quiet hours
         query = text("""
             SELECT DISTINCT
                 u.id AS user_id,
@@ -56,7 +56,7 @@ class GeoEngine:
             ))
             AND u.fcm_token IS NOT NULL
             AND (
-                uf.id IS NULL  -- Sin filtro = recibir todo
+                uf.id IS NULL  -- No filter = receive all
                 OR (
                     (uf.event_types IS NULL OR :event_type = ANY(uf.event_types))
                     AND (
@@ -104,5 +104,5 @@ class GeoEngine:
                 "zone_label": row.zone_label,
             })
 
-        logger.info("GeoEngine: evento %s afecta a %d usuarios", event.source_id, len(affected))
+        logger.info("GeoEngine: event %s affects %d users", event.source_id, len(affected))
         return affected

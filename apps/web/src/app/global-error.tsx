@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Manejador global de errores — captura excepciones no controladas en el cliente
- * y muestra información útil para debugging.
+ * Global error handler — catches unhandled client-side exceptions
+ * and shows useful debugging information.
  */
 export default function GlobalError({
   error,

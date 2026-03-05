@@ -1,4 +1,4 @@
-"""Conector DGT de Tráfico — parsea XML DATEX2 v3.6 para incidencias de tráfico."""
+"""DGT Traffic connector — parses DATEX2 v3.6 XML for traffic incidents."""
 
 import logging
 import xml.etree.ElementTree as ET
@@ -11,10 +11,10 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# Endpoint oficial NAP DATEX2 v3.6 (público, sin autenticación)
+# Official NAP DATEX2 v3.6 endpoint (public, no authentication)
 DGT_V36_URL = "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml"
 
-# Namespaces DATEX2 v3.6 de la DGT
+# DGT DATEX2 v3.6 namespaces
 NS = {
     "d2": "http://levelC/schema/3/d2Payload",
     "sit": "http://levelC/schema/3/situation",
@@ -27,7 +27,7 @@ NS = {
 
 XSI_TYPE = f"{{{NS['xsi']}}}type"
 
-# Mapeo de severidad DATEX2
+# DATEX2 severity mapping
 DATEX_SEVERITY_MAP = {
     "highest": "red",
     "high": "orange",
@@ -37,7 +37,7 @@ DATEX_SEVERITY_MAP = {
     "none": "green",
 }
 
-# Mapeo causeType → tipo de evento interno
+# causeType → internal event type mapping
 CAUSE_TYPE_MAP = {
     "accident": "traffic_accident",
     "roadMaintenance": "traffic_works",
@@ -49,7 +49,7 @@ CAUSE_TYPE_MAP = {
     "animalPresenceObstruction": "traffic_closure",
 }
 
-# Mapeo xsi:type del record → tipo de evento (fallback)
+# xsi:type of record → event type (fallback)
 RECORD_TYPE_MAP = {
     "RoadOrCarriagewayOrLaneManagement": "traffic_closure",
     "GenericSituationRecord": "traffic_closure",
@@ -68,14 +68,14 @@ RECORD_TYPE_MAP = {
 
 class DGTConnector:
     """
-    Obtiene incidencias de tráfico del feed DATEX2 v3.6 del NAP de la DGT.
+    Fetch traffic incidents from the DGT NAP DATEX2 v3.6 feed.
 
-    La DGT publica un SituationPublication con ~600 incidencias activas
-    en carreteras españolas (excepto País Vasco y Cataluña).
+    DGT publishes a SituationPublication with ~600 active incidents
+    on Spanish roads (except Basque Country and Catalonia).
     """
 
     async def fetch_incidents(self) -> list[dict]:
-        """Obtiene y parsea todas las incidencias de tráfico activas."""
+        """Fetch and parse all active traffic incidents."""
         events = []
 
         try:
@@ -83,13 +83,13 @@ class DGTConnector:
             if xml_bytes:
                 events = self._parse_datex2_v36(xml_bytes)
         except Exception as e:
-            logger.exception("Error obteniendo incidencias DGT: %s", e)
+            logger.exception("Error fetching DGT incidents: %s", e)
 
-        logger.info("DGT: obtenidas %d incidencias de tráfico", len(events))
+        logger.info("DGT: fetched %d traffic incidents", len(events))
         return events
 
     async def _download_feed(self) -> Optional[bytes]:
-        """Descarga el feed XML DATEX2 v3.6."""
+        """Download the DATEX2 v3.6 XML feed."""
         async with httpx.AsyncClient(timeout=90) as client:
             try:
                 resp = await client.get(DGT_V36_URL)
@@ -101,13 +101,13 @@ class DGTConnector:
         return None
 
     def _parse_datex2_v36(self, xml_bytes: bytes) -> list[dict]:
-        """Parsea XML DATEX2 v3.6 SituationPublication con ElementTree."""
+        """Parse DATEX2 v3.6 SituationPublication XML with ElementTree."""
         events = []
 
         try:
             root = ET.fromstring(xml_bytes)
         except ET.ParseError as e:
-            logger.error("Error parseando XML DATEX2 v3.6: %s", e)
+            logger.error("Error parsing DATEX2 v3.6 XML: %s", e)
             return events
 
         for situation in root.findall("sit:situation", NS):
@@ -117,37 +117,37 @@ class DGTConnector:
                     events.append(event)
             except Exception as e:
                 sit_id = situation.get("id", "?")
-                logger.warning("Error parseando situación DGT %s: %s", sit_id, e)
+                logger.warning("Error parsing DGT situation %s: %s", sit_id, e)
 
         return events
 
     def _parse_situation(self, situation: ET.Element) -> Optional[dict]:
-        """Parsea un elemento <sit:situation> de DATEX2 v3.6."""
+        """Parse a DATEX2 v3.6 <sit:situation> element."""
         sit_id = situation.get("id", "")
 
-        # Severidad general de la situación
+        # Overall situation severity
         overall_sev_el = situation.find("sit:overallSeverity", NS)
         overall_severity = overall_sev_el.text if overall_sev_el is not None else "medium"
 
-        # Primer situationRecord
+        # First situationRecord
         record = situation.find("sit:situationRecord", NS)
         if record is None:
             return None
 
-        # Tipo de record (xsi:type)
+        # Record type (xsi:type)
         record_type_raw = record.get(XSI_TYPE, "")
-        # Quitar prefijo namespace "sit:"
+        # Strip namespace prefix "sit:"
         record_type = record_type_raw.split(":")[-1] if ":" in record_type_raw else record_type_raw
 
-        # Tipo de evento basado en causeType → fallback por xsi:type
+        # Event type based on causeType → fallback by xsi:type
         event_type = self._resolve_event_type(record, record_type)
 
-        # Severidad del record
+        # Record severity
         sev_el = record.find("sit:severity", NS)
         severity_str = sev_el.text if sev_el is not None else overall_severity
         severity = DATEX_SEVERITY_MAP.get(severity_str.lower(), "yellow")
 
-        # Ubicación: coordenadas + información de carretera
+        # Location: coordinates + road info
         lat, lon, road_name, province, municipality = self._extract_location(record)
 
         # Timestamps
@@ -162,15 +162,15 @@ class DGTConnector:
                 start_time = st.text if st is not None else ""
                 end_time = et.text if et is not None else ""
 
-        # Construir título con carretera y municipio
+        # Build title with road and municipality
         title = self._build_title(event_type, road_name, municipality, province)
 
-        # Construir descripción
+        # Build description
         description = self._build_description(event_type, road_name, municipality, province)
 
         wkt = f"POINT({lon} {lat})" if lat and lon else None
 
-        # Construir nombre de área
+        # Build area name
         area_parts = [p for p in [road_name, municipality, province] if p]
         area_name = " — ".join(area_parts) if area_parts else ""
 
@@ -191,7 +191,7 @@ class DGTConnector:
         }
 
     def _resolve_event_type(self, record: ET.Element, record_type: str) -> str:
-        """Determina el tipo de evento a partir de causeType y record type."""
+        """Determine event type from causeType and record type."""
         cause = record.find("sit:cause", NS)
         if cause is not None:
             cause_type_el = cause.find("sit:causeType", NS)
@@ -200,7 +200,7 @@ class DGTConnector:
                 if mapped:
                     return mapped
 
-                # Si causeType tiene 'roadworks' en detailedCauseType
+                # If causeType has 'roadworks' in detailedCauseType
                 detailed = cause.find("sit:detailedCauseType", NS)
                 if detailed is not None:
                     maint = detailed.find("sit:roadMaintenanceType", NS)
@@ -210,7 +210,7 @@ class DGTConnector:
         return RECORD_TYPE_MAP.get(record_type, "traffic_closure")
 
     def _extract_location(self, record: ET.Element) -> tuple:
-        """Extrae coordenadas, carretera, provincia y municipio del record."""
+        """Extract coordinates, road, province, and municipality from record."""
         lat = lon = None
         road_name = ""
         province = ""
@@ -220,12 +220,12 @@ class DGTConnector:
         if loc_ref is None:
             return lat, lon, road_name, province, municipality
 
-        # Información de carretera
+        # Road info
         road_info = loc_ref.find(".//loc:roadInformation/loc:roadName", NS)
         if road_info is not None and road_info.text:
             road_name = road_info.text
 
-        # Coordenadas del primer punto (from o to)
+        # Coordinates of first point (from or to)
         for point_path in [
             ".//loc:tpegLinearLocation/loc:from/loc:pointCoordinates",
             ".//loc:tpegLinearLocation/loc:to/loc:pointCoordinates",
@@ -243,7 +243,7 @@ class DGTConnector:
                         pass
                     break
 
-        # Extensiones españolas: provincia y municipio
+        # Spanish extensions: province and municipality
         for ext in loc_ref.findall(".//loc:extendedTpegNonJunctionPoint", NS):
             prov_el = ext.find("lse:province", NS)
             muni_el = ext.find("lse:municipality", NS)
@@ -258,7 +258,7 @@ class DGTConnector:
 
     @staticmethod
     def _build_title(event_type: str, road_name: str, municipality: str, province: str) -> str:
-        """Construye título legible para la incidencia."""
+        """Build a human-readable title for the incident."""
         type_labels = {
             "traffic_accident": "🚗 Accidente",
             "traffic_closure": "🚧 Restricción vial",
@@ -273,7 +273,7 @@ class DGTConnector:
 
     @staticmethod
     def _build_description(event_type: str, road_name: str, municipality: str, province: str) -> str:
-        """Construye descripción detallada."""
+        """Build a detailed description."""
         parts = []
         if road_name:
             parts.append(f"Carretera: {road_name}")

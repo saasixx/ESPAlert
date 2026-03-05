@@ -1,4 +1,4 @@
-"""Esquemas Pydantic para autenticación y usuarios."""
+"""Pydantic schemas for authentication and users."""
 
 from datetime import datetime, time
 from typing import Optional

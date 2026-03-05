@@ -1,4 +1,4 @@
-"""Conector de salida Telegram — envía alertas a canales/grupos/usuarios de Telegram."""
+"""Telegram output connector — sends alerts to Telegram channels/groups/users."""
 
 import logging
 
@@ -13,9 +13,9 @@ TELEGRAM_API = "https://api.telegram.org"
 
 class TelegramConnector(OutputConnector):
     """
-    Envía alertas mediante la API de bots de Telegram.
+    Send alerts via the Telegram Bot API.
 
-    Target: ID de chat (e.g. "@mi_canal", "-1001234567890", "123456789")
+    Target: Chat ID (e.g. "@my_channel", "-1001234567890", "123456789")
     """
 
     def __init__(self, bot_token: str):
@@ -38,11 +38,11 @@ class TelegramConnector(OutputConnector):
             resp = await client.post(url, json=payload)
 
             if resp.status_code == 200:
-                logger.info("Telegram enviado a %s: %s", target, message.title[:50])
+                logger.info("Telegram sent to %s: %s", target, message.title[:50])
                 return True
 
             logger.warning(
-                "Telegram fallo (%d) a %s: %s",
+                "Telegram failed (%d) to %s: %s",
                 resp.status_code, target, resp.text[:200],
             )
             return False

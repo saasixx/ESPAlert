@@ -1,4 +1,4 @@
-"""API de Reportes Colaborativos — datos crowdsourced de tipo «Yo lo siento»."""
+"""Collaborative Reports API — crowdsourced 'I felt it' data."""
 
 from uuid import UUID
 
@@ -23,7 +23,7 @@ async def create_report(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Envía un reporte colaborativo (solo usuarios autenticados)."""
+    """Submit a collaborative report (authenticated users only)."""
     point = from_shape(Point(body.lon, body.lat), srid=4326)
 
     report = CollaborativeReport(
@@ -57,7 +57,7 @@ async def list_reports(
     limit: int = Query(default=50, le=200),
     db: AsyncSession = Depends(get_db),
 ):
-    """Lista reportes colaborativos recientes (público, solo lectura)."""
+    """List recent collaborative reports (public, read-only)."""
     query = select(CollaborativeReport).order_by(CollaborativeReport.created_at.desc())
 
     if event_id:

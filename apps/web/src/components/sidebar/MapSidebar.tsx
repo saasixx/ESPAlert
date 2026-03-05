@@ -55,7 +55,7 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
 
   const sidebarContent = (
     <>
-      {/* Encabezado */}
+      {/* Header */}
       <div className="p-4 md:p-6 border-b bg-background/50">
         <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
           <Image src="/espalert-logo.svg" alt="ESPAlert" width={32} height={32} className="dark:invert" />
@@ -77,7 +77,7 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
         <SummaryPill label="Riesgo moderado" value={summary.yellow} tone="yellow" />
       </div>
 
-      {/* Filtros por categoría */}
+      {/* Category filters */}
       <div className="p-3 md:p-4 border-b grid grid-cols-4 md:grid-cols-2 gap-2">
         <FilterButton 
           active={activeCategories.has('meteo')} 
@@ -105,7 +105,7 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
         />
       </div>
 
-      {/* Lista de eventos */}
+      {/* Event list */}
       <ScrollArea className="flex-1 min-h-0 p-3 md:p-4">
         <div className="flex flex-col gap-3 pb-8">
           {recommendedActions.length > 0 && (
@@ -138,12 +138,12 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
 
   return (
     <>
-      {/* Desktop: panel lateral fijo (oculto en móvil) */}
+      {/* Desktop: fixed side panel (hidden on mobile) */}
       <div className="hidden md:flex w-96 flex-col bg-background/90 backdrop-blur-xl border-r h-full shadow-2xl relative z-10">
         {sidebarContent}
       </div>
 
-      {/* Mobile: Drawer con botón flotante (oculto en desktop) */}
+      {/* Mobile: Drawer with floating button (hidden on desktop) */}
       <div className="absolute top-3 right-3 z-20 md:hidden">
         <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
           <DrawerTrigger asChild>

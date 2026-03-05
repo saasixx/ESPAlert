@@ -38,13 +38,13 @@ def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> JSO
     )
 
 
-# ── Middleware de cabeceras de seguridad ──────────────────────────────
+# ── Security headers middleware ───────────────────────────────────────
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Añade cabeceras de seguridad a todas las respuestas."""
+    """Add security headers to all responses."""
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        # Generar ID de petición para trazabilidad
+        # Generate request ID for traceability
         request_id = str(uuid.uuid4())
         request.state.request_id = request_id
 
@@ -52,7 +52,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         duration = time.time() - start
 
-        # Cabeceras de seguridad
+        # Security headers
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
@@ -62,13 +62,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "payment=(), usb=(), bluetooth=(self)"
         )
 
-        # HSTS solo en producción
+        # HSTS in production only
         if settings.ENVIRONMENT == "production":
             response.headers["Strict-Transport-Security"] = (
                 "max-age=63072000; includeSubDomains; preload"
             )
 
-        # Política de seguridad de contenidos
+        # Content security policy
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self'; "
@@ -79,11 +79,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "frame-ancestors 'none'"
         )
 
-        # Tiempo de respuesta (solo en debug)
+        # Response time (debug only)
         if settings.DEBUG:
             response.headers["X-Response-Time"] = f"{duration:.3f}s"
 
-        # Registro de acceso
+        # Access log
         logger.info(
             "[%s] %s %s → %s (%.3fs)",
             request_id,
@@ -96,32 +96,32 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
-# ── Validación de seguridad al arranque ─────────────────────────────
+# ── Security validation at startup ──────────────────────────────────
 
 def validate_security_config() -> None:
-    """Se ejecuta al inicio para detectar configuraciones inseguras."""
+    """Runs at startup to detect insecure configurations."""
     warnings: list[str] = []
     errors: list[str] = []
 
     if len(settings.JWT_SECRET) < 32:
         if settings.ENVIRONMENT == "production":
-            errors.append("JWT_SECRET debe tener al menos 32 caracteres en producción.")
+            errors.append("JWT_SECRET must be at least 32 characters in production.")
         else:
-            warnings.append("JWT_SECRET es demasiado corto — configura un valor fuerte en .env")
+            warnings.append("JWT_SECRET is too short — set a strong value in .env")
 
     if settings.DEBUG and settings.ENVIRONMENT == "production":
-        errors.append("DEBUG debe ser False en producción.")
+        errors.append("DEBUG must be False in production.")
 
     if not settings.AEMET_API_KEY:
-        warnings.append("AEMET_API_KEY no está configurada — los datos meteorológicos no estarán disponibles")
+        warnings.append("AEMET_API_KEY is not set — weather data will not be available")
 
     for w in warnings:
-        logger.warning("⚠️  Seguridad: %s", w)
+        logger.warning("⚠️  Security: %s", w)
     for e in errors:
-        logger.error("🔴 Seguridad: %s", e)
+        logger.error("🔴 Security: %s", e)
 
     if errors:
         raise RuntimeError(
-            "Se detectaron errores de configuración de seguridad. "
-            "Corrige los errores anteriores antes de iniciar en producción."
+            "Security configuration errors detected. "
+            "Fix the errors above before starting in production."
         )

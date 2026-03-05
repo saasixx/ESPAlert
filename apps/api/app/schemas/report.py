@@ -1,4 +1,4 @@
-"""Esquemas Pydantic para reportes colaborativos."""
+"""Pydantic schemas for collaborative reports."""
 
 from datetime import datetime
 from typing import Optional
@@ -10,7 +10,7 @@ from app.schemas.common import sanitize_html
 
 
 class ReportCreate(BaseModel):
-    """Creación de un reporte colaborativo ('yo lo sentí / yo lo vi')."""
+    """Create a collaborative report ('I felt it / I saw it')."""
 
     event_id: Optional[UUID] = None
     report_type: str = Field(..., max_length=50)

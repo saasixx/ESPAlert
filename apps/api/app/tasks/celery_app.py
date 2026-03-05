@@ -43,10 +43,10 @@ celery_app.conf.beat_schedule = {
     },
     "cleanup-expired": {
         "task": "app.tasks.cleanup.cleanup_expired_events",
-        "schedule": 3600,  # Cada hora
+        "schedule": 3600,  # Every hour
     },
     "update-stats": {
         "task": "app.tasks.cleanup.update_source_stats",
-        "schedule": 600,  # Cada 10 minutos
+        "schedule": 600,  # Every 10 minutes
     },
 }

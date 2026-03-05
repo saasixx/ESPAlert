@@ -1,44 +1,44 @@
-# Política de Seguridad
+# Security Policy
 
-## Versiones soportadas
+> 🇬🇧 **English** | [🇪🇸 Español](docs/es/SECURITY.md)
 
-| Versión | Soporte          |
+## Supported Versions
+
+| Version | Support          |
 |---------|------------------|
-| main    | ✅ Activo        |
-| < main  | ❌ Sin soporte   |
+| main    | ✅ Active        |
+| < main  | ❌ No support    |
 
-## Reportar una vulnerabilidad
+## Reporting a Vulnerability
 
-**NO abras un issue público** para reportar vulnerabilidades de seguridad.
+**DO NOT open a public issue** to report security vulnerabilities.
 
-En su lugar:
+Instead:
 
-1. Envía un correo a los maintainers del proyecto con el asunto
-   `[SECURITY] ESPAlert — <descripción breve>`.
-2. Incluye:
-   - Descripción detallada de la vulnerabilidad.
-   - Pasos para reproducirla.
-   - Impacto potencial.
-   - Posible solución (si la conoces).
-3. Recibirás una respuesta en un plazo máximo de **72 horas**.
+1. Email the project maintainers with the subject
+   `[SECURITY] ESPAlert — <brief description>`.
+2. Include:
+   - Detailed description of the vulnerability.
+   - Steps to reproduce.
+   - Potential impact.
+   - Possible fix (if you know one).
+3. You will receive a response within **72 hours**.
 
-## Prácticas de seguridad del proyecto
+## Project Security Practices
 
-- Las claves API y secretos **nunca** se almacenan en el repositorio.
-- Todas las contraseñas se hashean con **bcrypt**.
-- Los tokens JWT tienen expiración configurable.
-- La API implementa rate limiting con **SlowAPI + Redis**.
-- Las cabeceras de seguridad (HSTS, CSP, X-Frame-Options) se configuran
-  tanto en el middleware de FastAPI como en Nginx.
-- Los datos de usuario cumplen con la **RGPD/LOPDGDD** (endpoints de
-  exportación y eliminación de datos).
-- Los contenedores Docker ejecutan con usuario **no-root** (`appuser`).
+- API keys and secrets are **never** stored in the repository.
+- All passwords are hashed with **bcrypt**.
+- JWT tokens have configurable expiration.
+- The API implements rate limiting with **SlowAPI + Redis**.
+- Security headers (HSTS, CSP, X-Frame-Options) are configured in both
+  FastAPI middleware and Nginx.
+- User data complies with **GDPR/LOPDGDD** (data export and deletion endpoints).
+- Docker containers run with **non-root user** (`appuser`).
 
-## Divulgación responsable
+## Responsible Disclosure
 
-Seguimos una política de divulgación coordinada. Agradecemos que nos
-des tiempo razonable para corregir la vulnerabilidad antes de hacerla
-pública.
+We follow a coordinated disclosure policy. We appreciate giving us reasonable
+time to fix the vulnerability before making it public.
 
-Todos los reportes de seguridad válidos serán reconocidos en el
-archivo CHANGELOG o en los créditos del release correspondiente.
+All valid security reports will be acknowledged in the CHANGELOG or in the
+credits of the corresponding release.

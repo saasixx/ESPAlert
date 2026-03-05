@@ -1,6 +1,6 @@
-/** Constantes compartidas de la aplicación. */
+/** Shared application constants. */
 
-/** Colores de severidad indexados por nivel. */
+/** Severity colors indexed by level. */
 export const SEVERITY_COLORS: Record<string, string> = {
   red: "#ef4444",
   orange: "#f97316",
@@ -8,7 +8,7 @@ export const SEVERITY_COLORS: Record<string, string> = {
   green: "#22c55e",
 };
 
-/** Opacidad de relleno de polígonos por severidad. */
+/** Polygon fill opacity by severity. */
 export const SEVERITY_FILL_OPACITY: Record<string, number> = {
   red: 0.35,
   orange: 0.25,
@@ -16,7 +16,7 @@ export const SEVERITY_FILL_OPACITY: Record<string, number> = {
   green: 0.1,
 };
 
-/** Configuración visual de severidad para badges y UI. */
+/** Severity visual configuration for badges and UI. */
 export const SEVERITY_CONFIG: Record<
   string,
   { color: string; label: string; labelEn: string }
@@ -43,19 +43,19 @@ export const SEVERITY_CONFIG: Record<
   },
 };
 
-/** Vista inicial centrada en la Península Ibérica. */
+/** Initial view centered on the Iberian Peninsula. */
 export const SPAIN_CENTER: [number, number] = [-3.7, 40.0];
 export const SPAIN_ZOOM = 5.5;
 export const SPAIN_MIN_ZOOM = 4;
 export const SPAIN_MAX_ZOOM = 18;
 
-/** Límites del mapa (SW, NE) — cubre Península + Canarias + Baleares. */
+/** Map bounds (SW, NE) — covers Peninsula + Canary Islands + Balearic Islands. */
 export const SPAIN_BOUNDS: [[number, number], [number, number]] = [
   [-19.0, 27.0], // SW
   [5.5, 44.5], // NE
 ];
 
-/** Categorías de eventos con sus iconos y labels. */
+/** Event categories with their icons and labels. */
 export const CATEGORY_CONFIG: Record<
   string,
   { label: string; icon: string }

@@ -1,4 +1,4 @@
-"""Configuración de la aplicación — cargada desde variables de entorno / .env."""
+"""Application configuration — loaded from environment variables / .env."""
 
 import secrets
 from functools import lru_cache
@@ -6,48 +6,48 @@ from functools import lru_cache
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
-# Secreto auto-generado para desarrollo; NUNCA usar en producción
+# Auto-generated secret for development; NEVER use in production
 _DEV_JWT_SECRET = secrets.token_urlsafe(48)
 
 
 class Settings(BaseSettings):
-    """Configuración central de ESPAlert.
+    """Central ESPAlert configuration.
 
-    Todos los valores pueden sobrescribirse con variables de entorno
-    o con un fichero ``.env`` en la raíz del proyecto.
+    All values can be overridden via environment variables
+    or a ``.env`` file at the project root.
     """
 
-    # ── Aplicación ───────────────────────────────────────
+    # ── Application ──────────────────────────────────────
     APP_NAME: str = "ESPAlert"
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = True
     ENVIRONMENT: str = "development"  # development | staging | production
 
-    # ── Base de datos ────────────────────────────────────
+    # ── Database ─────────────────────────────────────────
     DATABASE_URL: str = "postgresql+asyncpg://espalert:changeme@localhost:5432/espalert"
     DATABASE_URL_SYNC: str = "postgresql+psycopg2://espalert:changeme@localhost:5432/espalert"
 
     # ── Redis ────────────────────────────────────────────
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    # ── Claves externas ──────────────────────────────────
+    # ── External keys ────────────────────────────────────
     AEMET_API_KEY: str = ""
 
     # ── Firebase ─────────────────────────────────────────
     FIREBASE_CREDENTIALS_PATH: str = "firebase-credentials.json"
 
-    # ── Intervalos de sondeo (segundos) ──────────────────
+    # ── Polling intervals (seconds) ──────────────────────
     AEMET_POLL_INTERVAL: int = 300       # 5 min
     IGN_POLL_INTERVAL: int = 120         # 2 min
     DGT_POLL_INTERVAL: int = 300         # 5 min
     METEOALARM_POLL_INTERVAL: int = 300  # 5 min
 
-    # ── Autenticación JWT ────────────────────────────────
-    JWT_SECRET: str = _DEV_JWT_SECRET  # Aleatorio por ejecución en dev
+    # ── JWT Authentication ───────────────────────────────
+    JWT_SECRET: str = _DEV_JWT_SECRET  # Random per run in dev
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_HOURS: int = 24
 
-    # ── Seguridad ────────────────────────────────────────
+    # ── Security ─────────────────────────────────────────
     ALLOWED_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://localhost:8080",
@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     @field_validator("ALLOWED_ORIGINS", "TRUSTED_HOSTS", mode="before")
     @classmethod
     def parse_origins(cls, v: str | list[str]) -> list[str]:
-        """Permite pasar orígenes como cadena separada por comas."""
+        """Allow passing origins as a comma-separated string."""
         if isinstance(v, str):
             return [o.strip() for o in v.split(",") if o.strip()]
         return v
@@ -80,5 +80,5 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    """Singleton cacheado de la configuración."""
+    """Cached settings singleton."""
     return Settings()

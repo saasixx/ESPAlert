@@ -1,4 +1,4 @@
-"""Modelo de Reporte Colaborativo — informes de tipo «Yo lo siento» por los usuarios."""
+"""Collaborative Report model — user-submitted 'I feel it' reports."""
 
 import uuid
 
@@ -10,7 +10,7 @@ from app.database import Base
 
 
 class CollaborativeReport(Base):
-    """Los usuarios informan en tiempo real de lo que están experimentando."""
+    """Users report in real time what they are experiencing."""
 
     __tablename__ = "collaborative_reports"
 

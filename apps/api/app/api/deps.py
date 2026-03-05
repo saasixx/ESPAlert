@@ -1,4 +1,4 @@
-"""Dependencias compartidas de la API — autenticación, BD, rate limiting."""
+"""Shared API dependencies — authentication, DB, rate limiting."""
 
 from uuid import UUID
 
@@ -17,7 +17,7 @@ security = HTTPBearer()
 
 
 def _verify_token(token: str) -> UUID:
-    """Verifica y decodifica un token JWT. Retorna el ID del usuario."""
+    """Verify and decode a JWT token. Returns the user ID."""
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         return UUID(payload["sub"])
@@ -31,7 +31,7 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    """Dependencia FastAPI: obtiene el usuario autenticado del token Bearer."""
+    """FastAPI dependency: get the authenticated user from the Bearer token."""
     user_id = _verify_token(credentials.credentials)
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()

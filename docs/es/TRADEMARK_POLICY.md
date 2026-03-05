@@ -1,5 +1,7 @@
 # Política de Marca de ESPAlert
 
+> 🇪🇸 **Español** | [🇬🇧 English](../TRADEMARK_POLICY.md)
+
 Esta política aplica a las marcas del proyecto, incluyendo el nombre **ESPAlert**,
 el logotipo, iconos y cualquier identidad visual oficial.
 

@@ -1,4 +1,4 @@
-"""Modelo de Usuario — cuentas, zonas de interés y preferencias de notificación."""
+"""User model — accounts, zones of interest, and notification preferences."""
 
 import uuid
 
@@ -14,7 +14,7 @@ from app.database import Base
 
 
 class User(Base):
-    """Cuenta de usuario con preferencias de notificación."""
+    """User account with notification preferences."""
 
     __tablename__ = "users"
 
@@ -23,18 +23,18 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     display_name = Column(String(100), nullable=True)
 
-    # Token de Firebase Cloud Messaging para notificaciones push
+    # Firebase Cloud Messaging token for push notifications
     fcm_token = Column(String(500), nullable=True)
 
-    # Preferencias de notificación
+    # Notification preferences
     quiet_start = Column(Time, nullable=True)  # e.g. 23:00
     quiet_end = Column(Time, nullable=True)    # e.g. 07:00
-    predictive_alerts = Column(Boolean, default=True)  # Alertas predictivas ("mañana habrá mal tiempo")
+    predictive_alerts = Column(Boolean, default=True)  # Predictive alerts ("tomorrow will have bad weather")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Relaciones
+    # Relationships
     zones = relationship("UserZone", back_populates="user", cascade="all,delete-orphan")
     filters = relationship("UserFilter", back_populates="user", cascade="all,delete-orphan")
 
@@ -43,13 +43,13 @@ class User(Base):
 
 
 class UserZone(Base):
-    """Zona geográfica de interés (casa, trabajo, ruta, etc.)."""
+    """Geographic zone of interest (home, work, route, etc.)."""
 
     __tablename__ = "user_zones"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    label = Column(String(100), nullable=False)  # "Casa", "Trabajo", "Ruta A-6"
+    label = Column(String(100), nullable=False)  # "Home", "Work", "Route A-6"
     geometry = Column(Geometry("GEOMETRY", srid=4326), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -64,16 +64,16 @@ class UserZone(Base):
 
 
 class UserFilter(Base):
-    """Preferencias de filtrado de alertas por usuario."""
+    """Alert filtering preferences per user."""
 
     __tablename__ = "user_filters"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
-    # Tipos de evento a recibir (NULL = todos)
+    # Event types to receive (NULL = all)
     event_types = Column(ARRAY(String), nullable=True)
-    # Severidad mínima para disparar notificación
+    # Minimum severity to trigger notification
     min_severity = Column(String(20), default="yellow")
 
     user = relationship("User", back_populates="filters")

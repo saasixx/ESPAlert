@@ -1,18 +1,18 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import type { AlertEvent } from '@/types/events';
 
-/** Estado de la conexión WebSocket. */
+/** WebSocket connection state. */
 export type ConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'polling' | 'disconnected';
 
 /**
- * Hook de WebSocket para recibir eventos de alerta en tiempo real.
+ * WebSocket hook for receiving real-time alert events.
  *
- * Se conecta al endpoint WS del backend y actualiza la lista de eventos
- * automáticamente. Incluye:
- * - Reconexión con backoff exponencial (1s → 30s).
- * - Heartbeat bidireccional (responde pong a pings del server).
- * - Fallback a polling HTTP cuando WS no está disponible (ej. Vercel).
- * - Estado de conexión granular.
+ * Connects to the backend WS endpoint and updates the event list
+ * automatically. Includes:
+ * - Reconnection with exponential backoff (1s → 30s).
+ * - Bidirectional heartbeat (responds pong to server pings).
+ * - HTTP polling fallback when WS is unavailable (e.g. Vercel).
+ * - Granular connection state.
  */
 export function useEventsWS(initialEvents: AlertEvent[]) {
   const [events, setEvents] = useState<AlertEvent[]>(initialEvents);
@@ -92,7 +92,7 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
           try {
             const data = JSON.parse(event.data);
 
-            // Responder heartbeats del servidor
+            // Respond to server heartbeats
             if (data.type === 'ping') {
               ws.send(JSON.stringify({ type: 'pong', timestamp: new Date().toISOString() }));
               return;
@@ -104,7 +104,7 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
             setEvents(prev => {
               // Evitar duplicados
               if (prev.some(e => e.id === newEvent.id)) return prev;
-              // Añadir al principio, mantener máx. 500 en memoria
+              // Prepend new event, keep max 500 in memory
               return [newEvent, ...prev].slice(0, 500);
             });
           } catch (err) {

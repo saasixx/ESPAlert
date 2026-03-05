@@ -1,4 +1,4 @@
-"""Servicio de notificaciones — envía notificaciones push vía Firebase Cloud Messaging."""
+"""Notification service — sends push notifications via Firebase Cloud Messaging."""
 
 import asyncio
 import json
@@ -12,7 +12,7 @@ from app.models.event import Event
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# Severidad → color de notificación + emoji
+# Severity → notification color + emoji
 SEVERITY_DISPLAY = {
     "green": {"emoji": "🟢", "color": "#4CAF50"},
     "yellow": {"emoji": "🟡", "color": "#FFC107"},
@@ -20,7 +20,7 @@ SEVERITY_DISPLAY = {
     "red": {"emoji": "🔴", "color": "#F44336"},
 }
 
-# Tipo de evento → emoji
+# Event type → emoji
 TYPE_EMOJI = {
     "wind": "💨",
     "rain": "🌧️",
@@ -47,15 +47,15 @@ TYPE_EMOJI = {
 
 class NotificationService:
     """
-    Envía notificaciones push a usuarios afectados y publica
-    en Redis pub/sub para clientes WebSocket en tiempo real.
+    Sends push notifications to affected users and publishes
+    to Redis pub/sub for real-time WebSocket clients.
     """
 
     def __init__(self):
         self._firebase_initialized = False
 
     def _init_firebase(self):
-        """Inicialización perezosa del SDK Firebase Admin."""
+        """Lazy initialization of the Firebase Admin SDK."""
         if self._firebase_initialized:
             return
         try:
@@ -68,23 +68,23 @@ class NotificationService:
 
             self._firebase_initialized = True
         except Exception as e:
-            logger.warning("Inicialización Firebase falló (push desactivado): %s", e)
+            logger.warning("Firebase initialization failed (push disabled): %s", e)
 
     async def notify_users(self, event: Event, affected_users: list[dict]):
         """
-        Envía notificaciones push a todos los usuarios afectados
-        y publica el evento en Redis para broadcast WebSocket.
+        Send push notifications to all affected users
+        and publish the event on Redis for WebSocket broadcast.
         """
-        # 1. Publicar en Redis para clientes WebSocket en tiempo real
+        # 1. Publish to Redis for real-time WebSocket clients
         await self._publish_to_redis(event)
 
-        # 2. Enviar push FCM a cada usuario afectado
+        # 2. Send FCM push to each affected user
         if affected_users:
             self._init_firebase()
             await self._send_fcm_batch(event, affected_users)
 
     async def _publish_to_redis(self, event: Event):
-        """Publica nuevo evento en Redis pub/sub para broadcast WebSocket."""
+        """Publish new event to Redis pub/sub for WebSocket broadcast."""
         try:
             redis = get_redis()
 
@@ -107,10 +107,10 @@ class NotificationService:
             await redis.publish("espalert:new_events", json.dumps(message))
 
         except Exception as e:
-            logger.error("Publicación Redis falló: %s", e)
+            logger.error("Redis publish failed: %s", e)
 
     async def _send_fcm_batch(self, event: Event, users: list[dict]):
-        """Envía notificaciones FCM a un lote de usuarios."""
+        """Send FCM notifications to a batch of users."""
         try:
             from firebase_admin import messaging
 
@@ -122,20 +122,20 @@ class NotificationService:
             title = f"{display['emoji']} {type_emoji} {event.title}"
             body = event.description[:200] if event.description else event.area_name or ""
 
-            # Añadir cuenta regresiva si el evento aún no ha comenzado
+            # Add countdown if event hasn't started yet
             if event.effective and event.effective > datetime.now(timezone.utc):
                 delta = event.effective - datetime.now(timezone.utc)
                 minutes = int(delta.total_seconds() / 60)
                 if minutes > 0:
                     body = f"⏱️ En {minutes} min — {body}"
 
-            # Recopilar tokens FCM válidos
+            # Collect valid FCM tokens
             tokens = [u["fcm_token"] for u in users if u.get("fcm_token")]
 
             if not tokens:
                 return
 
-            # Enviar multicast (hasta 500 tokens por llamada)
+            # Send multicast (up to 500 tokens per call)
             for i in range(0, len(tokens), 500):
                 batch_tokens = tokens[i:i+500]
 
@@ -174,11 +174,11 @@ class NotificationService:
                     messaging.send_each_for_multicast, message
                 )
                 logger.info(
-                    "Lote FCM: %d enviados, %d fallidos",
+                    "FCM batch: %d sent, %d failed",
                     response.success_count, response.failure_count,
                 )
 
         except ImportError:
-            logger.warning("firebase_admin no disponible — notificaciones push desactivadas")
+            logger.warning("firebase_admin not available — push notifications disabled")
         except Exception as e:
-            logger.error("Envío FCM falló: %s", e)
+            logger.error("FCM send failed: %s", e)

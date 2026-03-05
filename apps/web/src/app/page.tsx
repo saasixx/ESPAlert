@@ -1,11 +1,11 @@
 import MapClientWrapper from "@/components/map/MapClientWrapper";
 
-export const revalidate = 60; // Revalidar cada minuto
+export const revalidate = 60; // Revalidate every minute
 
-/** Obtiene los eventos activos desde el backend (SSR). */
+/** Fetches active events from the backend (SSR). */
 async function getActiveEvents() {
   try {
-    // NEXT_PUBLIC_API_URL incluye /api/v1; API_URL es solo el host base
+    // NEXT_PUBLIC_API_URL includes /api/v1; API_URL is just the host base
     const host = process.env.API_URL || "http://127.0.0.1:8000";
     const apiBase = process.env.NEXT_PUBLIC_API_URL || `${host}/api/v1`;
     const res = await fetch(`${apiBase}/events/`, {
@@ -14,7 +14,7 @@ async function getActiveEvents() {
 
     if (!res.ok) {
       if (process.env.NODE_ENV !== "production") {
-        console.warn("No se pudieron obtener eventos del backend:", res.status);
+        console.warn("Could not fetch events from backend:", res.status);
       }
       return [];
     }
@@ -22,7 +22,7 @@ async function getActiveEvents() {
     return await res.json();
   } catch (error) {
     if (process.env.NODE_ENV !== "production") {
-      console.error("Error al obtener eventos:", error);
+      console.error("Error fetching events:", error);
     }
     return [];
   }

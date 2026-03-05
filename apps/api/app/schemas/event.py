@@ -1,4 +1,4 @@
-"""Esquemas Pydantic para eventos de alerta."""
+"""Pydantic schemas for alert events."""
 
 from datetime import datetime
 from typing import Optional
@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class EventOut(BaseModel):
-    """Representación pública de un evento de alerta."""
+    """Public representation of an alert event."""
 
     id: UUID
     source: str
@@ -31,7 +31,7 @@ class EventOut(BaseModel):
 
 
 class EventListParams(BaseModel):
-    """Parámetros de consulta para filtrar eventos."""
+    """Query parameters for filtering events."""
 
     event_type: Optional[str] = None
     severity: Optional[str] = None

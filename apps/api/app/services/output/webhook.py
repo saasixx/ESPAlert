@@ -1,4 +1,4 @@
-"""Conector de salida Webhook genérico — envía alertas via HTTP POST."""
+"""Generic Webhook output connector — sends alerts via HTTP POST."""
 
 import logging
 from datetime import datetime, timezone
@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 
 class WebhookConnector(OutputConnector):
     """
-    Envía alertas a cualquier endpoint HTTP como JSON.
+    Send alerts to any HTTP endpoint as JSON.
 
-    Target: URL completa del endpoint (https://example.com/webhook)
+    Target: Full endpoint URL (https://example.com/webhook)
     """
 
     def __init__(self, secret: str = ""):
@@ -55,8 +55,8 @@ class WebhookConnector(OutputConnector):
             resp = await client.post(target, json=payload, headers=headers)
 
             if 200 <= resp.status_code < 300:
-                logger.info("Webhook enviado a %s: %s", target[:50], message.title[:50])
+                logger.info("Webhook sent to %s: %s", target[:50], message.title[:50])
                 return True
 
-            logger.warning("Webhook fallo (%d) → %s: %s", resp.status_code, target[:50], resp.text[:200])
+            logger.warning("Webhook failed (%d) → %s: %s", resp.status_code, target[:50], resp.text[:200])
             return False

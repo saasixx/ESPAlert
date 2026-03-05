@@ -1,4 +1,4 @@
-/** Evento de alerta devuelto por la API. */
+/** Alert event returned by the API. */
 export interface AlertEvent {
   id: string;
   source: string;
@@ -18,5 +18,5 @@ export interface AlertEvent {
   created_at: string;
 }
 
-/** Categorías de eventos para los filtros del mapa. */
+/** Event categories for map filters. */
 export type EventCategory = "meteo" | "seismic" | "traffic" | "maritime";

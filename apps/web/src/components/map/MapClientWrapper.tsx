@@ -5,8 +5,8 @@ import { useEventsWS } from "@/hooks/useEventsWS";
 import AlertMap from "./AlertMap";
 
 /**
- * Wrapper cliente que conecta los eventos en tiempo real (WS)
- * con el componente del mapa basado en mapcn.
+ * Client wrapper that connects real-time events (WS)
+ * with the mapcn-based map component.
  */
 export default function MapClientWrapper({ initialEvents }: { initialEvents: AlertEvent[] }) {
   const { events, isConnected, connectionState } = useEventsWS(initialEvents);

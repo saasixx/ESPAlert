@@ -1,4 +1,4 @@
-"""Conector MeteoAlarm — obtiene avisos meteorológicos europeos vía API de feeds CAP/JSON."""
+"""MeteoAlarm connector — fetches European weather warnings via CAP/JSON feed API."""
 
 import logging
 from typing import Optional
@@ -10,10 +10,10 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# API de Feeds MeteoAlarm (público, sin clave necesaria)
+# MeteoAlarm Feeds API (public, no key required)
 FEEDS_URL = "https://feeds.meteoalarm.org/api/v1/warnings/feeds-spain"
 
-# Severidad CAP → nuestra severidad
+# CAP severity → our severity
 CAP_SEVERITY = {
     "Extreme": "red",
     "Severe": "orange",
@@ -22,7 +22,7 @@ CAP_SEVERITY = {
     "Unknown": "green",
 }
 
-# Parámetro awareness_type → nuestros tipos de evento
+# awareness_type parameter → our event types
 AWARENESS_TYPE_MAP = {
     "1": "wind",
     "2": "snow",
@@ -42,14 +42,14 @@ AWARENESS_TYPE_MAP = {
 
 class MeteoAlarmConnector:
     """
-    Obtiene avisos meteorológicos de la API de feeds de MeteoAlarm.
+    Fetch weather warnings from the MeteoAlarm feeds API.
 
-    Usa el feed JSON basado en CAP que retorna todos los avisos activos para España,
-    procedentes de AEMET y publicados en el formato europeo estandarizado.
+    Uses the CAP-based JSON feed that returns all active warnings for Spain,
+    sourced from AEMET and published in the standardized European format.
     """
 
     async def fetch_warnings(self) -> list[dict]:
-        """Obtiene todos los avisos MeteoAlarm activos para España."""
+        """Fetch all active MeteoAlarm warnings for Spain."""
         events = []
 
         try:
@@ -57,24 +57,24 @@ class MeteoAlarmConnector:
             if data:
                 events = self._parse_warnings(data)
         except Exception as e:
-            logger.exception("Error obteniendo avisos MeteoAlarm: %s", e)
+            logger.exception("Error fetching MeteoAlarm warnings: %s", e)
 
-        logger.info("MeteoAlarm: obtenidos %d avisos", len(events))
+        logger.info("MeteoAlarm: fetched %d warnings", len(events))
         return events
 
     async def _query_feed(self) -> Optional[dict]:
-        """Consulta la API de feeds de MeteoAlarm."""
+        """Query the MeteoAlarm feeds API."""
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.get(FEEDS_URL)
 
             if resp.status_code != 200:
-                logger.error("MeteoAlarm feeds devuelve %s: %s", resp.status_code, resp.text[:200])
+                logger.error("MeteoAlarm feeds returns %s: %s", resp.status_code, resp.text[:200])
                 return None
 
             return resp.json()
 
     def _parse_warnings(self, data: dict) -> list[dict]:
-        """Parsea avisos CAP/JSON de MeteoAlarm a nuestro formato de evento."""
+        """Parse MeteoAlarm CAP/JSON warnings to our event format."""
         events = []
 
         warnings = data.get("warnings", [])
@@ -84,18 +84,18 @@ class MeteoAlarmConnector:
                 if event:
                     events.append(event)
             except Exception as e:
-                logger.warning("Error al parsear aviso MeteoAlarm: %s", e)
+                logger.warning("Error parsing MeteoAlarm warning: %s", e)
 
         return events
 
     def _parse_warning(self, warning: dict) -> Optional[dict]:
-        """Parsea un solo aviso de alerta CAP."""
+        """Parse a single CAP alert warning."""
         alert = warning.get("alert", {})
         identifier = alert.get("identifier", "")
         if not identifier:
             return None
 
-        # Obtener bloque info en español (primero), fallback a cualquiera
+        # Get info block in Spanish (first), fallback to any
         info_list = alert.get("info", [])
         if not info_list:
             return None
@@ -106,44 +106,44 @@ class MeteoAlarmConnector:
                 info = i
                 break
 
-        # Omitir "AllClear" — son cancelaciones
+        # Skip "AllClear" — these are cancellations
         response_types = info.get("responseType", [])
         if "AllClear" in response_types:
             return None
 
-        # Severidad
+        # Severity
         cap_severity = info.get("severity", "Minor")
         severity = CAP_SEVERITY.get(cap_severity, "green")
 
-        # Omitir alertas verdes/menores para reducir ruido
+        # Skip green/minor alerts to reduce noise
         if severity == "green":
             return None
 
-        # Tipo de evento desde parámetro awareness_type
+        # Event type from awareness_type parameter
         event_type = "other"
         params = info.get("parameter", [])
         for p in params:
             if p.get("valueName") == "awareness_type":
-                # Formato: "1; Wind" → tomar primer número
+                # Format: "1; Wind" → take first number
                 val = p.get("value", "13")
                 type_num = val.split(";")[0].strip()
                 event_type = AWARENESS_TYPE_MAP.get(type_num, "other")
                 break
 
-        # Campos de texto
+        # Text fields
         headline = info.get("headline", "")
         event_name = info.get("event", "")
         description = info.get("description", headline)
 
-        # Área
+        # Area
         areas = info.get("area", [])
         area_name = areas[0].get("areaDesc", "") if areas else ""
 
-        # Marcas de tiempo
+        # Timestamps
         effective = info.get("effective", info.get("onset", ""))
         expires = info.get("expires", "")
 
-        # Emisor
+        # Sender
         sender_name = info.get("senderName", "MeteoAlarm")
 
         return {
@@ -154,7 +154,7 @@ class MeteoAlarmConnector:
             "title": headline or f"{event_name} — {area_name}",
             "description": description or event_name,
             "instructions": f"Fuente: {sender_name}",
-            "area_wkt": None,  # Sin geometría en la API de feeds, solo geocódigos
+            "area_wkt": None,  # No geometry in feeds API, only geocodes
             "area_name": area_name,
             "effective": effective,
             "expires": expires,

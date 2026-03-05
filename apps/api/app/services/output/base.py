@@ -1,4 +1,4 @@
-"""Clase base abstracta para conectores de salida."""
+"""Abstract base class for output connectors."""
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -8,7 +8,7 @@ from typing import Optional
 
 @dataclass
 class OutputMessage:
-    """Mensaje normalizado que se envía a un conector de salida."""
+    """Normalized message sent to an output connector."""
 
     event_id: str
     title: str
@@ -42,7 +42,7 @@ class OutputMessage:
         }.get(self.event_type, "⚠️")
 
     def format_text(self, include_url: bool = True) -> str:
-        """Formatea el mensaje como texto plano."""
+        """Format the message as plain text."""
         lines = [
             f"{self.severity_emoji} {self.type_emoji} {self.title}",
         ]
@@ -53,7 +53,7 @@ class OutputMessage:
             if self.depth_km:
                 lines[-1] += f" • Profundidad: {self.depth_km} km"
         if self.description:
-            # Truncar descripción larga
+            # Truncate long description
             desc = self.description[:300]
             if len(self.description) > 300:
                 desc += "…"
@@ -65,7 +65,7 @@ class OutputMessage:
         return "\n".join(lines)
 
     def format_html(self) -> str:
-        """Formatea el mensaje como HTML básico."""
+        """Format the message as basic HTML."""
         parts = [
             f"<b>{self.severity_emoji} {self.type_emoji} {self.title}</b>",
         ]
@@ -86,30 +86,30 @@ class OutputMessage:
 
 
 class OutputConnector(ABC):
-    """Interfaz base para todos los conectores de salida."""
+    """Base interface for all output connectors."""
 
     @property
     @abstractmethod
     def name(self) -> str:
-        """Nombre del conector (e.g. 'telegram', 'discord', 'email')."""
+        """Connector name (e.g. 'telegram', 'discord', 'email')."""
         ...
 
     @abstractmethod
     async def send(self, message: OutputMessage, target: str) -> bool:
         """
-        Envía un mensaje al destino especificado.
+        Send a message to the specified target.
 
         Args:
-            message: Mensaje de alerta normalizado.
-            target: Identificador de destino (chat_id, webhook_url, email, etc).
+            message: Normalized alert message.
+            target: Target identifier (chat_id, webhook_url, email, etc).
 
         Returns:
-            True si el envío fue exitoso.
+            True if the send was successful.
         """
         ...
 
     async def send_batch(self, message: OutputMessage, targets: list[str]) -> dict[str, bool]:
-        """Envía un mensaje a múltiples destinos. Retorna mapa target→éxito."""
+        """Send a message to multiple targets. Returns target→success map."""
         results = {}
         for target in targets:
             try:

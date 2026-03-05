@@ -1,5 +1,7 @@
 # ESPAlert Trademark Policy
 
+> 🇬🇧 **English** | [🇪🇸 Español](es/TRADEMARK_POLICY.md)
+
 This policy applies to the project trademarks, including the name **ESPAlert**,
 the logo, icons, and any official visual identity.
 

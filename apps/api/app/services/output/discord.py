@@ -1,4 +1,4 @@
-"""Conector de salida Discord — envía alertas mediante webhooks de Discord."""
+"""Discord output connector — sends alerts via Discord webhooks."""
 
 import logging
 
@@ -8,7 +8,7 @@ from app.services.output.base import OutputConnector, OutputMessage
 
 logger = logging.getLogger(__name__)
 
-# Colores para embeds de Discord (en decimal)
+# Discord embed colors (decimal)
 SEVERITY_COLORS = {
     "red": 0xEF4444,
     "orange": 0xF97316,
@@ -19,9 +19,9 @@ SEVERITY_COLORS = {
 
 class DiscordConnector(OutputConnector):
     """
-    Envía alertas a Discord mediante webhooks.
+    Send alerts to Discord via webhooks.
 
-    Target: URL completa del webhook (https://discord.com/api/webhooks/...)
+    Target: Full webhook URL (https://discord.com/api/webhooks/...)
     """
 
     @property
@@ -60,8 +60,8 @@ class DiscordConnector(OutputConnector):
             resp = await client.post(target, json=payload)
 
             if resp.status_code in (200, 204):
-                logger.info("Discord enviado: %s", message.title[:50])
+                logger.info("Discord sent: %s", message.title[:50])
                 return True
 
-            logger.warning("Discord fallo (%d): %s", resp.status_code, resp.text[:200])
+            logger.warning("Discord failed (%d): %s", resp.status_code, resp.text[:200])
             return False

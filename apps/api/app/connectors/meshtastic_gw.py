@@ -1,4 +1,4 @@
-"""Pasarela de red mesh Meshtastic — puente entre LoRa mesh y el backend de ESPAlert."""
+"""Meshtastic mesh network gateway — bridge between LoRa mesh and ESPAlert backend."""
 
 import asyncio
 import json
@@ -13,14 +13,14 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# Canales Redis para comunicación mesh
-MESH_CHANNEL_IN = "espalert:mesh:incoming"    # Mensajes DESDE la mesh
-MESH_CHANNEL_OUT = "espalert:mesh:outgoing"   # Mensajes HACIA la mesh
-MESH_CHANNEL_NODES = "espalert:mesh:nodes"    # Actualizaciones de telemetría de nodos
+# Redis channels for mesh communication
+MESH_CHANNEL_IN = "espalert:mesh:incoming"    # Messages FROM the mesh
+MESH_CHANNEL_OUT = "espalert:mesh:outgoing"   # Messages TO the mesh
+MESH_CHANNEL_NODES = "espalert:mesh:nodes"    # Node telemetry updates
 
 
 class MeshMessage:
-    """Un mensaje que fluye por la red mesh Meshtastic."""
+    """A message flowing through the Meshtastic mesh network."""
 
     def __init__(
         self,
@@ -77,7 +77,7 @@ class MeshMessage:
 
 
 class MeshNode:
-    """Un nodo Meshtastic visible en la red mesh."""
+    """A Meshtastic node visible on the mesh network."""
 
     def __init__(
         self,
@@ -117,12 +117,12 @@ class MeshNode:
 
 class MeshtasticGateway:
     """
-    Pasarela backend para la red mesh Meshtastic.
+    Backend gateway for the Meshtastic mesh network.
 
-    Conecta a un nodo Meshtastic vía serial/TCP y puentea mensajes
-    a/desde Redis pub/sub para que la API y WebSocket los retransmitan.
+    Connects to a Meshtastic node via serial/TCP and bridges messages
+    to/from Redis pub/sub so the API and WebSocket can relay them.
 
-    Ejecutar como proceso independiente:
+    Run as a standalone process:
         python -m app.connectors.meshtastic_gw --port /dev/ttyUSB0
     """
 
@@ -133,7 +133,7 @@ class MeshtasticGateway:
         self.nodes: dict[str, MeshNode] = {}
 
     def connect(self):
-        """Conecta con el dispositivo Meshtastic."""
+        """Connect to the Meshtastic device."""
         try:
             import meshtastic
             import meshtastic.serial_interface
@@ -146,16 +146,16 @@ class MeshtasticGateway:
             else:
                 raise ValueError(f"Unknown connection type: {self.connection_type}")
 
-            logger.info("Conectado al dispositivo Meshtastic vía %s:%s", self.connection_type, self.address)
+            logger.info("Connected to Meshtastic device via %s:%s", self.connection_type, self.address)
 
-            # Suscribirse a mensajes entrantes
+            # Subscribe to incoming messages
             from pubsub import pub
 
             pub.subscribe(self._on_receive, "meshtastic.receive.text")
             pub.subscribe(self._on_node_update, "meshtastic.node.updated")
             pub.subscribe(self._on_connection, "meshtastic.connection.established")
 
-            # Cargar lista inicial de nodos
+            # Load initial node list
             if self.interface.nodes:
                 for node_id, node_info in self.interface.nodes.items():
                     self._update_node(node_id, node_info)
@@ -166,15 +166,15 @@ class MeshtasticGateway:
                 "Install with: pip install meshtastic"
             )
         except Exception as e:
-            logger.exception("Error al conectar con dispositivo Meshtastic: %s", e)
+            logger.exception("Error connecting to Meshtastic device: %s", e)
 
     def _on_receive(self, packet, interface):
-        """Maneja un mensaje de texto mesh entrante."""
+        """Handle an incoming mesh text message."""
         try:
             sender_id = packet.get("fromId", "")
             sender_name = packet.get("from", sender_id)
 
-            # Buscar nombre del emisor en los nodos
+            # Look up sender name from nodes
             if sender_id in self.nodes:
                 sender_name = self.nodes[sender_id].long_name
 
@@ -184,7 +184,7 @@ class MeshtasticGateway:
             if not text:
                 return
 
-            # Extraer posición si está disponible
+            # Extract position if available
             position = packet.get("position", {})
             lat = position.get("latitude")
             lon = position.get("longitude")
@@ -201,16 +201,16 @@ class MeshtasticGateway:
                 lon=lon,
             )
 
-            # Publicar en Redis
+            # Publish to Redis
             asyncio.run(self._publish_message(msg))
 
             logger.info(f"Mesh RX: [{sender_name}] {text}")
 
         except Exception as e:
-            logger.error("Error al procesar mensaje mesh: %s", e)
+            logger.error("Error processing mesh message: %s", e)
 
     def _on_node_update(self, node, interface):
-        """Maneja actualización de telemetría de nodo."""
+        """Handle a node telemetry update."""
         try:
             node_id = node.get("num", "")
             user = node.get("user", {})
@@ -233,31 +233,31 @@ class MeshtasticGateway:
             asyncio.run(self._publish_node_update(mesh_node))
 
         except Exception as e:
-            logger.error("Error al procesar actualización de nodo: %s", e)
+            logger.error("Error processing node update: %s", e)
 
     def _on_connection(self, interface, topic=None):
-        logger.info("Conexión Meshtastic establecida")
+        logger.info("Meshtastic connection established")
 
     async def _publish_message(self, msg: MeshMessage):
-        """Publica mensaje recibido en Redis.
+        """Publish received message to Redis.
 
-        Usa una conexión nueva (no el pool compartido) porque la pasarela
-        se ejecuta como proceso independiente y asyncio.run() crea un
-        nuevo event loop por llamada.
+        Uses a new connection (not the shared pool) because the gateway
+        runs as a standalone process and asyncio.run() creates a
+        new event loop per call.
         """
         redis = aioredis.from_url(settings.REDIS_URL)
         try:
             await redis.publish(MESH_CHANNEL_IN, json.dumps(msg.to_dict()))
-            # Almacenar en lista para historial (mantener últimos 500)
+            # Store in list for history (keep last 500)
             await redis.lpush("espalert:mesh:history", json.dumps(msg.to_dict()))
             await redis.ltrim("espalert:mesh:history", 0, 499)
         finally:
             await redis.close()
 
     async def _publish_node_update(self, node: MeshNode):
-        """Publica actualización de nodo en Redis.
+        """Publish node update to Redis.
 
-        Usa una conexión nueva — misma razón que _publish_message.
+        Uses a new connection — same reason as _publish_message.
         """
         redis = aioredis.from_url(settings.REDIS_URL)
         try:
@@ -267,9 +267,9 @@ class MeshtasticGateway:
             await redis.close()
 
     def send_message(self, text: str, channel: int = 0, destination: str = "^all"):
-        """Envía un mensaje de texto a la red mesh."""
+        """Send a text message to the mesh network."""
         if not self.interface:
-            logger.error("No conectado al dispositivo Meshtastic")
+            logger.error("Not connected to Meshtastic device")
             return False
 
         try:
@@ -282,11 +282,11 @@ class MeshtasticGateway:
             return True
 
         except Exception as e:
-            logger.error("Error al enviar mensaje mesh: %s", e)
+            logger.error("Error sending mesh message: %s", e)
             return False
 
     def send_alert_broadcast(self, event_title: str, severity: str, area: str):
-        """Transmite un resumen de alerta a la red mesh."""
+        """Broadcast an alert summary to the mesh network."""
         severity_icons = {
             "red": "🔴",
             "orange": "🟠",
@@ -296,39 +296,39 @@ class MeshtasticGateway:
         icon = severity_icons.get(severity, "⚠️")
         text = f"{icon} ALERTA: {event_title}\n📍 {area}"
 
-        # Recortar a 228 bytes (tamaño máximo de mensaje Meshtastic)
+        # Trim to 228 bytes (maximum Meshtastic message size)
         if len(text.encode("utf-8")) > 228:
             text = text[:220] + "..."
 
         return self.send_message(text)
 
     def get_nodes(self) -> list[dict]:
-        """Obtiene todos los nodos mesh conocidos."""
+        """Get all known mesh nodes."""
         return [n.to_dict() for n in self.nodes.values()]
 
     def disconnect(self):
-        """Cierra la conexión con el dispositivo Meshtastic."""
+        """Close the connection to the Meshtastic device."""
         if self.interface:
             self.interface.close()
-            logger.info("Dispositivo Meshtastic desconectado")
+            logger.info("Meshtastic device disconnected")
 
 
-# ── Punto de entrada CLI ───────────────────────────────────────────────────────
+# ── CLI entry point ────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Pasarela Meshtastic de ESPAlert")
+    parser = argparse.ArgumentParser(description="ESPAlert Meshtastic Gateway")
     parser.add_argument("--type", choices=["serial", "tcp"], default="serial")
     parser.add_argument("--address", default="/dev/ttyUSB0",
-                        help="Puerto serial o host:port TCP")
+                        help="Serial port or host:port for TCP")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
     gateway = MeshtasticGateway(args.type, args.address)
     gateway.connect()
 
-    logger.info("Pasarela en ejecución. Pulsa Ctrl+C para salir.")
+    logger.info("Gateway running. Press Ctrl+C to exit.")
     try:
         while True:
             pass

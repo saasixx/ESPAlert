@@ -1,118 +1,120 @@
-# Contribuir a ESPAlert
+# Contributing to ESPAlert
 
-¡Gracias por tu interés en contribuir a **ESPAlert**! Este documento explica el flujo
-de trabajo, las convenciones del proyecto y cómo enviar tus cambios de forma eficiente.
+> 🇬🇧 **English** | [🇪🇸 Español](docs/es/CONTRIBUTING.md)
+
+Thank you for your interest in contributing to **ESPAlert**! This document
+explains the workflow, project conventions, and how to submit your changes efficiently.
 
 ---
 
-## Tabla de contenidos
+## Table of Contents
 
-- [Código de conducta](#código-de-conducta)
-- [Primeros pasos](#primeros-pasos)
-- [Entorno de desarrollo](#entorno-de-desarrollo)
-- [Flujo de trabajo con Git](#flujo-de-trabajo-con-git)
-- [Convenciones de código](#convenciones-de-código)
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Environment](#development-environment)
+- [Git Workflow](#git-workflow)
+- [Code Conventions](#code-conventions)
 - [Tests](#tests)
 - [Pull Requests](#pull-requests)
-- [Reportar bugs](#reportar-bugs)
-- [Solicitar funcionalidades](#solicitar-funcionalidades)
+- [Reporting Bugs](#reporting-bugs)
+- [Requesting Features](#requesting-features)
 
 ---
 
-## Código de conducta
+## Code of Conduct
 
-Este proyecto se rige por el [Código de Conducta](CODE_OF_CONDUCT.md).
-Al participar, te comprometes a respetar sus normas.
+This project is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
+By participating, you commit to respecting its standards.
 
-## Primeros pasos
+## Getting Started
 
-1. Haz **fork** del repositorio.
-2. Clona tu fork:
+1. **Fork** the repository.
+2. Clone your fork:
    ```bash
-   git clone https://github.com/<tu-usuario>/ESPAlert.git
+   git clone https://github.com/<your-username>/ESPAlert.git
    cd ESPAlert
    ```
-3. Crea una rama descriptiva:
+3. Create a descriptive branch:
    ```bash
-   git checkout -b feat/mi-nueva-funcionalidad
+   git checkout -b feat/my-new-feature
    ```
 
-## Entorno de desarrollo
+## Development Environment
 
-### Opción A — Docker (recomendada)
+### Option A — Docker (recommended)
 
 ```bash
-cp .env.example .env          # Ajusta los valores si es necesario
-docker compose up --build      # Levanta toda la pila
+cp .env.example .env          # Adjust values if needed
+docker compose up --build      # Start the entire stack
 ```
 
 - **Frontend**: http://localhost:3000
 - **API + Docs**: http://localhost:8000/docs
 
-### Opción B — Local (sin Docker para el frontend)
+### Option B — Local (without Docker for frontend)
 
 ```bash
-# Levanta solo los servicios de infraestructura
+# Start only infrastructure + backend services
 docker compose up db redis api worker beat -d
 
-# Instala dependencias del frontend
+# Install frontend dependencies
 npm install
 npm run dev
 ```
 
-### Requisitos
+### Requirements
 
-| Herramienta | Versión mínima |
-|------------|----------------|
-| Node.js    | 20 LTS         |
-| Python     | 3.12           |
-| Docker     | 24+            |
-| npm        | 10+            |
+| Tool   | Minimum Version |
+|--------|-----------------|
+| Node.js | 20 LTS          |
+| Python | 3.12            |
+| Docker | 24+             |
+| npm    | 10+             |
 
-## Flujo de trabajo con Git
+## Git Workflow
 
-Utilizamos [Conventional Commits](https://www.conventionalcommits.org/es/):
-
-```
-<tipo>(<alcance>): <descripción breve>
-
-[cuerpo opcional]
-
-[pie de página opcional]
-```
-
-### Tipos permitidos
-
-| Tipo       | Cuándo usarlo                              |
-|------------|-------------------------------------------|
-| `feat`     | Nueva funcionalidad                       |
-| `fix`      | Corrección de bug                         |
-| `docs`     | Solo documentación                        |
-| `style`    | Formato (sin cambios lógicos)             |
-| `refactor` | Refactorización sin cambio funcional      |
-| `test`     | Añadir o corregir tests                   |
-| `chore`    | Tareas de mantenimiento (CI, deps, etc.)  |
-| `perf`     | Mejora de rendimiento                     |
-
-### Ejemplos
+We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
-feat(mapa): añadir capa de incendios forestales
-fix(api): corregir filtro de eventos por radio GPS
-docs(readme): actualizar instrucciones de instalación
+<type>(<scope>): <brief description>
+
+[optional body]
+
+[optional footer]
 ```
 
-## Convenciones de código
+### Allowed Types
+
+| Type       | When to use                         |
+|------------|-------------------------------------|
+| `feat`     | New feature                         |
+| `fix`      | Bug fix                             |
+| `docs`     | Documentation only                  |
+| `style`    | Formatting (no logic changes)       |
+| `refactor` | Refactoring without functional change |
+| `test`     | Add or fix tests                    |
+| `chore`    | Maintenance tasks (CI, deps, etc.)  |
+| `perf`     | Performance improvement             |
+
+### Examples
+
+```
+feat(map): add wildfire layer
+fix(api): correct GPS radius filter
+docs(readme): update installation instructions
+```
+
+## Code Conventions
 
 ### Python (Backend — `apps/api/`)
 
-- **Linter**: [Ruff](https://docs.astral.sh/ruff/) con las reglas por defecto.
-- **Formato**: Ruff format (compatible con Black).
-- **Docstrings**: En español, estilo Google.
-- **Tipos**: Usar type hints en todas las funciones públicas.
+- **Linter**: [Ruff](https://docs.astral.sh/ruff/) with default rules.
+- **Format**: Ruff format (Black-compatible).
+- **Docstrings**: In English, Google style.
+- **Types**: Use type hints for all public functions.
 
 ```bash
-# Ejecutar linter
+# Run linter
 pip install ruff
 ruff check apps/api/
 ruff format apps/api/
@@ -120,21 +122,21 @@ ruff format apps/api/
 
 ### TypeScript/React (Frontend — `apps/web/`)
 
-- **Linter**: ESLint con la config de Next.js.
-- **Formato**: Prettier (configurado vía ESLint).
-- **Componentes**: Functional components con hooks.
-- **Nombrado**: PascalCase para componentes, camelCase para hooks y utilidades.
+- **Linter**: ESLint with Next.js config.
+- **Format**: Prettier (via ESLint).
+- **Components**: Functional components with hooks.
+- **Naming**: PascalCase for components, camelCase for hooks and utilities.
 
 ```bash
 npm run lint
 ```
 
-### Idioma del código
+### Code Language
 
-- **Interfaz de usuario**: Siempre en **español**.
-- **Código fuente** (variables, funciones): En **inglés**.
-- **Comentarios y docstrings**: En **español**.
-- **Commits y PRs**: En **español** o **inglés** (a preferencia del autor).
+- **User Interface**: Spanish (primary), English available via i18n.
+- **Source Code** (variables, functions, classes): In **English**.
+- **Comments and Docstrings**: In **English**.
+- **Commits and PRs**: English preferred, Spanish accepted.
 
 ## Tests
 
@@ -155,41 +157,41 @@ npm run turbo build --filter=web
 
 ## Pull Requests
 
-1. Asegúrate de que tu rama está actualizada con `main`.
-2. Verifica que los tests pasan localmente.
-3. Escribe una descripción clara del cambio.
-4. Referencia el issue relacionado (si aplica): `Closes #123`.
-5. Solicita revisión de al menos un maintainer.
+1. Ensure your branch is up to date with `main`.
+2. Verify that tests pass locally.
+3. Write a clear change description.
+4. Reference the related issue (if applicable): `Closes #123`.
+5. Request review from at least one maintainer.
 
-### Checklist para el PR
+### PR Checklist
 
-- [ ] Mi código sigue las convenciones del proyecto.
-- [ ] He añadido tests para los cambios (si aplica).
-- [ ] La documentación está actualizada.
-- [ ] Los commits siguen el formato Conventional Commits.
-- [ ] He probado los cambios localmente con Docker.
+- [ ] My code follows project conventions.
+- [ ] I've added tests for the changes (if applicable).
+- [ ] Documentation is updated.
+- [ ] Commits follow Conventional Commits format.
+- [ ] I've tested the changes locally with Docker.
 
-## Reportar bugs
+## Reporting Bugs
 
-Usa la plantilla de [Bug Report](.github/ISSUE_TEMPLATE/bug_report.md) y proporciona:
+Use the [Bug Report](.github/ISSUE_TEMPLATE/bug_report.md) template and provide:
 
-1. **Descripción** clara del problema.
-2. **Pasos para reproducir** el error.
-3. **Comportamiento esperado** vs. **actual**.
-4. **Entorno**: navegador, SO, versión de Docker.
-5. **Capturas de pantalla** o logs relevantes.
+1. **Clear description** of the problem.
+2. **Steps to reproduce** the error.
+3. **Expected behavior** vs. **actual behavior**.
+4. **Environment**: browser, OS, Docker version.
+5. **Screenshots or logs** if relevant.
 
-## Solicitar funcionalidades
+## Requesting Features
 
-Usa la plantilla de [Feature Request](.github/ISSUE_TEMPLATE/feature_request.md) e incluye:
+Use the [Feature Request](.github/ISSUE_TEMPLATE/feature_request.md) template and include:
 
-1. **Problema** que resuelve la funcionalidad.
-2. **Solución propuesta** con el mayor detalle posible.
-3. **Alternativas** que hayas considerado.
-4. **Mockups o diagramas** si aplica.
+1. **Problem** that the feature solves.
+2. **Proposed solution** with as much detail as possible.
+3. **Alternatives** you've considered.
+4. **Mockups or diagrams** if applicable.
 
 ---
 
-> **¿Dudas?** Abre un [Discussion](../../discussions) en GitHub o contacta con los maintainers.
+> **Questions?** Open a [Discussion](../../discussions) on GitHub or contact the maintainers.
 
-¡Gracias por hacer de ESPAlert un proyecto mejor! 🛡️
+Thank you for making ESPAlert a better project! 🛡️

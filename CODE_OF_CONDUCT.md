@@ -1,59 +1,57 @@
-# Código de Conducta — Pacto del Contribuidor v2.1
+# Code of Conduct — Contributor Covenant v2.1
 
-## Nuestro compromiso
+> 🇬🇧 **English** | [🇪🇸 Español](docs/es/CODE_OF_CONDUCT.md)
 
-Como miembros, contribuidores y líderes de esta comunidad, nos comprometemos a
-hacer de la participación en nuestro proyecto una experiencia libre de acoso para
-todos, independientemente de la edad, tamaño corporal, discapacidad visible o
-invisible, etnia, características sexuales, identidad y expresión de género,
-nivel de experiencia, educación, estatus socioeconómico, nacionalidad, apariencia
-personal, raza, casta, color, religión o identidad y orientación sexual.
+## Our Commitment
 
-Nos comprometemos a actuar e interactuar de maneras que contribuyan a una
-comunidad abierta, acogedora, diversa, inclusiva y saludable.
+As members, contributors, and leaders in this community, we commit to
+making participation in our project a harassment-free experience for everyone,
+regardless of age, body size, visible or invisible disability, ethnicity,
+sex characteristics, gender identity and expression, level of experience,
+education, socioeconomic status, nationality, personal appearance, race,
+caste, color, religion, or sexual identity and orientation.
 
-## Nuestros estándares
+We commit to acting and interacting in ways that contribute to an open,
+welcoming, diverse, inclusive, and healthy community.
 
-Ejemplos de comportamiento que contribuye a un ambiente positivo:
+## Our Standards
 
-- Demostrar empatía y amabilidad ante otras personas.
-- Respetar opiniones, puntos de vista y experiencias diferentes.
-- Dar y aceptar adecuadamente retroalimentación constructiva.
-- Aceptar la responsabilidad y disculparse ante quienes se vean afectados
-  por nuestros errores, aprendiendo de la experiencia.
-- Centrarse en lo que sea mejor no solo para nosotros como individuos,
-  sino para la comunidad en general.
+Examples of behavior that contribute to a positive environment:
 
-Ejemplos de comportamiento inaceptable:
+- Demonstrating empathy and kindness toward other people.
+- Being respectful of differing opinions, viewpoints, and experiences.
+- Giving and accepting constructive feedback gracefully.
+- Accepting responsibility and apologizing to those affected by our mistakes,
+  and learning from the experience.
+- Focusing on what is best for the overall community, not just ourselves.
 
-- El uso de lenguaje o imágenes sexualizadas, y aproximaciones o
-  atenciones sexuales de cualquier tipo.
-- Comentarios despectivos (*trolling*), insultantes o derogatorios,
-  y ataques personales o políticos.
-- El acoso en público o privado.
-- Publicar información privada de otras personas, como direcciones
-  físicas o de correo electrónico, sin su permiso explícito.
-- Otras conductas que puedan ser razonablemente consideradas como
-  inapropiadas en un entorno profesional.
+Examples of unacceptable behavior:
 
-## Aplicación
+- The use of sexualized language or imagery, and sexual attention or
+  advances of any kind.
+- Trolling, insulting or derogatory comments, and personal or political attacks.
+- Public or private harassment.
+- Publishing others' private information, such as a physical or email
+  address, without explicit permission.
+- Other conduct which could reasonably be considered inappropriate in a
+  professional setting.
 
-Los líderes de la comunidad son responsables de aclarar y hacer cumplir
-nuestros estándares de comportamiento aceptable y tomarán acciones
-apropiadas y correctivas de forma justa en respuesta a cualquier
-comportamiento que consideren inapropiado, amenazante, ofensivo o dañino.
+## Enforcement
 
-Las instancias de comportamiento abusivo, acosador o inaceptable pueden
-ser reportadas a los mantenedores del proyecto en la sección de
-**Issues** o contactando directamente al equipo.
+Community leaders are responsible for clarifying and enforcing our standards
+of acceptable behavior and will take appropriate and fair corrective action
+in response to any behavior that they deem inappropriate, threatening,
+offensive, or harmful.
 
-## Alcance
+Instances of abusive, harassing, or otherwise unacceptable behavior may be
+reported to the project maintainers via **Issues** or by contacting the team directly.
 
-Este código de conducta aplica tanto a espacios del proyecto como a
-espacios públicos donde un individuo esté en representación del proyecto
-o su comunidad.
+## Scope
 
-## Atribución
+This Code of Conduct applies both within project spaces and in public spaces
+where an individual is representing the project or its community.
 
-Este Código de Conducta es una adaptación del
-[Contributor Covenant v2.1](https://www.contributor-covenant.org/es/version/2/1/code_of_conduct.html).
+## Attribution
+
+This Code of Conduct is an adaptation of the
+[Contributor Covenant v2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html).

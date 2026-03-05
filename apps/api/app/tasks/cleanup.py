@@ -1,4 +1,4 @@
-"""Tarea de limpieza — purga eventos expirados y datos temporales."""
+"""Cleanup task — purges expired events and temporary data."""
 
 import asyncio
 import logging
@@ -14,10 +14,10 @@ from app.models.event import Event
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# Días tras la expiración antes de purgar el evento
+# Days after expiration before purging the event
 PURGE_AFTER_DAYS = 7
 
-# Máximo de eventos a purgar por ejecución (evita bloqueos largos)
+# Maximum events to purge per run (prevents long locks)
 PURGE_BATCH_SIZE = 500
 
 
@@ -27,22 +27,22 @@ def _get_async_session() -> async_sessionmaker:
 
 
 async def _run_cleanup():
-    """Purga eventos expirados hace más de PURGE_AFTER_DAYS días."""
+    """Purge events expired more than PURGE_AFTER_DAYS days ago."""
     session_factory = _get_async_session()
     cutoff = datetime.now(timezone.utc) - timedelta(days=PURGE_AFTER_DAYS)
 
     async with session_factory() as db:
         try:
-            # Contar candidatos
+            # Count candidates
             count_stmt = select(func.count(Event.id)).where(Event.expires < cutoff)
             result = await db.execute(count_stmt)
             total = result.scalar() or 0
 
             if total == 0:
-                logger.info("Limpieza: no hay eventos expirados para purgar.")
+                logger.info("Cleanup: no expired events to purge.")
                 return 0
 
-            # Purgar en lote
+            # Purge in batch
             stmt = (
                 delete(Event)
                 .where(Event.expires < cutoff)
@@ -52,28 +52,28 @@ async def _run_cleanup():
             deleted = result.rowcount
             await db.commit()
 
-            logger.info("Limpieza: purgados %d/%d eventos expirados (corte: %s).", deleted, total, cutoff.isoformat())
+            logger.info("Cleanup: purged %d/%d expired events (cutoff: %s).", deleted, total, cutoff.isoformat())
             return deleted
 
         except Exception as e:
             await db.rollback()
-            logger.exception("Error en tarea de limpieza: %s", e)
+            logger.exception("Error in cleanup task: %s", e)
             raise
 
 
 @celery_app.task(name="app.tasks.cleanup.cleanup_expired_events", bind=True, max_retries=2)
 def cleanup_expired_events(self):
-    """Purga periódica de eventos expirados de la base de datos."""
+    """Periodic purge of expired events from the database."""
     try:
         deleted = asyncio.run(_run_cleanup())
         return {"deleted": deleted}
     except Exception as exc:
-        logger.exception("Tarea de limpieza falló: %s", exc)
+        logger.exception("Cleanup task failed: %s", exc)
         self.retry(exc=exc, countdown=300)
 
 
 async def _update_source_stats():
-    """Actualiza estadísticas de ingesta por fuente en Redis."""
+    """Update ingestion statistics by source in Redis."""
     from app.database import get_redis
 
     session_factory = _get_async_session()
@@ -83,7 +83,7 @@ async def _update_source_stats():
         now = datetime.now(timezone.utc)
         one_hour_ago = now - timedelta(hours=1)
 
-        # Contar eventos recientes por fuente
+        # Count recent events by source
         stmt = (
             select(Event.source, func.count(Event.id))
             .where(Event.created_at >= one_hour_ago)
@@ -96,17 +96,17 @@ async def _update_source_stats():
             source_val = row[0].value if hasattr(row[0], "value") else str(row[0])
             stats[source_val] = row[1]
 
-        # Guardar en Redis con TTL de 10 minutos
+        # Store in Redis with 10-minute TTL
         import json
 
         await redis.set("espalert:stats:ingest_1h", json.dumps(stats), ex=600)
-        logger.debug("Estadísticas de ingesta actualizadas: %s", stats)
+        logger.debug("Ingestion stats updated: %s", stats)
 
 
 @celery_app.task(name="app.tasks.cleanup.update_source_stats")
 def update_source_stats():
-    """Actualiza estadísticas de ingesta por fuente."""
+    """Update ingestion statistics by source."""
     try:
         asyncio.run(_update_source_stats())
     except Exception as exc:
-        logger.warning("Error actualizando estadísticas: %s", exc)
+        logger.warning("Error updating stats: %s", exc)

@@ -1,8 +1,8 @@
 import { useCallback, useSyncExternalStore } from "react";
 
 /**
- * Hook para detectar si una media query CSS coincide.
- * Usa useSyncExternalStore para evitar setState dentro de useEffect.
+ * Hook for detecting if a CSS media query matches.
+ * Uses useSyncExternalStore to avoid setState inside useEffect.
  */
 export function useMediaQuery(query: string): boolean {
   const subscribe = useCallback(

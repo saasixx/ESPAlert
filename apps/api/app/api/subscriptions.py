@@ -1,4 +1,4 @@
-"""API de Suscripciones — gestión de zonas, filtros y ajustes de usuario."""
+"""Subscriptions API — zone, filter, and user settings management."""
 
 import json
 from uuid import UUID
@@ -21,7 +21,7 @@ from app.schemas import (
 router = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
 
 
-# ── Zonas ─────────────────────────────────────────────────────────────────────
+# ── Zones ─────────────────────────────────────────────────────────────────────
 
 @router.get("/zones", response_model=list[ZoneOut])
 async def list_zones(
@@ -45,14 +45,14 @@ async def create_zone(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # Máximo 4 zonas por usuario (estilo Yurekuru)
+    # Maximum 4 zones per user (Yurekuru style)
     count_result = await db.execute(
         select(UserZone).where(UserZone.user_id == user.id)
     )
     if len(count_result.all()) >= 4:
         raise HTTPException(status_code=400, detail="Máximo 4 zonas permitidas")
 
-    # Convertir GeoJSON a geometría PostGIS
+    # Convert GeoJSON to PostGIS geometry
     geom = from_shape(shape(data.geojson), srid=4326)
 
     zone = UserZone(user_id=user.id, label=data.label, geometry=geom)
@@ -77,7 +77,7 @@ async def delete_zone(
     await db.delete(zone)
 
 
-# ── Filtros ───────────────────────────────────────────────────────────────────
+# ── Filters ─────────────────────────────────────────────────────────────────────────
 
 @router.get("/filters", response_model=list[FilterOut])
 async def list_filters(
@@ -121,7 +121,7 @@ async def delete_filter(
     await db.delete(filt)
 
 
-# ── Ajustes del Usuario ─────────────────────────────────────────────────────────
+# ── User Settings ───────────────────────────────────────────────────────────────
 
 @router.patch("/settings", response_model=UserOut)
 async def update_settings(

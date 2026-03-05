@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * AlertDetailMap — Mini mapa para la página de detalle de una alerta.
- * Muestra la geometría del evento o un marcador centroide si no tiene geometría.
+ * AlertDetailMap — Mini map for the alert detail page.
+ * Shows the event geometry or a centroid marker if no geometry is available.
  */
 
 import { useMemo } from "react";
@@ -39,10 +39,10 @@ export function AlertDetailMap({ event }: AlertDetailMapProps) {
       attributionControl={{ compact: true }}
       interactive={true}
     >
-      {/* Polígono si lo hay */}
+      {/* Polygon if available */}
       <AlertPolygonLayer events={polygonEvents} />
 
-      {/* Marcador punto */}
+      {/* Point marker */}
       {(event.area_geojson?.type === "Point" || !event.area_geojson) && (
         <MapMarker longitude={coords[0]} latitude={coords[1]}>
           <MarkerContent>
@@ -57,7 +57,7 @@ export function AlertDetailMap({ event }: AlertDetailMapProps) {
   );
 }
 
-/** Extrae coordenadas [lon, lat] del evento. */
+/** Extract [lon, lat] coordinates from the event. */
 function getCoords(event: AlertEvent): [number, number] | null {
   const geo = event.area_geojson;
 
@@ -81,6 +81,6 @@ function getCoords(event: AlertEvent): [number, number] | null {
     return [lon, lat];
   }
 
-  // Fallback: centroide por nombre de área
+  // Fallback: centroid by area name
   return resolveAreaCentroid(event.area_name);
 }

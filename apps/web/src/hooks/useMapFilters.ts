@@ -2,8 +2,8 @@ import { useState, useCallback } from 'react';
 import type { EventCategory } from '@/types/events';
 
 /**
- * Hook para gestionar los filtros de categorías del mapa.
- * Controla qué tipos de alerta son visibles.
+ * Hook for managing map category filters.
+ * Controls which alert types are visible.
  */
 export function useMapFilters() {
   const [activeCategories, setActiveCategories] = useState<Set<EventCategory>>(
@@ -22,7 +22,7 @@ export function useMapFilters() {
     });
   }, []);
 
-  /** Determina la categoría a partir del tipo de evento de la API. */
+  /** Determines the category from the API event type. */
   const getCategoryFromType = useCallback((eventType: string): EventCategory => {
     if (eventType.startsWith('traffic')) return 'traffic';
     if (eventType === 'earthquake' || eventType === 'tsunami') return 'seismic';

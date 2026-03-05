@@ -1,4 +1,4 @@
-"""Modelo unificado de Evento — todas las fuentes de datos se normalizan aquí."""
+"""Unified Event model — all data sources are normalized here."""
 
 import enum
 import uuid
@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 from app.database import Base
 
 
-# ── Enumeraciones ────────────────────────────────────────────────────────────
+# ── Enumerations ─────────────────────────────────────────────────────────────
 
 
 class EventSource(str, enum.Enum):
@@ -25,9 +25,9 @@ class EventSource(str, enum.Enum):
 
 
 class EventType(str, enum.Enum):
-    """Tipos de evento soportados."""
+    """Supported event types."""
 
-    # Meteorológico
+    # Meteorological
     WIND = "wind"
     RAIN = "rain"
     STORM = "storm"
@@ -38,69 +38,69 @@ class EventType(str, enum.Enum):
     COLD = "cold"
     UV = "uv"
     FIRE_RISK = "fire_risk"
-    # Costero / Marítimo
+    # Coastal / Maritime
     COASTAL = "coastal"
     WAVE = "wave"
     TIDE = "tide"
-    # Sísmico
+    # Seismic
     EARTHQUAKE = "earthquake"
     TSUNAMI = "tsunami"
-    # Tráfico
+    # Traffic
     TRAFFIC_ACCIDENT = "traffic_accident"
     TRAFFIC_CLOSURE = "traffic_closure"
     TRAFFIC_WORKS = "traffic_works"
     TRAFFIC_JAM = "traffic_jam"
-    # Protección civil
+    # Civil protection
     CIVIL_PROTECTION = "civil_protection"
-    # Genérico / otros
+    # Generic / other
     OTHER = "other"
 
 
 class Severity(str, enum.Enum):
-    """Nivel de severidad del evento."""
+    """Event severity level."""
 
-    GREEN = "green"      # Sin riesgo significativo
-    YELLOW = "yellow"    # Riesgo bajo — estar atento
-    ORANGE = "orange"    # Riesgo moderado — estar preparado
-    RED = "red"          # Riesgo alto — actuar
+    GREEN = "green"      # No significant risk
+    YELLOW = "yellow"    # Low risk — be aware
+    ORANGE = "orange"    # Moderate risk — be prepared
+    RED = "red"          # High risk — take action
 
 
-# ── Modelo ───────────────────────────────────────────────────────────────────
+# ── Model ────────────────────────────────────────────────────────────────────
 
 
 class Event(Base):
-    """Evento de alerta normalizado almacenado en PostgreSQL/PostGIS."""
+    """Normalized alert event stored in PostgreSQL/PostGIS."""
 
     __tablename__ = "events"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     source = Column(SAEnum(EventSource, name="event_source"), nullable=False, index=True)
-    source_id = Column(String(255), unique=True, nullable=False)  # Clave de deduplicación
+    source_id = Column(String(255), unique=True, nullable=False)  # Deduplication key
 
     event_type = Column(SAEnum(EventType, name="event_type"), nullable=False, index=True)
     severity = Column(SAEnum(Severity, name="severity"), nullable=False, index=True)
 
     title = Column(String(500), nullable=False)
     description = Column(Text, nullable=True)
-    instructions = Column(Text, nullable=True)  # Recomendaciones de seguridad
+    instructions = Column(Text, nullable=True)  # Safety recommendations
 
-    # Geometría PostGIS — almacena polígonos, multipolígonos o puntos
+    # PostGIS geometry — stores polygons, multipolygons or points
     area = Column(Geometry("GEOMETRY", srid=4326), nullable=True)
     area_name = Column(String(500), nullable=True)
 
-    # Límites temporales
-    effective = Column(DateTime(timezone=True), nullable=True)  # Inicio del evento
-    expires = Column(DateTime(timezone=True), nullable=True)    # Fin del evento
+    # Time bounds
+    effective = Column(DateTime(timezone=True), nullable=True)  # Event start
+    expires = Column(DateTime(timezone=True), nullable=True)    # Event end
 
-    # Metadatos
+    # Metadata
     source_url = Column(String(1000), nullable=True)
     raw_data = Column(JSONB, nullable=True)
 
-    # Específico de terremotos (nulo para otros tipos)
+    # Earthquake-specific (null for other types)
     magnitude = Column(String(10), nullable=True)
     depth_km = Column(String(10), nullable=True)
 
-    # Marcas de tiempo
+    # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

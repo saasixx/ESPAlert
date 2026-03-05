@@ -1,4 +1,4 @@
-"""Registro de conectores de salida — patrón plugin para canales de notificación."""
+"""Output connector registry — plugin pattern for notification channels."""
 
 import logging
 from typing import Optional
@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 
 class OutputRegistry:
     """
-    Registro singleton de conectores de salida.
+    Singleton registry of output connectors.
 
-    Uso:
+    Usage:
         registry = OutputRegistry()
         registry.register(TelegramConnector(bot_token="..."))
         registry.register(DiscordConnector(webhook_url="..."))
@@ -30,40 +30,40 @@ class OutputRegistry:
         return cls._instance
 
     def register(self, connector: OutputConnector) -> None:
-        """Registra un conector de salida."""
+        """Register an output connector."""
         self._connectors[connector.name] = connector
-        logger.info("Conector de salida registrado: %s", connector.name)
+        logger.info("Output connector registered: %s", connector.name)
 
     def unregister(self, name: str) -> None:
-        """Des-registra un conector de salida."""
+        """Unregister an output connector."""
         self._connectors.pop(name, None)
 
     def get(self, name: str) -> Optional[OutputConnector]:
-        """Obtiene un conector por nombre."""
+        """Get a connector by name."""
         return self._connectors.get(name)
 
     @property
     def available(self) -> list[str]:
-        """Lista de conectores registrados."""
+        """List of registered connectors."""
         return list(self._connectors.keys())
 
     async def dispatch(self, message: OutputMessage, channel: str, target: str) -> bool:
-        """Envía un mensaje a través de un canal específico."""
+        """Send a message through a specific channel."""
         connector = self._connectors.get(channel)
         if not connector:
-            logger.warning("Conector '%s' no registrado. Disponibles: %s", channel, self.available)
+            logger.warning("Connector '%s' not registered. Available: %s", channel, self.available)
             return False
         try:
             return await connector.send(message, target)
         except Exception as e:
-            logger.exception("Error en conector '%s' → %s: %s", channel, target, e)
+            logger.exception("Error in connector '%s' → %s: %s", channel, target, e)
             return False
 
     async def broadcast(
         self, message: OutputMessage, targets: dict[str, list[str]]
     ) -> dict[str, dict[str, bool]]:
         """
-        Envía un mensaje a múltiples canales y destinos.
+        Send a message to multiple channels and targets.
 
         Args:
             targets: {"telegram": ["@ch1", "@ch2"], "discord": ["url1"]}
@@ -75,7 +75,7 @@ class OutputRegistry:
         for channel, channel_targets in targets.items():
             connector = self._connectors.get(channel)
             if not connector:
-                logger.warning("Conector '%s' no encontrado, omitiendo.", channel)
+                logger.warning("Connector '%s' not found, skipping.", channel)
                 results[channel] = {t: False for t in channel_targets}
                 continue
             results[channel] = await connector.send_batch(message, channel_targets)

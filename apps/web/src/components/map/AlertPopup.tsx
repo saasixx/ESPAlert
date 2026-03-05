@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * AlertPopup — Contenido del popup que se muestra al seleccionar una alerta en el mapa.
- * Diseñado para usarse dentro de componentes popup de mapcn.
+ * AlertPopup — Popup content shown when selecting an alert on the map.
+ * Designed for use inside mapcn popup components.
  */
 
 import { formatDistanceToNow } from "date-fns";

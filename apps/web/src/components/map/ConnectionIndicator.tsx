@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * ConnectionIndicator — Badge superpuesto en el mapa que muestra
- * el estado de la conexión WebSocket.
+ * ConnectionIndicator — Overlaid badge on the map showing
+ * the WebSocket connection state.
  */
 
 import { clsx } from "clsx";
