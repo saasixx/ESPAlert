@@ -1,28 +1,28 @@
-## Resumen
+## Summary
 
-Describe brevemente qué cambia este PR y por qué.
+Briefly describe what this PR changes and why.
 
-## Tipo de cambio
+## Type of change
 
-- [ ] feat (nueva funcionalidad)
-- [ ] fix (corrección de bug)
-- [ ] docs (solo documentación)
-- [ ] refactor (sin cambio funcional)
-- [ ] test (nuevos o ajustes de tests)
-- [ ] chore (mantenimiento/CI/deps)
+- [ ] feat (new feature)
+- [ ] fix (bug fix)
+- [ ] docs (documentation only)
+- [ ] refactor (no functional change)
+- [ ] test (new or updated tests)
+- [ ] chore (maintenance/CI/deps)
 
 ## Checklist
 
-- [ ] He leído `CONTRIBUTING.md`.
-- [ ] Mi código sigue las convenciones del proyecto.
-- [ ] Añadí/actualicé tests cuando aplica.
-- [ ] Actualicé documentación cuando aplica.
-- [ ] CI pasa correctamente en este PR.
+- [ ] I have read `CONTRIBUTING.md`.
+- [ ] My code follows the project conventions.
+- [ ] I added/updated tests where applicable.
+- [ ] I updated documentation where applicable.
+- [ ] CI passes on this PR.
 
-## Evidencias
+## Evidence
 
-Incluye capturas, GIFs, logs o resultados de test/lint relevantes.
+Include screenshots, GIFs, logs, or relevant test/lint results.
 
-## Issues relacionados
+## Related issues
 
 Closes #

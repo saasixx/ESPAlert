@@ -9,7 +9,7 @@ Bienvenido a la documentación de ESPAlert. Este proyecto proporciona documentac
 
 ---
 
-## 📄 Documentación en Español
+## 🇪🇸 Documentación en Español
 
 ### Documentos Principales
 
@@ -31,7 +31,7 @@ Bienvenido a la documentación de ESPAlert. Este proyecto proporciona documentac
 
 ---
 
-## 📄 English Documentation
+## 🇬🇧 English Documentation
 
 ### Main Documents
 
@@ -55,14 +55,14 @@ Bienvenido a la documentación de ESPAlert. Este proyecto proporciona documentac
 
 ## 🚀 Empezar Rápido / Quick Start
 
-### Para Desarrolladores Españoles
+### 🇪🇸 Para Desarrolladores Españoles
 
 1. Comienza con [docs/es/README.md](docs/es/README.md) — Overview del proyecto y requisitos.
 2. Busca issues con label [`good first issue`](../../issues?q=label%3A%22good+first+issue%22) — Encuentra tu primer issue.
 3. Consulta [docs/es/CONTRIBUTING.md](docs/es/CONTRIBUTING.md) — Flujo de trabajo y convenciones.
 4. Revisa [docs/es/ROADMAP.md](docs/es/ROADMAP.md) — Conoce las próximas features.
 
-### For English-Speaking Developers
+### 🇬🇧 For English-Speaking Developers
 
 1. Start with [README.md](README.md) — Project overview and requirements.
 2. Look for issues with [`good first issue`](../../issues?q=label%3A%22good+first+issue%22) label — Find your first issue.

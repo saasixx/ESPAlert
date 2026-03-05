@@ -1,51 +1,51 @@
 ---
-name: "\U0001F4E1 Solicitud de fuente de datos"
-about: Proponer una nueva fuente de datos (API pública, feed, etc.)
+name: "📡 Data Source Request"
+about: Propose a new data source (public API, feed, etc.)
 title: "[DATA] "
 labels: ["enhancement", "data-source"]
 assignees: ""
 ---
 
-## Fuente de datos
+## Data source
 
-**Nombre:** <!-- e.g. Protección Civil, AEMET predicciones, InfoRiesgos -->
-**URL/Documentación:** <!-- Enlace a la API, feed o documentación pública -->
-**Organismo:** <!-- e.g. Ministerio del Interior, AEMET, Comunidad de Madrid -->
+**Name:** <!-- e.g. Civil Protection, AEMET forecasts, InfoRiesgos -->
+**URL/Documentation:** <!-- Link to the API, feed or public documentation -->
+**Organisation:** <!-- e.g. Ministry of the Interior, AEMET, Community of Madrid -->
 
-## Tipo de datos
+## Data type
 
-- [ ] Meteorología
-- [ ] Sismología
-- [ ] Tráfico
-- [ ] Incendios forestales
-- [ ] Inundaciones
-- [ ] Protección civil
-- [ ] Marítimo / Costero
-- [ ] Otro: ___________
+- [ ] Meteorology
+- [ ] Seismology
+- [ ] Traffic
+- [ ] Wildfires
+- [ ] Floods
+- [ ] Civil protection
+- [ ] Maritime / Coastal
+- [ ] Other: ___________
 
-## Formato
+## Format
 
 - [ ] REST API (JSON)
 - [ ] XML / CAP
 - [ ] CSV
 - [ ] RSS/Atom feed
 - [ ] WebSocket / streaming
-- [ ] Scraping necesario
-- [ ] Otro: ___________
+- [ ] Scraping required
+- [ ] Other: ___________
 
-## Contexto
+## Context
 
-<!-- ¿Por qué es útil esta fuente? ¿Qué cobertura geográfica tiene? -->
+<!-- Why is this source useful? What geographic coverage does it have? -->
 
-## Ejemplo de datos
+## Example data
 
-<!-- Pegar un ejemplo de respuesta o enlazar documentación -->
+<!-- Paste a sample response or link to the documentation -->
 ```json
 
 ```
 
 ## Checklist
 
-- [ ] La fuente es de acceso público o requiere registro gratuito
-- [ ] Los datos incluyen geolocalización (coordenadas o área)
-- [ ] La licencia permite uso en proyectos open source
+- [ ] The source is publicly accessible or requires free registration
+- [ ] The data includes geolocation (coordinates or area)
+- [ ] The licence allows use in open-source projects

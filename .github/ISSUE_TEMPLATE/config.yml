@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: "🔐 Reportar vulnerabilidad"
+  - name: "🔐 Report a vulnerability"
     url: "https://github.com/saasixx/ESPAlert/security/policy"
-    about: "Por favor, no publiques vulnerabilidades en issues abiertos."
-  - name: "💬 Preguntas y soporte"
+    about: "Please do not post vulnerabilities in public issues."
+  - name: "💬 Questions & support"
     url: "https://github.com/saasixx/ESPAlert/discussions"
-    about: "Usa Discussions para preguntas generales y soporte de uso."
-  - name: "📘 Guía de contribución"
+    about: "Use Discussions for general questions and usage support."
+  - name: "📘 Contributing guide"
     url: "https://github.com/saasixx/ESPAlert/blob/main/CONTRIBUTING.md"
-    about: "Revisa normas y flujo de trabajo antes de abrir PRs."
+    about: "Review the guidelines and workflow before opening PRs."

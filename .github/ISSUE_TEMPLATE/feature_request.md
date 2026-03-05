@@ -1,28 +1,28 @@
 ---
-name: "✨ Solicitud de funcionalidad"
-about: Propón una nueva funcionalidad o mejora
+name: "✨ Feature Request"
+about: Propose a new feature or improvement
 title: "[FEAT] "
-labels: ["mejora", "triaje"]
+labels: ["enhancement", "triage"]
 assignees: []
 ---
 
-## Problema relacionado
+## Related problem
 
-_Describe el problema que esta funcionalidad resolvería.
-Ej: "Me resulta frustrante que..."_
+_Describe the problem this feature would solve.
+E.g. "I'm frustrated when..."_
 
-## Solución propuesta
+## Proposed solution
 
-_Describe de forma clara lo que te gustaría que se implementase._
+_Clearly describe what you would like to be implemented._
 
-## Alternativas consideradas
+## Alternatives considered
 
-_Describe alternativas que hayas evaluado._
+_Describe alternatives you have evaluated._
 
-## Mockups o diagramas
+## Mockups or diagrams
 
-_Si aplica, adjunta bocetos o diagramas que ilustren la propuesta._
+_If applicable, attach sketches or diagrams illustrating the proposal._
 
-## Contexto adicional
+## Additional context
 
-_Cualquier información extra sobre la solicitud._
+_Any extra information about the request._

@@ -1,41 +1,41 @@
 ---
-name: "🐛 Reporte de Bug"
-about: Reporta un error para ayudarnos a mejorar
+name: "🐛 Bug Report"
+about: Report a bug to help us improve
 title: "[BUG] "
-labels: ["bug", "triaje"]
+labels: ["bug", "triage"]
 assignees: []
 ---
 
-## Descripción del bug
+## Bug description
 
-_Describe de forma clara y concisa en qué consiste el error._
+_Clearly and concisely describe the bug._
 
-## Pasos para reproducir
+## Steps to reproduce
 
-1. Ve a '...'
-2. Haz clic en '...'
-3. Baja hasta '...'
-4. Observa el error
+1. Go to '...'
+2. Click on '...'
+3. Scroll down to '...'
+4. See the error
 
-## Comportamiento esperado
+## Expected behaviour
 
-_Describe qué debería haber ocurrido._
+_Describe what should have happened._
 
-## Comportamiento actual
+## Actual behaviour
 
-_Describe qué ocurrió realmente._
+_Describe what actually happened._
 
-## Capturas de pantalla
+## Screenshots
 
-_Si aplica, adjunta capturas de pantalla para ilustrar._
+_If applicable, attach screenshots to illustrate the issue._
 
-## Entorno
+## Environment
 
-- **Navegador**: [ej. Chrome 120, Firefox 121]
-- **Sistema operativo**: [ej. Windows 11, macOS 14, Ubuntu 22.04]
-- **Versión de Docker**: [ej. 24.0.7]
-- **Despliegue**: [local / servidor propio / otro]
+- **Browser**: [e.g. Chrome 120, Firefox 121]
+- **OS**: [e.g. Windows 11, macOS 14, Ubuntu 22.04]
+- **Docker version**: [e.g. 24.0.7]
+- **Deployment**: [local / self-hosted / other]
 
-## Contexto adicional
+## Additional context
 
-_Cualquier información extra que pueda ser útil (logs, configuración, etc.)._
+_Any extra information that might be useful (logs, configuration, etc.)._
