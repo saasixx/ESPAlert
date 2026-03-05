@@ -5,7 +5,7 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y este proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
-## [Sin publicar]
+## [0.1.0] - 2026-03-05
 
 ### Añadido
 - Endpoint `GET /health` con checks de API, base de datos y Redis.
