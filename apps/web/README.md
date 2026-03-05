@@ -2,18 +2,15 @@
 
 Frontend de ESPAlert construido con Next.js App Router, Tailwind y MapLibre.
 
-## Requisitos
-
-- Node.js >= 20.9.0
-- npm >= 10
+> 🇪🇸 **Español** | 🇬🇧 [English](README.en.md)
 
 ## Scripts
 
 ```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
+npm run dev      # Inicia el servidor de desarrollo con hot reload
+npm run build    # Compila para producción
+npm run start    # Inicia el servidor de producción
+npm run lint     # Ejecuta ESLint
 ```
 
 ## Desarrollo local
@@ -32,14 +29,14 @@ npm run dev --workspace=web
 
 3. Abre `http://localhost:3000`.
 
-## Variables
+## Configuración
 
 Este paquete consume la API del backend de ESPAlert. Revisa la configuración
 central en el README raíz para entorno Docker y variables de entorno.
 
 ## Estructura principal
 
-- `src/app/` rutas y layout (App Router)
-- `src/components/map/` mapa, popup y detalle de alertas
-- `src/hooks/` hooks de WebSocket, filtros y media query
-- `src/lib/` cliente API y utilidades
+- `src/app/` — rutas y layout (App Router)
+- `src/components/map/` — mapa, popup y detalle de alertas
+- `src/hooks/` — hooks de WebSocket, filtros y media query
+- `src/lib/` — cliente API y utilidades

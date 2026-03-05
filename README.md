@@ -18,15 +18,12 @@
 
 **Sistema de alertas multi-riesgo en tiempo real para España**
 
+> 🇪🇸 [Español](README.md) | 🇬🇧 **[English](README.en.md)**
+
 🇪🇸 ESPAlert es una plataforma **Open Source** que agrega alertas de
 meteorología, sismos, tráfico y protección civil en un único mapa interactivo
 centrado en España. Consume datos públicos de AEMET, IGN, DGT y MeteoAlarm y
 los unifica en una API REST con WebSockets para actualizaciones instantáneas.
-
-🇬🇧 ESPAlert is an **Open Source** platform that aggregates weather, earthquake,
-traffic, and civil protection alerts into a single interactive map focused on
-Spain. It consumes public data from official Spanish and European sources and
-delivers real-time updates via REST API and WebSockets.
 
 > ⚠️ **Aviso legal**: ESPAlert es un proyecto comunitario Open Source
 > independiente. **No está afiliado, patrocinado ni vinculado de ninguna forma
@@ -42,7 +39,9 @@ delivers real-time updates via REST API and WebSockets.
   <a href="CONTRIBUTING.md">Contribuir</a> ·
   <a href="SECURITY.md">Seguridad</a> ·
   <a href="TRADEMARK_POLICY.md">Marca</a> ·
-  <a href=".github/ISSUE_TEMPLATE/bug_report.md">Reportar bug</a>
+  <a href=".github/ISSUE_TEMPLATE/bug_report.md">Reportar bug</a> ·
+  <a href="DOCS.md">📚 Docs Bilingüe</a> ·
+  <a href="README.en.md">📖 English</a>
 </p>
 
 <p align="center">
@@ -192,6 +191,9 @@ versiones. Los cambios publicados se registran en [CHANGELOG.md](CHANGELOG.md).
 
 ¡Las contribuciones son bienvenidas! Lee [CONTRIBUTING.md](CONTRIBUTING.md)
 para conocer el flujo de trabajo, las convenciones y cómo enviar un Pull Request.
+
+**¿Nuevo en el proyecto?** Busca issues con el label
+[`good first issue`](../../issues?q=label%3A%22good+first+issue%22) — tareas pequeñas y bien definidas para principiantes.
 
 Este proyecto sigue el [Código de Conducta del Contribuidor](CODE_OF_CONDUCT.md).
 
