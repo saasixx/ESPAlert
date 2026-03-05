@@ -1,8 +1,13 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const API_URL = process.env.API_URL || "http://127.0.0.1:8000";
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: path.resolve(__dirname, "../.."),
+  },
+
   // standalone output solo para Docker (Vercel usa su propio sistema de builds)
   ...(process.env.VERCEL ? {} : { output: "standalone" }),
 

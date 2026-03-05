@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js" alt="Next.js 15" />
+  <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js" alt="Next.js 16" />
   <img src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi" alt="FastAPI" />
   <img src="https://img.shields.io/badge/PostGIS-16-336791?logo=postgresql" alt="PostGIS" />
   <img src="https://img.shields.io/badge/MapLibre_GL-5-blue?logo=maplibre" alt="MapLibre" />
@@ -49,13 +49,7 @@ delivers real-time updates via REST API and WebSockets.
   <em>Mapa interactivo · WebSockets en vivo · Meshtastic LoRa · RGPD/LOPDGDD</em>
 </p>
 
-<!-- TODO: Añadir screenshots reales del mapa con alertas
-### Screenshots
-
-| Mapa con avisos AEMET | Detalle de sismo IGN | Modo oscuro |
-|---|---|---|
-| ![meteo](docs/screenshots/meteo.png) | ![sismo](docs/screenshots/sismo.png) | ![dark](docs/screenshots/dark.png) |
--->
+> ⚠️ **Nota**: Las capturas de pantalla del producto placeholder se añadirán en futuras versiones. Consulta el [Roadmap](#roadmap) para el plan de desarrollo.
 
 ---
 
@@ -81,7 +75,7 @@ delivers real-time updates via REST API and WebSockets.
 │                                                              │
 │  ┌──────────────┐    WebSocket / REST    ┌────────────────┐  │
 │  │  apps/web    │◄──────────────────────►│   apps/api     │  │
-│  │  Next.js 15  │                        │   FastAPI      │  │
+│  │  Next.js 16  │                        │   FastAPI      │  │
 │  │  MapLibre GL │                        │   Celery       │  │
 │  │  shadcn/ui   │                        │   PostGIS      │  │
 │  └──────────────┘                        └───────┬────────┘  │
@@ -95,7 +89,7 @@ delivers real-time updates via REST API and WebSockets.
 
 | Componente       | Tecnología                                    | Ubicación          |
 |------------------|-----------------------------------------------|--------------------|
-| **Frontend Web** | Next.js 15, Tailwind CSS, shadcn/ui, MapLibre | `apps/web`         |
+| **Frontend Web** | Next.js 16, Tailwind CSS, shadcn/ui, MapLibre | `apps/web`         |
 | **Backend API**  | Python 3.12, FastAPI, PostGIS, Celery, Redis  | `apps/api`         |
 | **Monorepo**     | Turborepo + npm workspaces                    | Raíz               |
 | **Mesh Radio**   | Meshtastic (LoRa)                             | `apps/api/connectors` |

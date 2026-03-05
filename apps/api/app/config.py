@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # ── Aplicación ───────────────────────────────────────
     APP_NAME: str = "ESPAlert"
-    APP_VERSION: str = "1.0.0"
+    APP_VERSION: str = "0.1.0"
     DEBUG: bool = True
     ENVIRONMENT: str = "development"  # development | staging | production
 

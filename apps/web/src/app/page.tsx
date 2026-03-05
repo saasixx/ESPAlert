@@ -13,13 +13,17 @@ async function getActiveEvents() {
     });
 
     if (!res.ok) {
-      console.warn("No se pudieron obtener eventos del backend:", res.status);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("No se pudieron obtener eventos del backend:", res.status);
+      }
       return [];
     }
 
     return await res.json();
   } catch (error) {
-    console.error("Error al obtener eventos:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Error al obtener eventos:", error);
+    }
     return [];
   }
 }
