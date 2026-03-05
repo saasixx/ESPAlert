@@ -6,9 +6,7 @@ correctos a partir de datos de ejemplo representativos.
 
 from pathlib import Path
 
-import pytest
-
-from app.connectors.aemet import AemetConnector, AEMET_EVENT_MAP
+from app.connectors.aemet import AemetConnector
 from app.connectors.ign import IGNConnector, magnitude_to_severity
 from app.connectors.dgt import DGTConnector
 
