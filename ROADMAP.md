@@ -52,6 +52,8 @@ notificaciones multi-canal.
 | 4 | **Informes colaborativos UI** | UI para enviar reportes geolocalizados, feed en el mapa como capa adicional. |
 | 5 | **Caché Redis** | Cachear `GET /events/` y `/active/summary` con invalidación por pub/sub al normalizar nuevos eventos. |
 | 6 | **Tarea de limpieza** | Purga de eventos expirados > 30 días, archivado en tabla `events_archive`. |
+| 7 | **Iconografía contextual** | Iconos personalizados en el mapa según fuente (AEMET, IGN, DGT, MeteoAlarm), tipo de evento (meteo, sísmico, tráfico, incendios…) y severidad. Uso de `iconKey` en el payload de eventos para mapear a iconos `DivIcon` de Leaflet en mapcn, con fallback consistente. |
+| 8 | **Tramos DGT en el mapa** | Para incidencias de la DGT que afecten a carreteras (cortes, retenciones, obras), almacenar un `LineString` opcional `segment` con el tramo afectado y dibujarlo en el mapa como polilínea, sincronizada con el popup del evento. |
 
 ### Criterios de Done
 
@@ -59,6 +61,9 @@ notificaciones multi-canal.
   `severity >= orange`, y recibir una notificación Telegram cuando se publique
   una alerta dentro de su zona.
 - Tests de integración con PostGIS en CI.
+- El mapa muestra iconos diferenciados por dominio (meteorología, sismos, tráfico, incendios) y por severidad, sin necesidad de abrir los popups para entender el contexto de la alerta.
+- Para una incidencia de carretera cortada de la DGT, el mapa muestra el tramo afectado como una línea sobre la carretera, y el popup del evento indica claramente el tramo (carretera + PK inicio/fin).
+
 
 ---
 
