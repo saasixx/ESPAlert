@@ -21,11 +21,11 @@ concretas y criterios de finalización.
 | # | Épica | Descripción |
 |---|-------|-------------|
 | 1 | **Ingesta estable** | Tareas Celery (AEMET, IGN, DGT, MeteoAlarm) con reintentos, logs estructurados y deduplicación verificada por tests. |
-| 2 | **Mapa interactivo con mapcn** | Migración de `react-map-gl` a [mapcn](https://mapcn.dev) con clustering, popups de detalle, filtros por categoría/severidad y modo oscuro. |
+| 2 | **Mapa interactivo con mapcn** | Utiliza componentes de [mapcn](https://github.com/AnmolSaini16/mapcn) con clustering, popups de detalle, filtros por categoría/severidad y soporte dark mode integrado con next-themes. |
 | 3 | **Vista detalle de alerta** | Página/modal `/alerts/:id` con geometría, instrucciones, fuente y timeline. |
 | 4 | **Responsive mobile-first** | Sidebar como `Sheet`/`Drawer` en pantallas pequeñas, mapa full-screen. |
 | 5 | **Health checks y CI robusta** | Endpoints `GET /health` detallado, tests de parsers con fixtures XML/CSV, CI con servicio PostGIS. |
-| 6 | **Documentación mínima** | README con screenshots, `.env.example` completo, guía de desarrollo local. |
+| 6 | **Documentación mínima** | README, `.env.example` completo, guía de desarrollo local. |
 
 ### Criterios de Done
 

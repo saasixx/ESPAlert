@@ -2,7 +2,7 @@
 
 /**
  * AlertPopup — Contenido del popup que se muestra al seleccionar una alerta en el mapa.
- * Diseñado para usarse dentro de <MapPopup> o <MarkerPopup> de mapcn.
+ * Diseñado para usarse dentro de componentes popup de mapcn.
  */
 
 import { formatDistanceToNow } from "date-fns";

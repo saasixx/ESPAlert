@@ -3,8 +3,7 @@
 /**
  * AlertMap — Componente de mapa principal basado en mapcn.
  *
- * Reemplaza la implementación anterior con react-map-gl.
- * Usa MapLibre GL directamente a través de los componentes copypaste de mapcn,
+ * Utiliza componentes de mapcn (https://github.com/AnmolSaini16/mapcn)
  * que se integran nativamente con shadcn/ui y Tailwind CSS.
  */
 

@@ -4,7 +4,7 @@
  * AlertPolygonLayer — Renderiza polígonos de avisos meteorológicos y áreas de alerta.
  *
  * Usa useMap() de mapcn para acceder al MapLibre map instance directamente
- * y añadir sources/layers de GeoJSON de polígonos con colores por severidad.
+ * y añade sources/layers de GeoJSON de polígonos con colores por severidad.
  */
 
 import { useEffect, useMemo, useRef } from "react";

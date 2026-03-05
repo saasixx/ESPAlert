@@ -49,7 +49,6 @@ delivers real-time updates via REST API and WebSockets.
   <em>Mapa interactivo · WebSockets en vivo · Meshtastic LoRa · RGPD/LOPDGDD</em>
 </p>
 
-> ⚠️ **Nota**: Las capturas de pantalla del producto placeholder se añadirán en futuras versiones. Consulta el [Roadmap](#roadmap) para el plan de desarrollo.
 
 ---
 
@@ -200,6 +199,23 @@ Este proyecto sigue el [Código de Conducta del Contribuidor](CODE_OF_CONDUCT.md
 
 Si descubres una vulnerabilidad, **no abras un issue público**. Consulta
 [SECURITY.md](SECURITY.md) para saber cómo reportarla de forma responsable.
+
+## Créditos y Dependencias
+
+ESPAlert está construido sobre software libre de calidad:
+
+- **mapcn** — Componentes React para MapLibre GL (MIT)
+- **MapLibre GL** — Motor de mapas interactivos (BSD-3-Clause)
+- **FastAPI** — Framework web asincrónico (MIT)
+- **PostgreSQL + PostGIS** — Base de datos geoespacial (PostgreSQL License)
+- **Next.js** — Framework React con SSR (MIT)
+- **Tailwind CSS** — Utilidades CSS (MIT)
+- **shadcn/ui** — Componentes UI (MIT)
+- **Redis** — Cache in-memory (BSD-3-Clause)
+- **Celery** — Cola de tareas distribuida (BSD)
+
+Agradecemos especialmente a [AnmolSaini16](https://github.com/AnmolSaini16/) por mapcn
+y a todos los proyectos Open Source que hacen posible ESPAlert.
 
 ## Licencia
 
