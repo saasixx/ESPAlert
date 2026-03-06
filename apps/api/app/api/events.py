@@ -105,14 +105,13 @@ async def get_event(
     db: AsyncSession = Depends(get_db),
 ):
     """Get an event by its ID with full geometry."""
-    stmt = select(Event, ST_AsGeoJSON(Event.area).label("area_geojson")).where(
-        Event.id == event_id
-    )
+    stmt = select(Event, ST_AsGeoJSON(Event.area).label("area_geojson")).where(Event.id == event_id)
     result = await db.execute(stmt)
     row = result.first()
 
     if not row:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404, detail="Evento no encontrado")
 
     return _event_to_out(row.Event, row.area_geojson)

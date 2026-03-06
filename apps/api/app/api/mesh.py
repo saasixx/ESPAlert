@@ -28,6 +28,7 @@ async def get_mesh_history(
 ):
     """Get recent mesh message history (public, read-only)."""
     from app.database import get_redis
+
     redis = get_redis()
     raw = await redis.lrange("espalert:mesh:history", 0, limit - 1)
     messages = []
@@ -44,6 +45,7 @@ async def get_mesh_history(
 async def get_mesh_nodes():
     """Get known Meshtastic nodes (public, read-only)."""
     from app.database import get_redis
+
     redis = get_redis()
     raw = await redis.hgetall("espalert:mesh:active_nodes")
     nodes = []
@@ -74,9 +76,11 @@ async def send_mesh_message(
     clean_text = text.strip()
     if not clean_text:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=400, detail="El mensaje no puede estar vacío")
 
     from app.database import get_redis
+
     redis = get_redis()
     message = {
         "text": clean_text[:MAX_MSG_LENGTH],
@@ -104,6 +108,7 @@ async def mesh_websocket(websocket: WebSocket):
     await websocket.accept()
 
     from app.database import get_redis
+
     redis = get_redis()
     pubsub = redis.pubsub()
     await pubsub.subscribe(
@@ -117,6 +122,7 @@ async def mesh_websocket(websocket: WebSocket):
     authenticated_user = None  # Track whether the WS client has authenticated
 
     try:
+
         async def relay_from_mesh():
             async for message in pubsub.listen():
                 if message["type"] == "message":
@@ -137,10 +143,7 @@ async def mesh_websocket(websocket: WebSocket):
                 if client_data.get("action") == "auth":
                     token = client_data.get("token", "")
                     try:
-                        payload = pyjwt.decode(
-                            token, settings.JWT_SECRET,
-                            algorithms=[settings.JWT_ALGORITHM]
-                        )
+                        payload = pyjwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
                         authenticated_user = payload.get("sub")
                         await websocket.send_json({"type": "auth", "status": "ok"})
                     except pyjwt.InvalidTokenError:
@@ -149,10 +152,9 @@ async def mesh_websocket(websocket: WebSocket):
                 elif client_data.get("action") == "send":
                     # Requires authentication to send messages
                     if not authenticated_user:
-                        await websocket.send_json({
-                            "type": "error",
-                            "detail": "Authenticate first: {\"action\": \"auth\", \"token\": \"JWT\"}"
-                        })
+                        await websocket.send_json(
+                            {"type": "error", "detail": 'Authenticate first: {"action": "auth", "token": "JWT"}'}
+                        )
                         continue
 
                     text = client_data.get("text", "").strip()

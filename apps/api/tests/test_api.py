@@ -15,14 +15,17 @@ async def test_health(client):
     resp = await client.get("/health")
     assert resp.status_code == 200
     data = resp.json()
-    assert "status" in data
+    assert data["status"] in ("ok", "running", "healthy")
 
 
 async def test_events_list(client):
     """Events endpoint returns a list (may be empty without DB)."""
     resp = await client.get("/api/v1/events/")
-    # May degrade without DB available, but should not break the test runner.
-    assert resp.status_code in (200, 500, 503)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert isinstance(
+        data, list
+    )  # This catches cases where an API suddenly returns: {"error": "database unavailable"} instead of a list.
 
 
 async def test_register_validation(client):
@@ -31,7 +34,7 @@ async def test_register_validation(client):
         "/api/v1/auth/register",
         json={"email": "not-an-email", "password": "short"},
     )
-    assert resp.status_code in (400, 422)
+    assert resp.status_code == 422
 
 
 async def test_login_missing_fields(client):
@@ -43,7 +46,7 @@ async def test_login_missing_fields(client):
 async def test_protected_endpoint_requires_auth(client):
     """Protected endpoints return 401 without token."""
     resp = await client.get("/api/v1/subscriptions/zones")
-    assert resp.status_code in (401, 403)
+    assert resp.status_code == 401
 
 
 async def test_report_requires_auth(client):
@@ -57,4 +60,4 @@ async def test_report_requires_auth(client):
             "lon": -3.7038,
         },
     )
-    assert resp.status_code in (401, 403)
+    assert resp.status_code == 401

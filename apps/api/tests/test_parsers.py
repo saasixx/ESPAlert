@@ -34,9 +34,15 @@ class TestAemetParser:
         event = events[0]
 
         required_fields = [
-            "source", "source_id", "event_type", "severity",
-            "title", "description", "area_name",
-            "effective", "expires",
+            "source",
+            "source_id",
+            "event_type",
+            "severity",
+            "title",
+            "description",
+            "area_name",
+            "effective",
+            "expires",
         ]
         for field in required_fields:
             assert field in event, f"Missing required field: {field}"
@@ -99,8 +105,14 @@ class TestIGNParser:
         """Events have all required fields."""
         events = self.connector._parse_fdsn_text(self.text)
         required_fields = [
-            "source", "source_id", "event_type", "severity",
-            "title", "magnitude", "depth_km", "area_wkt",
+            "source",
+            "source_id",
+            "event_type",
+            "severity",
+            "title",
+            "magnitude",
+            "depth_km",
+            "area_wkt",
         ]
         for field in required_fields:
             assert field in events[0], f"Missing field: {field}"

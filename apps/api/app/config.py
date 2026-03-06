@@ -37,9 +37,9 @@ class Settings(BaseSettings):
     FIREBASE_CREDENTIALS_PATH: str = "firebase-credentials.json"
 
     # ── Polling intervals (seconds) ──────────────────────
-    AEMET_POLL_INTERVAL: int = 300       # 5 min
-    IGN_POLL_INTERVAL: int = 120         # 2 min
-    DGT_POLL_INTERVAL: int = 300         # 5 min
+    AEMET_POLL_INTERVAL: int = 300  # 5 min
+    IGN_POLL_INTERVAL: int = 120  # 2 min
+    DGT_POLL_INTERVAL: int = 300  # 5 min
     METEOALARM_POLL_INTERVAL: int = 300  # 5 min
 
     # ── JWT Authentication ───────────────────────────────

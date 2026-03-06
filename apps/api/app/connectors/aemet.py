@@ -112,9 +112,7 @@ class AemetConnector:
 
         for area_code in AEMET_AREAS:
             try:
-                data_url = await self._fetch_data_url(
-                    f"avisos_cap/ultimoelaborado/area/{area_code}"
-                )
+                data_url = await self._fetch_data_url(f"avisos_cap/ultimoelaborado/area/{area_code}")
                 if not data_url:
                     continue
 
@@ -271,9 +269,7 @@ class AemetConnector:
 
     async def fetch_municipal_prediction(self, municipio_code: str) -> Optional[dict]:
         """Get hourly prediction for a municipality (for detail screens)."""
-        data_url = await self._fetch_data_url(
-            f"prediccion/especifica/municipio/horaria/{municipio_code}"
-        )
+        data_url = await self._fetch_data_url(f"prediccion/especifica/municipio/horaria/{municipio_code}")
         if not data_url:
             return None
 

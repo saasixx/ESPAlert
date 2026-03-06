@@ -43,6 +43,8 @@ class TelegramConnector(OutputConnector):
 
             logger.warning(
                 "Telegram failed (%d) to %s: %s",
-                resp.status_code, target, resp.text[:200],
+                resp.status_code,
+                target,
+                resp.text[:200],
             )
             return False

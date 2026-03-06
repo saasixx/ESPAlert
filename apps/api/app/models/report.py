@@ -19,7 +19,7 @@ class CollaborativeReport(Base):
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id", ondelete="SET NULL"), nullable=True)
 
     report_type = Column(String(50), nullable=False)  # "rain", "wind", "hail", "smoke", "shaking"
-    intensity = Column(String(20), nullable=False)     # "none", "light", "moderate", "strong", "extreme"
+    intensity = Column(String(20), nullable=False)  # "none", "light", "moderate", "strong", "extreme"
     location = Column(Geometry("POINT", srid=4326), nullable=False)
     comment = Column(String(500), nullable=True)
 

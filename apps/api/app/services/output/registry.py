@@ -59,9 +59,7 @@ class OutputRegistry:
             logger.exception("Error in connector '%s' → %s: %s", channel, target, e)
             return False
 
-    async def broadcast(
-        self, message: OutputMessage, targets: dict[str, list[str]]
-    ) -> dict[str, dict[str, bool]]:
+    async def broadcast(self, message: OutputMessage, targets: dict[str, list[str]]) -> dict[str, dict[str, bool]]:
         """
         Send a message to multiple channels and targets.
 

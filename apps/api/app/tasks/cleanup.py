@@ -43,11 +43,7 @@ async def _run_cleanup():
                 return 0
 
             # Purge in batch
-            stmt = (
-                delete(Event)
-                .where(Event.expires < cutoff)
-                .execution_options(synchronize_session=False)
-            )
+            stmt = delete(Event).where(Event.expires < cutoff).execution_options(synchronize_session=False)
             result = await db.execute(stmt)
             deleted = result.rowcount
             await db.commit()
@@ -84,11 +80,7 @@ async def _update_source_stats():
         one_hour_ago = now - timedelta(hours=1)
 
         # Count recent events by source
-        stmt = (
-            select(Event.source, func.count(Event.id))
-            .where(Event.created_at >= one_hour_ago)
-            .group_by(Event.source)
-        )
+        stmt = select(Event.source, func.count(Event.id)).where(Event.created_at >= one_hour_ago).group_by(Event.source)
         result = await db.execute(stmt)
 
         stats = {}
