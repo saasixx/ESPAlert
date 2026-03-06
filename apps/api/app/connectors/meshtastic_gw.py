@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 # Redis channels for mesh communication
-MESH_CHANNEL_IN = "espalert:mesh:incoming"    # Messages FROM the mesh
-MESH_CHANNEL_OUT = "espalert:mesh:outgoing"   # Messages TO the mesh
-MESH_CHANNEL_NODES = "espalert:mesh:nodes"    # Node telemetry updates
+MESH_CHANNEL_IN = "espalert:mesh:incoming"  # Messages FROM the mesh
+MESH_CHANNEL_OUT = "espalert:mesh:outgoing"  # Messages TO the mesh
+MESH_CHANNEL_NODES = "espalert:mesh:nodes"  # Node telemetry updates
 
 
 class MeshMessage:
@@ -161,10 +161,7 @@ class MeshtasticGateway:
                     self._update_node(node_id, node_info)
 
         except ImportError:
-            logger.error(
-                "meshtastic package not installed. "
-                "Install with: pip install meshtastic"
-            )
+            logger.error("meshtastic package not installed. Install with: pip install meshtastic")
         except Exception as e:
             logger.exception("Error connecting to Meshtastic device: %s", e)
 
@@ -320,8 +317,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="ESPAlert Meshtastic Gateway")
     parser.add_argument("--type", choices=["serial", "tcp"], default="serial")
-    parser.add_argument("--address", default="/dev/ttyUSB0",
-                        help="Serial port or host:port for TCP")
+    parser.add_argument("--address", default="/dev/ttyUSB0", help="Serial port or host:port for TCP")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)

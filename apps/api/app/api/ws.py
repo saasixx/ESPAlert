@@ -89,6 +89,7 @@ async def websocket_events(
     await pubsub.subscribe("espalert:new_events")
 
     try:
+
         async def relay_redis():
             async for message in pubsub.listen():
                 if message["type"] == "message":

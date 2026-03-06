@@ -64,10 +64,10 @@ class IGNConnector:
         params = {
             "starttime": start_time.strftime("%Y-%m-%dT%H:%M:%S"),
             "endtime": end_time.strftime("%Y-%m-%dT%H:%M:%S"),
-            "minlatitude": 25.0,   # South of Canary Islands
-            "maxlatitude": 45.0,   # Northern Spain
-            "minlongitude": -20.0, # West of Canary Islands
-            "maxlongitude": 6.0,   # Eastern Mediterranean coast
+            "minlatitude": 25.0,  # South of Canary Islands
+            "maxlatitude": 45.0,  # Northern Spain
+            "minlongitude": -20.0,  # West of Canary Islands
+            "maxlongitude": 6.0,  # Eastern Mediterranean coast
             "format": "text",
             "orderby": "time",
         }
@@ -115,36 +115,38 @@ class IGNConnector:
 
                 severity = magnitude_to_severity(magnitude)
 
-                events.append({
-                    "source": "ign",
-                    "source_id": f"ign-{event_id}",
-                    "event_type": "earthquake",
-                    "severity": severity,
-                    "title": f"Terremoto M{magnitude} — {location_name}",
-                    "description": (
-                        f"Magnitud: {magnitude} ({mag_type})\n"
-                        f"Profundidad: {depth} km\n"
-                        f"Ubicación: {location_name}\n"
-                        f"Coordenadas: {lat}°N, {lon}°{'W' if lon < 0 else 'E'}"
-                    ),
-                    "instructions": self._get_earthquake_instructions(magnitude),
-                    "area_wkt": f"POINT({lon} {lat})",
-                    "area_name": location_name,
-                    "effective": event_time.isoformat(),
-                    "expires": (event_time + timedelta(hours=24)).isoformat(),
-                    "source_url": "https://www.ign.es/web/ign/portal/sis-catalogo-terremotos",
-                    "magnitude": str(magnitude),
-                    "depth_km": str(depth),
-                    "raw_data": {
-                        "event_id": event_id,
-                        "lat": lat,
-                        "lon": lon,
-                        "depth_km": depth,
-                        "magnitude": magnitude,
-                        "mag_type": mag_type,
-                        "location": location_name,
-                    },
-                })
+                events.append(
+                    {
+                        "source": "ign",
+                        "source_id": f"ign-{event_id}",
+                        "event_type": "earthquake",
+                        "severity": severity,
+                        "title": f"Terremoto M{magnitude} — {location_name}",
+                        "description": (
+                            f"Magnitud: {magnitude} ({mag_type})\n"
+                            f"Profundidad: {depth} km\n"
+                            f"Ubicación: {location_name}\n"
+                            f"Coordenadas: {lat}°N, {lon}°{'W' if lon < 0 else 'E'}"
+                        ),
+                        "instructions": self._get_earthquake_instructions(magnitude),
+                        "area_wkt": f"POINT({lon} {lat})",
+                        "area_name": location_name,
+                        "effective": event_time.isoformat(),
+                        "expires": (event_time + timedelta(hours=24)).isoformat(),
+                        "source_url": "https://www.ign.es/web/ign/portal/sis-catalogo-terremotos",
+                        "magnitude": str(magnitude),
+                        "depth_km": str(depth),
+                        "raw_data": {
+                            "event_id": event_id,
+                            "lat": lat,
+                            "lon": lon,
+                            "depth_km": depth,
+                            "magnitude": magnitude,
+                            "mag_type": mag_type,
+                            "location": location_name,
+                        },
+                    }
+                )
             except (ValueError, IndexError) as e:
                 logger.warning("Error parsing FDSN line: %s", e)
 
@@ -170,23 +172,25 @@ class IGNConnector:
                     event_id = quake.get("evid", "")
                     time_str = quake.get("fecha", "")
 
-                    events.append({
-                        "source": "ign",
-                        "source_id": f"ign-{event_id}",
-                        "event_type": "earthquake",
-                        "severity": magnitude_to_severity(mag),
-                        "title": f"Terremoto M{mag} — {location}",
-                        "description": f"Magnitud: {mag}\nProfundidad: {depth} km\nUbicación: {location}",
-                        "instructions": self._get_earthquake_instructions(mag),
-                        "area_wkt": f"POINT({lon} {lat})",
-                        "area_name": location,
-                        "effective": time_str,
-                        "expires": "",
-                        "source_url": "https://www.ign.es/web/ign/portal/sis-catalogo-terremotos",
-                        "magnitude": str(mag),
-                        "depth_km": str(depth),
-                        "raw_data": quake,
-                    })
+                    events.append(
+                        {
+                            "source": "ign",
+                            "source_id": f"ign-{event_id}",
+                            "event_type": "earthquake",
+                            "severity": magnitude_to_severity(mag),
+                            "title": f"Terremoto M{mag} — {location}",
+                            "description": f"Magnitud: {mag}\nProfundidad: {depth} km\nUbicación: {location}",
+                            "instructions": self._get_earthquake_instructions(mag),
+                            "area_wkt": f"POINT({lon} {lat})",
+                            "area_name": location,
+                            "effective": time_str,
+                            "expires": "",
+                            "source_url": "https://www.ign.es/web/ign/portal/sis-catalogo-terremotos",
+                            "magnitude": str(mag),
+                            "depth_km": str(depth),
+                            "raw_data": quake,
+                        }
+                    )
                 except (ValueError, KeyError) as e:
                     logger.warning("Error parsing IGN fallback earthquake: %s", e)
 

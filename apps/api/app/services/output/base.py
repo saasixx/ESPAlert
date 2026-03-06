@@ -26,19 +26,28 @@ class OutputMessage:
 
     @property
     def severity_emoji(self) -> str:
-        return {"red": "🔴", "orange": "🟠", "yellow": "🟡", "green": "🟢"}.get(
-            self.severity, "⚪"
-        )
+        return {"red": "🔴", "orange": "🟠", "yellow": "🟡", "green": "🟢"}.get(self.severity, "⚪")
 
     @property
     def type_emoji(self) -> str:
         return {
-            "wind": "💨", "rain": "🌧️", "storm": "⛈️", "snow": "❄️",
-            "ice": "🧊", "fog": "🌫️", "heat": "🌡️", "cold": "🥶",
-            "earthquake": "📳", "tsunami": "🌊", "coastal": "🌊",
-            "traffic_accident": "🚗", "traffic_closure": "🚧",
-            "traffic_works": "🔧", "traffic_jam": "🐌",
-            "fire_risk": "🔥", "civil_protection": "🚨",
+            "wind": "💨",
+            "rain": "🌧️",
+            "storm": "⛈️",
+            "snow": "❄️",
+            "ice": "🧊",
+            "fog": "🌫️",
+            "heat": "🌡️",
+            "cold": "🥶",
+            "earthquake": "📳",
+            "tsunami": "🌊",
+            "coastal": "🌊",
+            "traffic_accident": "🚗",
+            "traffic_closure": "🚧",
+            "traffic_works": "🔧",
+            "traffic_jam": "🐌",
+            "fire_risk": "🔥",
+            "civil_protection": "🚨",
         }.get(self.event_type, "⚠️")
 
     def format_text(self, include_url: bool = True) -> str:

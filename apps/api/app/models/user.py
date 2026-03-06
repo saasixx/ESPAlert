@@ -4,8 +4,14 @@ import uuid
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (
-    Column, String, DateTime, Time, Boolean,
-    ForeignKey, func, Index,
+    Column,
+    String,
+    DateTime,
+    Time,
+    Boolean,
+    ForeignKey,
+    func,
+    Index,
 )
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship
@@ -28,7 +34,7 @@ class User(Base):
 
     # Notification preferences
     quiet_start = Column(Time, nullable=True)  # e.g. 23:00
-    quiet_end = Column(Time, nullable=True)    # e.g. 07:00
+    quiet_end = Column(Time, nullable=True)  # e.g. 07:00
     predictive_alerts = Column(Boolean, default=True)  # Predictive alerts ("tomorrow will have bad weather")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -55,9 +61,7 @@ class UserZone(Base):
 
     user = relationship("User", back_populates="zones")
 
-    __table_args__ = (
-        Index("idx_user_zones_geom", "geometry", postgresql_using="gist"),
-    )
+    __table_args__ = (Index("idx_user_zones_geom", "geometry", postgresql_using="gist"),)
 
     def __repr__(self):
         return f"<UserZone {self.label}>"

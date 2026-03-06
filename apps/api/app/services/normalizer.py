@@ -53,9 +53,7 @@ class Normalizer:
             return None
 
         # Check existing event
-        result = await self.db.execute(
-            select(Event).where(Event.source_id == source_id)
-        )
+        result = await self.db.execute(select(Event).where(Event.source_id == source_id))
         existing_event = result.scalar_one_or_none()
 
         if existing_event:

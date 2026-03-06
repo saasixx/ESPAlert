@@ -24,27 +24,21 @@ async def export_my_data(
     Export all user personal data in JSON format.
     """
     # Zones
-    zones_result = await db.execute(
-        select(UserZone).where(UserZone.user_id == user.id)
-    )
+    zones_result = await db.execute(select(UserZone).where(UserZone.user_id == user.id))
     zones = [
         {"id": str(z.id), "label": z.label, "created_at": z.created_at.isoformat() if z.created_at else None}
         for z in zones_result.scalars().all()
     ]
 
     # Filters
-    filters_result = await db.execute(
-        select(UserFilter).where(UserFilter.user_id == user.id)
-    )
+    filters_result = await db.execute(select(UserFilter).where(UserFilter.user_id == user.id))
     filters = [
         {"id": str(f.id), "event_types": f.event_types, "min_severity": f.min_severity}
         for f in filters_result.scalars().all()
     ]
 
     # Reports
-    reports_result = await db.execute(
-        select(CollaborativeReport).where(CollaborativeReport.user_id == user.id)
-    )
+    reports_result = await db.execute(select(CollaborativeReport).where(CollaborativeReport.user_id == user.id))
     reports = [
         {
             "id": str(r.id),
@@ -114,8 +108,7 @@ async def privacy_policy():
             {
                 "title": "1. Responsable del tratamiento",
                 "content": (
-                    "ESPAlert es responsable del tratamiento de tus datos personales. "
-                    "Contacto: privacidad@espalert.es"
+                    "ESPAlert es responsable del tratamiento de tus datos personales. Contacto: privacidad@espalert.es"
                 ),
             },
             {

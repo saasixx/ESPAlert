@@ -40,6 +40,7 @@ def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> JSO
 
 # ── Security headers middleware ───────────────────────────────────────
 
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to all responses."""
 
@@ -58,15 +59,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = (
-            "camera=(), microphone=(), geolocation=(self), "
-            "payment=(), usb=(), bluetooth=(self)"
+            "camera=(), microphone=(), geolocation=(self), payment=(), usb=(), bluetooth=(self)"
         )
 
         # HSTS in production only
         if settings.ENVIRONMENT == "production":
-            response.headers["Strict-Transport-Security"] = (
-                "max-age=63072000; includeSubDomains; preload"
-            )
+            response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
 
         # Content security policy
         response.headers["Content-Security-Policy"] = (
@@ -98,6 +96,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 # ── Security validation at startup ──────────────────────────────────
 
+
 def validate_security_config() -> None:
     """Runs at startup to detect insecure configurations."""
     warnings: list[str] = []
@@ -122,6 +121,5 @@ def validate_security_config() -> None:
 
     if errors:
         raise RuntimeError(
-            "Security configuration errors detected. "
-            "Fix the errors above before starting in production."
+            "Security configuration errors detected. Fix the errors above before starting in production."
         )

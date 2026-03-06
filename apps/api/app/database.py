@@ -24,7 +24,7 @@ else:
         echo=settings.DEBUG,
         pool_size=20,
         max_overflow=10,
-        pool_recycle=1800,   # Recycle connections every 30 min
+        pool_recycle=1800,  # Recycle connections every 30 min
         pool_timeout=30,
         pool_pre_ping=True,  # Verify connections before using them
     )

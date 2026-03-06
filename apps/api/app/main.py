@@ -75,9 +75,7 @@ if settings.ENVIRONMENT == "production":
 # 3. CORS — permissive in development only
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=(
-        ["*"] if settings.ENVIRONMENT == "development" else settings.ALLOWED_ORIGINS
-    ),
+    allow_origins=(["*"] if settings.ENVIRONMENT == "development" else settings.ALLOWED_ORIGINS),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-Request-ID"],

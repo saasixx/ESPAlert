@@ -137,7 +137,7 @@ class NotificationService:
 
             # Send multicast (up to 500 tokens per call)
             for i in range(0, len(tokens), 500):
-                batch_tokens = tokens[i:i+500]
+                batch_tokens = tokens[i : i + 500]
 
                 message = messaging.MulticastMessage(
                     tokens=batch_tokens,
@@ -170,12 +170,11 @@ class NotificationService:
                     ),
                 )
 
-                response = await asyncio.to_thread(
-                    messaging.send_each_for_multicast, message
-                )
+                response = await asyncio.to_thread(messaging.send_each_for_multicast, message)
                 logger.info(
                     "FCM batch: %d sent, %d failed",
-                    response.success_count, response.failure_count,
+                    response.success_count,
+                    response.failure_count,
                 )
 
         except ImportError:

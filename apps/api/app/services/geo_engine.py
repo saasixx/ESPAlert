@@ -83,26 +83,29 @@ class GeoEngine:
             )
         """)
 
-        event_severity = SEVERITY_STR_ORDER.get(
-            event.severity.value if event.severity else "green", 0
-        )
+        event_severity = SEVERITY_STR_ORDER.get(event.severity.value if event.severity else "green", 0)
         event_type_val = event.event_type.value if event.event_type else "other"
 
-        result = await self.db.execute(query, {
-            "event_id": str(event.id),
-            "event_type": event_type_val,
-            "severity_order": event_severity,
-            "current_time": now,
-        })
+        result = await self.db.execute(
+            query,
+            {
+                "event_id": str(event.id),
+                "event_type": event_type_val,
+                "severity_order": event_severity,
+                "current_time": now,
+            },
+        )
 
         affected = []
         for row in result.fetchall():
-            affected.append({
-                "user_id": str(row.user_id),
-                "email": row.email,
-                "fcm_token": row.fcm_token,
-                "zone_label": row.zone_label,
-            })
+            affected.append(
+                {
+                    "user_id": str(row.user_id),
+                    "email": row.email,
+                    "fcm_token": row.fcm_token,
+                    "zone_label": row.zone_label,
+                }
+            )
 
         logger.info("GeoEngine: event %s affects %d users", event.source_id, len(affected))
         return affected

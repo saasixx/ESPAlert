@@ -19,8 +19,7 @@ class UserCreate(BaseModel):
     def validate_password_strength(cls, v: str) -> str:
         if not PASSWORD_REGEX.match(v):
             raise ValueError(
-                "La contraseña debe tener al menos 8 caracteres, "
-                "una mayúscula, una minúscula y un número."
+                "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
             )
         return v
 

@@ -14,8 +14,12 @@ from app.database import get_db
 from app.models.user import User, UserZone, UserFilter
 from app.api.deps import get_current_user
 from app.schemas import (
-    ZoneCreate, ZoneOut, FilterCreate, FilterOut,
-    UserSettingsUpdate, UserOut,
+    ZoneCreate,
+    ZoneOut,
+    FilterCreate,
+    FilterOut,
+    UserSettingsUpdate,
+    UserOut,
 )
 
 router = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
@@ -23,14 +27,14 @@ router = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
 
 # ── Zones ─────────────────────────────────────────────────────────────────────
 
+
 @router.get("/zones", response_model=list[ZoneOut])
 async def list_zones(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(UserZone, ST_AsGeoJSON(UserZone.geometry).label("geojson"))
-        .where(UserZone.user_id == user.id)
+        select(UserZone, ST_AsGeoJSON(UserZone.geometry).label("geojson")).where(UserZone.user_id == user.id)
     )
     rows = result.all()
     return [
@@ -46,9 +50,7 @@ async def create_zone(
     db: AsyncSession = Depends(get_db),
 ):
     # Maximum 4 zones per user (Yurekuru style)
-    count_result = await db.execute(
-        select(UserZone).where(UserZone.user_id == user.id)
-    )
+    count_result = await db.execute(select(UserZone).where(UserZone.user_id == user.id))
     if len(count_result.all()) >= 4:
         raise HTTPException(status_code=400, detail="Máximo 4 zonas permitidas")
 
@@ -68,9 +70,7 @@ async def delete_zone(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(UserZone).where(UserZone.id == zone_id, UserZone.user_id == user.id)
-    )
+    result = await db.execute(select(UserZone).where(UserZone.id == zone_id, UserZone.user_id == user.id))
     zone = result.scalar_one_or_none()
     if not zone:
         raise HTTPException(status_code=404, detail="Zona no encontrada")
@@ -79,14 +79,13 @@ async def delete_zone(
 
 # ── Filters ─────────────────────────────────────────────────────────────────────────
 
+
 @router.get("/filters", response_model=list[FilterOut])
 async def list_filters(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(UserFilter).where(UserFilter.user_id == user.id)
-    )
+    result = await db.execute(select(UserFilter).where(UserFilter.user_id == user.id))
     return [FilterOut.model_validate(f) for f in result.scalars().all()]
 
 
@@ -112,9 +111,7 @@ async def delete_filter(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(UserFilter).where(UserFilter.id == filter_id, UserFilter.user_id == user.id)
-    )
+    result = await db.execute(select(UserFilter).where(UserFilter.id == filter_id, UserFilter.user_id == user.id))
     filt = result.scalar_one_or_none()
     if not filt:
         raise HTTPException(status_code=404, detail="Filtro no encontrado")
@@ -122,6 +119,7 @@ async def delete_filter(
 
 
 # ── User Settings ───────────────────────────────────────────────────────────────
+
 
 @router.patch("/settings", response_model=UserOut)
 async def update_settings(

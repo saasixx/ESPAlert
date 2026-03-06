@@ -5,8 +5,13 @@ import uuid
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (
-    Column, String, Text, DateTime, Enum as SAEnum,
-    func, Index,
+    Column,
+    String,
+    Text,
+    DateTime,
+    Enum as SAEnum,
+    func,
+    Index,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
@@ -59,10 +64,10 @@ class EventType(str, enum.Enum):
 class Severity(str, enum.Enum):
     """Event severity level."""
 
-    GREEN = "green"      # No significant risk
-    YELLOW = "yellow"    # Low risk — be aware
-    ORANGE = "orange"    # Moderate risk — be prepared
-    RED = "red"          # High risk — take action
+    GREEN = "green"  # No significant risk
+    YELLOW = "yellow"  # Low risk — be aware
+    ORANGE = "orange"  # Moderate risk — be prepared
+    RED = "red"  # High risk — take action
 
 
 # ── Model ────────────────────────────────────────────────────────────────────
@@ -90,7 +95,7 @@ class Event(Base):
 
     # Time bounds
     effective = Column(DateTime(timezone=True), nullable=True)  # Event start
-    expires = Column(DateTime(timezone=True), nullable=True)    # Event end
+    expires = Column(DateTime(timezone=True), nullable=True)  # Event end
 
     # Metadata
     source_url = Column(String(1000), nullable=True)
