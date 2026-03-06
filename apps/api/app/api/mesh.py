@@ -116,6 +116,7 @@ async def mesh_websocket(websocket: WebSocket):
     token = auth_header[7:] if auth_header.lower().startswith("bearer ") else ""
 
     if not token:
+        await websocket.accept()
         await websocket.close(code=4001, reason="Token requerido")
         return
 
@@ -123,6 +124,7 @@ async def mesh_websocket(websocket: WebSocket):
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         authenticated_user = payload.get("sub")
     except jwt.InvalidTokenError:
+        await websocket.accept()
         await websocket.close(code=4001, reason="Token inválido")
         return
 

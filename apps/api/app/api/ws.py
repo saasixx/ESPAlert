@@ -88,6 +88,7 @@ async def websocket_events(
 
     # If a token was provided, validate it; reject on failure
     if token and not _verify_ws_token(token):
+        await websocket.accept()
         await websocket.close(code=4001, reason="Token inválido")
         return
 
