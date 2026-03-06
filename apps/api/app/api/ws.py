@@ -27,6 +27,7 @@ class ConnectionManager:
 
     async def connect(self, websocket: WebSocket) -> bool:
         if len(self.active_connections) >= self.max_connections:
+            await websocket.accept()
             await websocket.close(code=1013, reason="Server overloaded")
             return False
         await websocket.accept()

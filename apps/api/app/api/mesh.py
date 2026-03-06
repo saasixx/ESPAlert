@@ -1,5 +1,6 @@
 """Mesh chat API — HTTP + WebSocket endpoints for Meshtastic communication (hardened)."""
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timezone
@@ -128,9 +129,12 @@ async def mesh_websocket(websocket: WebSocket):
         await websocket.close(code=4001, reason="Token inválido")
         return
 
-    await websocket.accept()
+    if not authenticated_user:
+        await websocket.accept()
+        await websocket.close(code=4001, reason="Token inválido")
+        return
 
-    import asyncio
+    await websocket.accept()
 
     from app.database import get_redis
 
