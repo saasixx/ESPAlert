@@ -1,10 +1,34 @@
 /** Wrapper for backend API calls. */
 
+interface ResolveApiBaseUrlOptions {
+  /** Override browser detection for tests. */
+  isBrowser?: boolean;
+  /** Override public API URL for tests. */
+  nextPublicApiUrl?: string;
+  /** Override internal API host URL for tests. */
+  apiUrl?: string;
+}
+
+/** Resolves API base URL for SSR/client contexts. */
+export function resolveApiBaseUrl(options: ResolveApiBaseUrlOptions = {}): string {
+  const isBrowser = options.isBrowser ?? typeof window !== "undefined";
+  const nextPublicApiUrl = options.nextPublicApiUrl ?? process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = options.apiUrl ?? process.env.API_URL;
+
+  if (nextPublicApiUrl) {
+    return nextPublicApiUrl;
+  }
+
+  if (isBrowser) {
+    return "/api/v1";
+  }
+
+  const host = apiUrl || "http://127.0.0.1:8000";
+  return `${host}/api/v1`;
+}
+
 /** API base URL: SSR uses internal variable, client uses proxy or public URL. */
-const API_BASE =
-  typeof window === "undefined"
-    ? process.env.NEXT_PUBLIC_API_URL || `${process.env.API_URL || "http://127.0.0.1:8000"}/api/v1`
-    : process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+const API_BASE = resolveApiBaseUrl();
 
 interface FetchOptions extends RequestInit {
   /** JWT token for authentication. */

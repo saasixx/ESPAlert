@@ -4,6 +4,38 @@ import type { AlertEvent } from '@/types/events';
 /** WebSocket connection state. */
 export type ConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'polling' | 'disconnected';
 
+interface ResolveEventsWsUrlOptions {
+  /** Override public WS URL for tests. */
+  nextPublicWsUrl?: string;
+  /** Override public API URL for tests. */
+  nextPublicApiUrl?: string;
+  /** Override location protocol for tests. */
+  locationProtocol?: string;
+  /** Override location host for tests. */
+  locationHost?: string;
+}
+
+/** Resolves events WS URL from env vars with browser fallback. */
+export function resolveEventsWsUrl(options: ResolveEventsWsUrlOptions = {}): string {
+  const nextPublicWsUrl = options.nextPublicWsUrl ?? process.env.NEXT_PUBLIC_WS_URL;
+  if (nextPublicWsUrl) {
+    return nextPublicWsUrl;
+  }
+
+  const nextPublicApiUrl = options.nextPublicApiUrl ?? process.env.NEXT_PUBLIC_API_URL;
+  const locationProtocol = options.locationProtocol
+    ?? (typeof window !== 'undefined' ? window.location.protocol : 'http:');
+  const wsProtocol = locationProtocol === 'https:' ? 'wss:' : 'ws:';
+
+  if (nextPublicApiUrl) {
+    return `${nextPublicApiUrl.replace(/^https?:/, wsProtocol)}/ws/events`;
+  }
+
+  const locationHost = options.locationHost
+    ?? (typeof window !== 'undefined' ? window.location.host : '127.0.0.1:3000');
+  return `${wsProtocol}//${locationHost}/api/v1/ws/events`;
+}
+
 /**
  * WebSocket hook for receiving real-time alert events.
  *
@@ -71,10 +103,7 @@ export function useEventsWS(initialEvents: AlertEvent[]) {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      const wsProtocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL
-        || (apiUrl ? apiUrl.replace(/^https?:/, wsProtocol) + '/ws/events' : `${wsProtocol}//${window.location.host}/api/v1/ws/events`);
+      const wsUrl = resolveEventsWsUrl();
       setConnectionState(wsFailCount.current === 0 ? 'connecting' : 'reconnecting');
 
       try {
