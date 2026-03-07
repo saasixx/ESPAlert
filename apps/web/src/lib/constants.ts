@@ -65,3 +65,18 @@ export const CATEGORY_CONFIG: Record<
   traffic: { label: "Tráfico", icon: "Car" },
   maritime: { label: "Costero", icon: "Waves" },
 };
+
+/**
+ * Resolves the display category from an event's icon_key hint (backend)
+ * or falls back to deriving it from event_type.
+ */
+export function getEventCategory(
+  eventType: string,
+  iconKey?: string | null,
+): string {
+  if (iconKey && iconKey in CATEGORY_CONFIG) return iconKey;
+  if (eventType.startsWith("traffic")) return "traffic";
+  if (eventType === "earthquake" || eventType === "tsunami") return "seismic";
+  if (["coastal", "wave", "tide"].includes(eventType)) return "maritime";
+  return "meteo";
+}

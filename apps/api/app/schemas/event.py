@@ -4,7 +4,23 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, computed_field, field_validator
+
+# Mapping from event_type value to frontend icon category
+_SEISMIC_TYPES = {"earthquake", "tsunami"}
+_TRAFFIC_PREFIX = "traffic"
+_MARITIME_TYPES = {"coastal", "wave", "tide"}
+
+
+def _derive_icon_key(event_type: str) -> str:
+    """Derive the frontend icon category from event_type."""
+    if event_type in _SEISMIC_TYPES:
+        return "seismic"
+    if event_type.startswith(_TRAFFIC_PREFIX):
+        return "traffic"
+    if event_type in _MARITIME_TYPES:
+        return "maritime"
+    return "meteo"
 
 
 class EventOut(BaseModel):
@@ -26,6 +42,12 @@ class EventOut(BaseModel):
     magnitude: Optional[str] = None
     depth_km: Optional[str] = None
     created_at: datetime
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def icon_key(self) -> str:
+        """Frontend icon category derived from event_type (no DB column needed)."""
+        return _derive_icon_key(self.event_type)
 
     model_config = {"from_attributes": True}
 
