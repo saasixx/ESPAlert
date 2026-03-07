@@ -11,6 +11,7 @@ npm run dev      # Inicia el servidor de desarrollo con hot reload
 npm run build    # Compila para producción
 npm run start    # Inicia el servidor de producción
 npm run lint     # Ejecuta ESLint
+npm run test     # Ejecuta tests unitarios (Vitest)
 ```
 
 ## Desarrollo local
