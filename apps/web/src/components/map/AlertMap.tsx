@@ -12,19 +12,19 @@ import {
   Map,
   MapControls,
   MapPopup,
-  MapClusterLayer,
 } from "@/components/ui/map";
 import type { AlertEvent } from "@/types/events";
 import { useMapFilters } from "@/hooks/useMapFilters";
 import { MapSidebar } from "@/components/sidebar/MapSidebar";
 import { AlertPopup } from "@/components/map/AlertPopup";
 import { AlertPolygonLayer } from "@/components/map/AlertPolygonLayer";
+import { AlertIconLayer } from "@/components/map/AlertIconLayer";
 import { ConnectionIndicator } from "@/components/map/ConnectionIndicator";
 import {
-  SEVERITY_COLORS,
   SPAIN_CENTER,
   SPAIN_ZOOM,
   SPAIN_MIN_ZOOM,
+  getEventCategory,
 } from "@/lib/constants";
 import { resolveAreaCentroid } from "@/lib/area-centroids";
 
@@ -58,22 +58,25 @@ export default function AlertMap({
       type: "FeatureCollection",
       features: visibleEvents
         .map((e) => {
+          const category = getEventCategory(e.event_type, e.icon_key);
+          const baseProps = {
+            id: e.id,
+            severity: e.severity,
+            category,
+            event_type: e.event_type,
+            title: e.title,
+            area_name: e.area_name ?? "",
+            magnitude: e.magnitude ?? "",
+            depth_km: e.depth_km ?? "",
+            created_at: e.created_at,
+          };
+
           // Event with native Point geometry
           if (e.area_geojson?.type === "Point") {
             return {
               type: "Feature" as const,
               geometry: e.area_geojson as GeoJSON.Point,
-              properties: {
-                id: e.id,
-                severity: e.severity,
-                event_type: e.event_type,
-                title: e.title,
-                area_name: e.area_name ?? "",
-                magnitude: e.magnitude ?? "",
-                depth_km: e.depth_km ?? "",
-                created_at: e.created_at,
-                color: SEVERITY_COLORS[e.severity] ?? SEVERITY_COLORS.green,
-              },
+              properties: baseProps,
             };
           }
 
@@ -87,17 +90,7 @@ export default function AlertMap({
                   type: "Point" as const,
                   coordinates: centroid,
                 },
-                properties: {
-                  id: e.id,
-                  severity: e.severity,
-                  event_type: e.event_type,
-                  title: e.title,
-                  area_name: e.area_name ?? "",
-                  magnitude: e.magnitude ?? "",
-                  depth_km: e.depth_km ?? "",
-                  created_at: e.created_at,
-                  color: SEVERITY_COLORS[e.severity] ?? SEVERITY_COLORS.green,
-                },
+                properties: baseProps,
               };
             }
           }
@@ -173,15 +166,10 @@ export default function AlertMap({
             onEventClick={handlePolygonClick}
           />
 
-          {/* Point layer with clustering (earthquakes, traffic) */}
+          {/* Point layer with clustering and category icons (earthquakes, traffic, meteo) */}
           {pointsGeoJSON.features.length > 0 && (
-            <MapClusterLayer
+            <AlertIconLayer
               data={pointsGeoJSON}
-              clusterRadius={60}
-              clusterMaxZoom={12}
-              clusterColors={["#22c55e", "#eab308", "#ef4444"]}
-              clusterThresholds={[10, 50]}
-              pointColor="#3b82f6"
               onPointClick={handlePointClick}
             />
           )}

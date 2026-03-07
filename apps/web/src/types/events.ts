@@ -4,6 +4,8 @@ export interface AlertEvent {
   source: string;
   source_id: string;
   event_type: string;
+  /** Optional icon key hint from the backend (e.g. "meteo", "seismic"). Falls back to frontend mapping. */
+  icon_key?: string | null;
   severity: "green" | "yellow" | "orange" | "red";
   title: string;
   description?: string | null;
