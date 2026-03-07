@@ -127,7 +127,7 @@ class NotificationService:
             display = SEVERITY_DISPLAY.get(severity_val, SEVERITY_DISPLAY["green"])
             type_emoji = TYPE_EMOJI.get(type_val, "⚠️")
 
-            title = f"{display['emoji']} {type_emoji} {event.title}"
+            title = f"{display["emoji"]} {type_emoji} {event.title}"
             body = event.description[:200] if event.description else event.area_name or ""
 
             # Add countdown if event hasn't started yet
@@ -204,8 +204,8 @@ class NotificationService:
         type_val = event.event_type.value if event.event_type else "other"
         display = SEVERITY_DISPLAY.get(severity_val, SEVERITY_DISPLAY["green"])
         type_emoji = TYPE_EMOJI.get(type_val, "⚠️")
-        title = f"{display['emoji']} {type_emoji} *Alerta: {event.title}*"
-        body = f"Nueva alerta en su zona de interés:\\n\\n*Severidad:* {severity_val.upper()}\\n*Tipo:* {type_val.upper()}\\n\\n*Descripción:*\\n{event.description or ''}"
+        title = f"{display["emoji"]} {type_emoji} *Alerta: {event.title}*"
+        body = f"Nueva alerta en su zona de interés:\\n\\n*Severidad:* {severity_val.upper()}\\n*Tipo:* {type_val.upper()}\\n\\n*Descripción:*\\n{event.description or ""}"
 
         message_text = f"{title}\\n\\n{body}"
 

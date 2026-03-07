@@ -19,10 +19,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column('users', sa.Column('telegram_chat_id', sa.String(length=100), nullable=True))
-    op.create_index(op.f('ix_users_telegram_chat_id'), 'users', ['telegram_chat_id'], unique=False)
+    op.add_column("users", sa.Column("telegram_chat_id", sa.String(length=100), nullable=True))
+    op.create_index(op.f("ix_users_telegram_chat_id"), "users", ["telegram_chat_id"], unique=False)
 
 
 def downgrade() -> None:
-    op.drop_index(op.f('ix_users_telegram_chat_id'), table_name='users')
-    op.drop_column('users', 'telegram_chat_id')
+    op.drop_index(op.f("ix_users_telegram_chat_id"), table_name="users")
+    op.drop_column("users", "telegram_chat_id")
