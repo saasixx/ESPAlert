@@ -6,7 +6,7 @@ import Link from "next/link";
 import { clsx } from "clsx";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { Activity, Car, CloudRain, MapPin, Waves, Menu } from "lucide-react";
+import { Activity, Car, CloudRain, MapPin, Waves, Menu, LogIn, User } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/drawer";
 import type { AlertEvent, EventCategory } from "@/types/events";
 import { SEVERITY_CONFIG } from "@/lib/constants";
+import { useAuth } from "@/contexts/auth-context";
 
 interface MapSidebarProps {
   events: AlertEvent[];
@@ -29,6 +30,7 @@ interface MapSidebarProps {
 
 export function MapSidebar({ events, activeCategories, toggleCategory, isConnected, onEventClick }: MapSidebarProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { user } = useAuth();
 
   const summary = events.reduce(
     (acc, event) => {
@@ -107,7 +109,7 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
 
       {/* Event list */}
       <ScrollArea className="flex-1 min-h-0 p-3 md:p-4">
-        <div className="flex flex-col gap-3 pb-8">
+        <div className="flex flex-col gap-3 pb-2">
           {recommendedActions.length > 0 && (
             <section className="rounded-xl border bg-card p-4">
               <h2 className="text-sm font-semibold mb-2">Acciones recomendadas</h2>
@@ -133,6 +135,28 @@ export function MapSidebar({ events, activeCategories, toggleCategory, isConnect
           )}
         </div>
       </ScrollArea>
+
+      {/* Auth footer */}
+      <div className="border-t p-3 md:p-4 shrink-0">
+        {user ? (
+          <Link href="/profile" className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted transition-colors">
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <User size={16} className="text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">{user.display_name ?? user.email}</p>
+              <p className="text-xs text-muted-foreground">Ver perfil</p>
+            </div>
+          </Link>
+        ) : (
+          <Link href="/login">
+            <Button variant="outline" className="w-full gap-2">
+              <LogIn size={16} />
+              Iniciar sesión
+            </Button>
+          </Link>
+        )}
+      </div>
     </>
   );
 

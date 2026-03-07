@@ -9,12 +9,12 @@ from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user  # noqa: F401  # Re-export for compatibility
+from app.api.deps import get_current_user
 from app.config import get_settings
 from app.database import get_db
 from app.middleware import limiter
 from app.models.user import User
-from app.schemas import UserCreate, UserLogin, TokenOut
+from app.schemas import UserCreate, UserLogin, TokenOut, UserOut, UserSettingsUpdate
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 settings = get_settings()
@@ -73,3 +73,28 @@ async def login(request: Request, data: UserLogin, db: AsyncSession = Depends(ge
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
     return TokenOut(access_token=_create_token(user.id))
+
+
+@router.get("/me", response_model=UserOut)
+async def get_me(current_user: User = Depends(get_current_user)):
+    """Return the authenticated user's profile."""
+    return current_user
+
+
+@router.patch("/me", response_model=UserOut)
+async def update_me(
+    data: UserSettingsUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update notification preferences for the authenticated user."""
+    if data.quiet_start is not None:
+        current_user.quiet_start = data.quiet_start
+    if data.quiet_end is not None:
+        current_user.quiet_end = data.quiet_end
+    if data.predictive_alerts is not None:
+        current_user.predictive_alerts = data.predictive_alerts
+    if data.fcm_token is not None:
+        current_user.fcm_token = data.fcm_token
+    await db.flush()
+    return current_user
