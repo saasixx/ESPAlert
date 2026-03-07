@@ -258,11 +258,10 @@ export function AlertIconLayer({ data, onPointClick }: AlertIconLayerProps) {
       if (!features.length) return;
       const clusterId = features[0].properties?.cluster_id;
       const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource;
-      source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-        if (err || zoom == null) return;
+      source.getClusterExpansionZoom(clusterId).then((zoom) => {
         const coords = (features[0].geometry as GeoJSON.Point).coordinates;
         map.easeTo({ center: [coords[0], coords[1]], zoom });
-      });
+      }).catch(() => {});
     };
 
     const setCursorPointer = () => {

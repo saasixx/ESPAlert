@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   lint-frontend:
-    name: "Lint y Build frontend"
+    name: "Lint, Typecheck y Build frontend"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,8 +27,14 @@ jobs:
       - name: Lint
         run: npx turbo lint --filter=web
 
+      - name: Typecheck
+        run: npx tsc --noEmit
+        working-directory: apps/web
+
       - name: Build
         run: npx turbo build --filter=web
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
 
   lint-backend:
     name: "Lint y Tests backend"
@@ -86,6 +92,9 @@ jobs:
 
       - name: Lint con Ruff
         run: ruff check .
+
+      - name: Formato con Ruff
+        run: ruff format --check .
 
       - name: Migrar base de datos
         run: alembic upgrade head
