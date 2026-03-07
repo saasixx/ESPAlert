@@ -3,7 +3,11 @@
 import asyncio
 import json
 import logging
+import hmac
+import hashlib
 from datetime import datetime, timezone
+
+import httpx
 
 from app.config import get_settings
 from app.database import get_redis
@@ -82,6 +86,10 @@ class NotificationService:
         if affected_users:
             self._init_firebase()
             await self._send_fcm_batch(event, affected_users)
+
+        # 3. Trigger webhooks and telegram if configured
+        await self._dispatch_webhook(event)
+        await self._send_telegram_batch(event, affected_users)
 
     async def _publish_to_redis(self, event: Event):
         """Publish new event to Redis pub/sub for WebSocket broadcast."""
@@ -181,3 +189,75 @@ class NotificationService:
             logger.warning("firebase_admin not available — push notifications disabled")
         except Exception as e:
             logger.error("FCM send failed: %s", e)
+
+    async def _send_telegram_batch(self, event: Event, users: list[dict]):
+        """Send Telegram chat messages to a batch of affected users."""
+        if not settings.TELEGRAM_BOT_TOKEN:
+            return
+
+        chat_ids = [u["telegram_chat_id"] for u in users if u.get("telegram_chat_id")]
+        # Also include backward compatibility if email was overloaded or needed mapping
+        if not chat_ids:
+            return
+
+        severity_val = event.severity.value if event.severity else "green"
+        type_val = event.event_type.value if event.event_type else "other"
+        display = SEVERITY_DISPLAY.get(severity_val, SEVERITY_DISPLAY["green"])
+        type_emoji = TYPE_EMOJI.get(type_val, "⚠️")
+        title = f"{display['emoji']} {type_emoji} *Alerta: {event.title}*"
+        body = f"Nueva alerta en su zona de interés:\\n\\n*Severidad:* {severity_val.upper()}\\n*Tipo:* {type_val.upper()}\\n\\n*Descripción:*\\n{event.description or ''}"
+        
+        message_text = f"{title}\\n\\n{body}"
+
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                for chat_id in chat_ids:
+                    url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage"
+                    payload = {
+                        "chat_id": chat_id,
+                        "text": message_text,
+                        "parse_mode": "Markdown",
+                    }
+                    resp = await client.post(url, json=payload)
+                    if resp.status_code != 200:
+                        logger.warning("Telegram send failed for chat %s: %s", chat_id, resp.text)
+            logger.info("Telegram batch sent: %d users", len(chat_ids))
+        except Exception as e:
+            logger.error("Telegram batch failed: %s", e)
+
+    async def _dispatch_webhook(self, event: Event):
+        """Dispatch event to configured webhook via POST if a URL is registered."""
+        # For a full implementation this would query a webhooks table,
+        # but for v0.2.0 we support a global webhook configured via ENV var.
+        webhook_url = getattr(settings, "GLOBAL_WEBHOOK_URL", None)
+        if not webhook_url:
+            return
+
+        payload = {
+            "id": str(event.id),
+            "source": event.source.value if event.source else "",
+            "event_type": event.event_type.value if event.event_type else "other",
+            "severity": event.severity.value if event.severity else "green",
+            "title": event.title,
+            "description": event.description,
+            "area_name": event.area_name,
+            "effective": event.effective.isoformat() if event.effective else None,
+            "expires": event.expires.isoformat() if event.expires else None,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        json_payload = json.dumps(payload)
+
+        headers = {"Content-Type": "application/json"}
+        if settings.WEBHOOK_SECRET:
+            signature = hmac.new(
+                settings.WEBHOOK_SECRET.encode(), json_payload.encode(), hashlib.sha256
+            ).hexdigest()
+            headers["X-ESPAlert-Signature"] = f"sha256={signature}"
+
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.post(webhook_url, content=json_payload, headers=headers)
+                resp.raise_for_status()
+                logger.debug("Webhook dispatched successfully: %s", resp.status_code)
+        except Exception as e:
+            logger.error("Webhook dispatch failed: %s", e)

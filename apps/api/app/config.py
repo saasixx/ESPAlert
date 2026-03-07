@@ -70,6 +70,10 @@ class Settings(BaseSettings):
     MESHTASTIC_CONNECTION: str = "serial"
     MESHTASTIC_ADDRESS: str = "/dev/ttyUSB0"
 
+    # ── Notification Channels ────────────────────────────
+    TELEGRAM_BOT_TOKEN: str = ""
+    WEBHOOK_SECRET: str = ""
+
     @field_validator("ALLOWED_ORIGINS", "TRUSTED_HOSTS", mode="before")
     @classmethod
     def parse_origins(cls, v: str | list[str]) -> list[str]:

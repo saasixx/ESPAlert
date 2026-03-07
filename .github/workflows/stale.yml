@@ -1,0 +1,22 @@
+name: "Close stale issues and PRs"
+on:
+  schedule:
+  - cron: "30 1 * * *"
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+    - uses: actions/stale@v9
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        stale-issue-message: 'Esta Issue lleva inactiva mucho tiempo sin nuevas respuestas. Se marcará como inactiva (stale) y se cerrará automáticamente en 7 días si nadie comenta. Gracias por tu comprensión.'
+        stale-pr-message: 'Este Pull Request no ha tenido revisiones ni commits en 60 días. Se cerrará automáticamente en 7 días si no hay actividad. Si aún quieres seguir con este PR, por favor añade un comentario.'
+        stale-issue-label: 'stale'
+        stale-pr-label: 'stale'
+        exempt-issue-labels: 'bug,help wanted,good first issue,enhancement'
+        days-before-stale: 60
+        days-before-close: 7

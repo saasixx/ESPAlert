@@ -31,6 +31,9 @@ class User(Base):
 
     # Firebase Cloud Messaging token for push notifications
     fcm_token = Column(String(500), nullable=True)
+    
+    # Telegram Chat ID for notifications
+    telegram_chat_id = Column(String(100), nullable=True, index=True)
 
     # Notification preferences
     quiet_start = Column(Time, nullable=True)  # e.g. 23:00
