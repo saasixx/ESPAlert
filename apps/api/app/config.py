@@ -6,7 +6,10 @@ from functools import lru_cache
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
-# Auto-generated secret for development; NEVER use in production
+# Generated once at module-load time; stable for the lifetime of a process.
+# When JWT_SECRET is absent from the environment this value is used as a
+# fallback so that all tokens become invalid on every restart (dev only).
+# A startup warning is emitted by main.py whenever this fallback is active.
 _DEV_JWT_SECRET = secrets.token_urlsafe(48)
 
 
@@ -43,7 +46,7 @@ class Settings(BaseSettings):
     METEOALARM_POLL_INTERVAL: int = 300  # 5 min
 
     # ── JWT Authentication ───────────────────────────────
-    JWT_SECRET: str = _DEV_JWT_SECRET  # Random per run in dev
+    JWT_SECRET: str = _DEV_JWT_SECRET  # Override via env var in staging/production
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_HOURS: int = 24
 

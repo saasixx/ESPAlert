@@ -5,7 +5,7 @@ import json
 import logging
 
 import jwt
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.config import get_settings
 from app.database import get_redis
@@ -27,6 +27,7 @@ class ConnectionManager:
 
     async def connect(self, websocket: WebSocket) -> bool:
         if len(self.active_connections) >= self.max_connections:
+            await websocket.accept()
             await websocket.close(code=1013, reason="Server overloaded")
             return False
         await websocket.accept()
@@ -56,10 +57,16 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+def _extract_bearer_token(websocket: WebSocket) -> str:
+    """Extract JWT token from the Authorization: Bearer <token> header."""
+    auth_header = websocket.headers.get("authorization", "")
+    if auth_header.lower().startswith("bearer "):
+        return auth_header[7:]
+    return ""
+
+
 def _verify_ws_token(token: str) -> bool:
-    """Verify JWT token for WebSocket authentication. Returns True if valid or if auth is optional."""
-    if not token:
-        return True  # Allow unauthenticated access for public event stream
+    """Verify JWT token for WebSocket authentication. Returns True if valid."""
     try:
         jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         return True
@@ -70,14 +77,19 @@ def _verify_ws_token(token: str) -> bool:
 @router.websocket("/ws/events")
 async def websocket_events(
     websocket: WebSocket,
-    token: str = Query(default=""),
 ):
     """
     Real-time event stream via WebSocket.
-    Optional authentication with ?token=JWT_TOKEN parameter.
+    Optional authentication via Authorization: Bearer <token> header.
+    Unauthenticated connections are allowed (public event stream).
+    If a token is provided but invalid, the connection is rejected with code 4001.
     """
-    # Validate token if provided
+    # Extract token from Authorization header (optional for this endpoint)
+    token = _extract_bearer_token(websocket)
+
+    # If a token was provided, validate it; reject on failure
     if token and not _verify_ws_token(token):
+        await websocket.accept()
         await websocket.close(code=4001, reason="Token inválido")
         return
 

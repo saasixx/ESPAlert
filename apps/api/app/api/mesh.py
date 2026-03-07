@@ -1,9 +1,11 @@
 """Mesh chat API — HTTP + WebSocket endpoints for Meshtastic communication (hardened)."""
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timezone
 
+import jwt
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Depends, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -103,8 +105,35 @@ async def mesh_websocket(websocket: WebSocket):
     """
     Real-time WebSocket for mesh chat.
     Receives: incoming mesh messages + node updates.
-    Sends: outgoing messages (requires auth token in first message).
+    Sends: outgoing messages (requires authentication).
+
+    Authentication is performed at connection time via the
+    Authorization: Bearer <token> HTTP header sent during the WebSocket
+    upgrade handshake. The connection is rejected with close code 4001
+    if the token is missing or invalid.
     """
+    # Authenticate at connection time using the Authorization header
+    auth_header = websocket.headers.get("authorization", "")
+    token = auth_header[7:] if auth_header.lower().startswith("bearer ") else ""
+
+    if not token:
+        await websocket.accept()
+        await websocket.close(code=4001, reason="Token requerido")
+        return
+
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        authenticated_user = payload.get("sub")
+    except jwt.InvalidTokenError:
+        await websocket.accept()
+        await websocket.close(code=4001, reason="Token inválido")
+        return
+
+    if not authenticated_user:
+        await websocket.accept()
+        await websocket.close(code=4001, reason="Token inválido")
+        return
+
     await websocket.accept()
 
     from app.database import get_redis
@@ -115,11 +144,6 @@ async def mesh_websocket(websocket: WebSocket):
         "espalert:mesh:incoming",
         "espalert:mesh:nodes",
     )
-
-    import asyncio
-    import jwt as pyjwt
-
-    authenticated_user = None  # Track whether the WS client has authenticated
 
     try:
 
@@ -139,24 +163,7 @@ async def mesh_websocket(websocket: WebSocket):
             try:
                 client_data = await websocket.receive_json()
 
-                # Handle auth message (must authenticate before sending)
-                if client_data.get("action") == "auth":
-                    token = client_data.get("token", "")
-                    try:
-                        payload = pyjwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
-                        authenticated_user = payload.get("sub")
-                        await websocket.send_json({"type": "auth", "status": "ok"})
-                    except pyjwt.InvalidTokenError:
-                        await websocket.send_json({"type": "auth", "status": "error", "detail": "Token inválido"})
-
-                elif client_data.get("action") == "send":
-                    # Requires authentication to send messages
-                    if not authenticated_user:
-                        await websocket.send_json(
-                            {"type": "error", "detail": 'Authenticate first: {"action": "auth", "token": "JWT"}'}
-                        )
-                        continue
-
+                if client_data.get("action") == "send":
                     text = client_data.get("text", "").strip()
                     if text and len(text) <= MAX_MSG_LENGTH:
                         outgoing = {
