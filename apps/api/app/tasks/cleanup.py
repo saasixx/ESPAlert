@@ -66,11 +66,7 @@ async def _run_cleanup():
             await db.execute(archive_stmt, {"ids": ids})
 
             # Delete from live table
-            del_stmt = (
-                delete(Event)
-                .where(Event.id.in_(ids))
-                .execution_options(synchronize_session=False)
-            )
+            del_stmt = delete(Event).where(Event.id.in_(ids)).execution_options(synchronize_session=False)
             del_result = await db.execute(del_stmt)
             deleted = del_result.rowcount
             await db.commit()

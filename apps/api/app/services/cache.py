@@ -9,8 +9,8 @@ import redis.asyncio as aioredis
 
 logger = logging.getLogger(__name__)
 
-CACHE_TTL_EVENTS = 300   # 5 min — matches fastest poll interval (IGN 2 min, rounded up)
-CACHE_TTL_SUMMARY = 60   # 1 min — summary changes more frequently
+CACHE_TTL_EVENTS = 300  # 5 min — matches fastest poll interval (IGN 2 min, rounded up)
+CACHE_TTL_SUMMARY = 60  # 1 min — summary changes more frequently
 
 _PREFIX = "espalert:cache"
 _KEY_EVENTS_GLOB = f"{_PREFIX}:events:*"

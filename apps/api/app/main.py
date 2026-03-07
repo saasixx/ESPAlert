@@ -31,10 +31,7 @@ async def lifespan(_app: FastAPI):
     validate_security_config()
 
     if not os.environ.get("JWT_SECRET"):
-        logger.warning(
-            "JWT_SECRET not set — using ephemeral dev secret. "
-            "All tokens will be invalid after restart."
-        )
+        logger.warning("JWT_SECRET not set — using ephemeral dev secret. All tokens will be invalid after restart.")
 
     logger.info("🚀 %s v%s starting...", settings.APP_NAME, settings.APP_VERSION)
     logger.info("   Environment: %s | Debug: %s", settings.ENVIRONMENT, settings.DEBUG)

@@ -62,17 +62,19 @@ async def list_events(
 ):
     """List alert events with optional filters (type, severity, geo-radius)."""
     redis = get_redis()
-    cache_key = events_cache_key({
-        "event_type": event_type,
-        "severity": severity,
-        "source": source,
-        "active_only": active_only,
-        "lat": lat,
-        "lon": lon,
-        "radius_km": radius_km,
-        "limit": limit,
-        "offset": offset,
-    })
+    cache_key = events_cache_key(
+        {
+            "event_type": event_type,
+            "severity": severity,
+            "source": source,
+            "active_only": active_only,
+            "lat": lat,
+            "lon": lon,
+            "radius_km": radius_km,
+            "limit": limit,
+            "offset": offset,
+        }
+    )
 
     cached = await get_cached(redis, cache_key)
     if cached is not None:
@@ -135,6 +137,7 @@ async def get_event(
 
     if not row:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404, detail="Event not found")
 
     return _event_to_out(row.Event, row.area_geojson)
