@@ -10,7 +10,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-    - uses: actions/stale@v9
+    - uses: actions/stale@v10
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         stale-issue-message: 'Esta Issue lleva inactiva mucho tiempo sin nuevas respuestas. Se marcará como inactiva (stale) y se cerrará automáticamente en 7 días si nadie comenta. Gracias por tu comprensión.'
