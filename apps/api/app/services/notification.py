@@ -206,7 +206,7 @@ class NotificationService:
         type_emoji = TYPE_EMOJI.get(type_val, "⚠️")
         title = f"{display['emoji']} {type_emoji} *Alerta: {event.title}*"
         body = f"Nueva alerta en su zona de interés:\\n\\n*Severidad:* {severity_val.upper()}\\n*Tipo:* {type_val.upper()}\\n\\n*Descripción:*\\n{event.description or ''}"
-        
+
         message_text = f"{title}\\n\\n{body}"
 
         try:
