@@ -14,6 +14,8 @@ from app.connectors.meteoalarm import MeteoAlarmConnector
 from app.services.normalizer import Normalizer
 from app.services.geo_engine import GeoEngine
 from app.services.notification import NotificationService
+from app.services.cache import invalidate_events_cache
+from app.database import get_redis
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -44,6 +46,10 @@ async def _process_events(raw_events: list[dict]):
                         await notifier.notify_users(event, affected)
 
                 await db.commit()
+
+                # Invalidate cached event listings so new data is served immediately
+                redis = get_redis()
+                await invalidate_events_cache(redis)
             else:
                 await db.commit()
 
