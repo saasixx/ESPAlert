@@ -1,10 +1,10 @@
-"""Cleanup task — purges expired events and temporary data."""
+"""Cleanup task — archives expired events then purges them from the live table."""
 
 import asyncio
 import logging
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import delete, select, func
+from sqlalchemy import delete, select, func, text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from app.tasks.celery_app import celery_app
@@ -14,10 +14,10 @@ from app.models.event import Event
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# Days after expiration before purging the event
-PURGE_AFTER_DAYS = 7
+# Roadmap spec: purge events older than 30 days
+PURGE_AFTER_DAYS = 30
 
-# Maximum events to purge per run (prevents long locks)
+# Maximum events to process per run (prevents long locks)
 PURGE_BATCH_SIZE = 500
 
 
@@ -27,7 +27,7 @@ def _get_async_session() -> async_sessionmaker:
 
 
 async def _run_cleanup():
-    """Purge events expired more than PURGE_AFTER_DAYS days ago."""
+    """Archive events expired > PURGE_AFTER_DAYS days ago, then delete them."""
     session_factory = _get_async_session()
     cutoff = datetime.now(timezone.utc) - timedelta(days=PURGE_AFTER_DAYS)
 
@@ -42,13 +42,45 @@ async def _run_cleanup():
                 logger.info("Cleanup: no expired events to purge.")
                 return 0
 
-            # Purge in batch
-            stmt = delete(Event).where(Event.expires < cutoff).execution_options(synchronize_session=False)
-            result = await db.execute(stmt)
-            deleted = result.rowcount
+            # Fetch IDs to process in this batch
+            id_stmt = select(Event.id).where(Event.expires < cutoff).limit(PURGE_BATCH_SIZE)
+            id_result = await db.execute(id_stmt)
+            ids = [row[0] for row in id_result.all()]
+
+            # Archive before deleting — INSERT … SELECT with ON CONFLICT DO NOTHING
+            # (safe to re-run if a previous run failed mid-way)
+            archive_stmt = text("""
+                INSERT INTO events_archive (
+                    id, source, source_id, event_type, severity, title, description,
+                    instructions, area, area_name, effective, expires, source_url,
+                    raw_data, magnitude, depth_km, created_at, updated_at, archived_at
+                )
+                SELECT
+                    id, source, source_id, event_type, severity, title, description,
+                    instructions, area, area_name, effective, expires, source_url,
+                    raw_data, magnitude, depth_km, created_at, updated_at, now()
+                FROM events
+                WHERE id = ANY(:ids)
+                ON CONFLICT (id) DO NOTHING
+            """)
+            await db.execute(archive_stmt, {"ids": ids})
+
+            # Delete from live table
+            del_stmt = (
+                delete(Event)
+                .where(Event.id.in_(ids))
+                .execution_options(synchronize_session=False)
+            )
+            del_result = await db.execute(del_stmt)
+            deleted = del_result.rowcount
             await db.commit()
 
-            logger.info("Cleanup: purged %d/%d expired events (cutoff: %s).", deleted, total, cutoff.isoformat())
+            logger.info(
+                "Cleanup: archived and purged %d/%d expired events (cutoff: %s).",
+                deleted,
+                total,
+                cutoff.isoformat(),
+            )
             return deleted
 
         except Exception as e:
@@ -59,7 +91,7 @@ async def _run_cleanup():
 
 @celery_app.task(name="app.tasks.cleanup.cleanup_expired_events", bind=True, max_retries=2)
 def cleanup_expired_events(self):
-    """Periodic purge of expired events from the database."""
+    """Periodic task: archive then purge expired events from the database."""
     try:
         deleted = asyncio.run(_run_cleanup())
         return {"deleted": deleted}
