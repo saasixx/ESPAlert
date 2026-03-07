@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   lint-frontend:
-    name: "Lint, Typecheck y Build frontend"
+    name: "Lint, Typecheck, Tests y Build frontend"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +29,10 @@ jobs:
 
       - name: Typecheck
         run: npx tsc --noEmit
+        working-directory: apps/web
+
+      - name: Tests
+        run: npm run test
         working-directory: apps/web
 
       - name: Build
