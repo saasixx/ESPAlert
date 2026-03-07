@@ -24,13 +24,13 @@ def upgrade() -> None:
         sa.Column("id", sa.UUID(), nullable=False),
         sa.Column(
             "source",
-            sa.Enum("AEMET", "IGN", "DGT", "METEOALARM", "ESALERT", name="event_source"),
+            postgresql.ENUM("AEMET", "IGN", "DGT", "METEOALARM", "ESALERT", name="event_source", create_type=False),
             nullable=False,
         ),
         sa.Column("source_id", sa.String(length=255), nullable=False),
         sa.Column(
             "event_type",
-            sa.Enum(
+            postgresql.ENUM(
                 "WIND",
                 "RAIN",
                 "STORM",
@@ -53,12 +53,13 @@ def upgrade() -> None:
                 "CIVIL_PROTECTION",
                 "OTHER",
                 name="event_type",
+                create_type=False,
             ),
             nullable=False,
         ),
         sa.Column(
             "severity",
-            sa.Enum("GREEN", "YELLOW", "ORANGE", "RED", name="severity"),
+            postgresql.ENUM("GREEN", "YELLOW", "ORANGE", "RED", name="severity", create_type=False),
             nullable=False,
         ),
         sa.Column("title", sa.String(length=500), nullable=False),
