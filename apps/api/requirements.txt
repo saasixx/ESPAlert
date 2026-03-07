@@ -31,7 +31,7 @@ pyjwt==2.10.1
 passlib[bcrypt]==1.7.4
 
 # GeoJSON / Geometry
-shapely==2.0.6
+shapely==2.1.2
 geojson==3.2.0
 
 # Utils
