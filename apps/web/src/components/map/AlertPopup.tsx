@@ -11,7 +11,7 @@ import { Activity, ExternalLink, MapPin } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import type { AlertEvent } from "@/types/events";
-import { SEVERITY_CONFIG } from "@/lib/constants";
+import { SEVERITY_CONFIG, UI_STRINGS } from "@/lib/constants";
 
 interface AlertPopupProps {
   event: AlertEvent;
@@ -50,8 +50,8 @@ export function AlertPopup({ event }: AlertPopupProps) {
       {event.magnitude && (
         <div className="flex items-center gap-1.5 text-xs font-medium text-purple-400">
           <Activity size={12} />
-          Magnitud: {event.magnitude}
-          {event.depth_km && ` • Prof: ${event.depth_km} km`}
+          {UI_STRINGS.alertPopup.magnitude}: {event.magnitude}
+          {event.depth_km && ` • ${UI_STRINGS.alertPopup.depthShort}: ${event.depth_km} km`}
         </div>
       )}
 
@@ -69,7 +69,7 @@ export function AlertPopup({ event }: AlertPopupProps) {
           className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
         >
           <ExternalLink size={10} />
-          Ver fuente oficial
+          {UI_STRINGS.alertPopup.officialSource}
         </a>
       )}
     </div>
