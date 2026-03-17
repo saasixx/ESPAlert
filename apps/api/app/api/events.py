@@ -60,7 +60,31 @@ async def list_events(
     offset: int = Query(0),
     db: AsyncSession = Depends(get_db),
 ):
-    """List alert events with optional filters (type, severity, geo-radius)."""
+    """List alert events with optional filters.
+
+    Returns paginated events from AEMET, IGN, DGT, and MeteoAlarm sources.
+    Supports filtering by event type, severity, source, and geographic radius.
+    Results are cached for performance.
+
+    Args:
+        event_type: Filter by event type (e.g. ``flood``, ``earthquake``).
+        severity: Filter by severity level (e.g. ``extreme``, ``severe``).
+        source: Filter by data source (``aemet``, ``ign``, ``dgt``, ``meteoalarm``).
+        active_only: If ``True``, only return events currently in effect
+            (i.e. ``effective <= now <= expires``). Defaults to ``True``.
+        lat: Latitude for geographic radius filter (WGS84 decimal degrees).
+        lon: Longitude for geographic radius filter (WGS84 decimal degrees).
+        radius_km: Search radius in kilometres when ``lat``/``lon`` are provided.
+            Defaults to ``50``.
+        limit: Maximum number of results to return per page (default ``50``,
+            max ``200``).
+        offset: Number of results to skip for pagination. Defaults to ``0``.
+
+    Returns:
+        List of ``EventOut`` objects, each containing ``id``, ``source``,
+        ``source_id``, ``event_type``, ``severity``, ``title``, ``description``,
+        ``area_geojson``, ``effective``, ``expires``, and related fields.
+    """
     redis = get_redis()
     cache_key = events_cache_key(
         {
