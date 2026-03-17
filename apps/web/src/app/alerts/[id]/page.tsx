@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { SEVERITY_CONFIG } from "@/lib/constants";
+import { SEVERITY_CONFIG, UI_STRINGS } from "@/lib/constants";
 import type { AlertEvent } from "@/types/events";
 import { AlertDetailMap } from "@/components/map/AlertDetailMap";
 
@@ -40,40 +40,6 @@ function formatDate(iso: string | null | undefined): string {
   }
 }
 
-/** Mapping of event_type to readable label. */
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  wind: "Viento",
-  rain: "Lluvia",
-  storm: "Tormenta",
-  snow: "Nieve",
-  ice: "Hielo",
-  fog: "Niebla",
-  heat: "Altas temperaturas",
-  cold: "Bajas temperaturas",
-  fire_risk: "Riesgo de incendio",
-  coastal: "Costero",
-  wave: "Oleaje",
-  tide: "Mareas",
-  earthquake: "Terremoto",
-  tsunami: "Tsunami",
-  traffic_accident: "Accidente de tráfico",
-  traffic_closure: "Corte de tráfico",
-  traffic_works: "Obras en vía",
-  traffic_jam: "Retenciones",
-  civil_protection: "Protección civil",
-  uv: "Radiación UV",
-  other: "Otro",
-};
-
-/** Mapping of source to readable name. */
-const SOURCE_LABELS: Record<string, string> = {
-  aemet: "AEMET",
-  ign: "IGN",
-  dgt: "DGT",
-  meteoalarm: "MeteoAlarm",
-  esalert: "ESPAlert",
-};
-
 export default async function AlertDetailPage({
   params,
 }: {
@@ -96,7 +62,7 @@ export default async function AlertDetailPage({
           <Link href="/">
             <Button variant="ghost" size="icon" className="shrink-0">
               <ArrowLeft size={20} />
-              <span className="sr-only">Volver al mapa</span>
+              <span className="sr-only">{UI_STRINGS.alertDetail.backToMap}</span>
             </Button>
           </Link>
           <div className="flex-1 min-w-0">
@@ -104,7 +70,7 @@ export default async function AlertDetailPage({
               {event.title}
             </h1>
             <p className="text-xs text-muted-foreground">
-              {SOURCE_LABELS[event.source] ?? event.source} · {EVENT_TYPE_LABELS[event.event_type] ?? event.event_type}
+              {UI_STRINGS.sourceLabels[event.source as keyof typeof UI_STRINGS.sourceLabels] ?? event.source} · {UI_STRINGS.eventTypeLabels[event.event_type as keyof typeof UI_STRINGS.eventTypeLabels] ?? event.event_type}
             </p>
           </div>
           <Badge
@@ -135,22 +101,22 @@ export default async function AlertDetailPage({
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Clock size={16} className="text-muted-foreground" />
-                Línea temporal
+                {UI_STRINGS.alertDetail.timeline}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Inicio</span>
+                <span className="text-muted-foreground">{UI_STRINGS.alertDetail.start}</span>
                 <span className="font-medium">{formatDate(event.effective)}</span>
               </div>
               <Separator />
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Expiración</span>
+                <span className="text-muted-foreground">{UI_STRINGS.alertDetail.expiration}</span>
                 <span className="font-medium">{formatDate(event.expires)}</span>
               </div>
               <Separator />
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Registrado</span>
+                <span className="text-muted-foreground">{UI_STRINGS.alertDetail.recorded}</span>
                 <span className="font-medium">{formatDate(event.created_at)}</span>
               </div>
             </CardContent>
@@ -161,14 +127,14 @@ export default async function AlertDetailPage({
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
                 <MapPin size={16} className="text-muted-foreground" />
-                Ubicación
+                {UI_STRINGS.alertDetail.location}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               {event.area_name && (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Zona</span>
+                    <span className="text-muted-foreground">{UI_STRINGS.alertDetail.area}</span>
                     <span className="font-medium text-right max-w-[60%]">{event.area_name}</span>
                   </div>
                   <Separator />
@@ -177,7 +143,7 @@ export default async function AlertDetailPage({
               {event.magnitude && (
                 <>
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Magnitud</span>
+                    <span className="text-muted-foreground">{UI_STRINGS.alertDetail.magnitude}</span>
                     <span className="font-semibold text-purple-500 flex items-center gap-1">
                       <Activity size={14} />
                       {event.magnitude}
@@ -189,15 +155,15 @@ export default async function AlertDetailPage({
               {event.depth_km && (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Profundidad</span>
+                    <span className="text-muted-foreground">{UI_STRINGS.alertDetail.depth}</span>
                     <span className="font-medium">{event.depth_km} km</span>
                   </div>
                   <Separator />
                 </>
               )}
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Fuente</span>
-                <span className="font-medium">{SOURCE_LABELS[event.source] ?? event.source}</span>
+                <span className="text-muted-foreground">{UI_STRINGS.alertDetail.source}</span>
+                <span className="font-medium">{UI_STRINGS.sourceLabels[event.source as keyof typeof UI_STRINGS.sourceLabels] ?? event.source}</span>
               </div>
             </CardContent>
           </Card>
@@ -209,7 +175,7 @@ export default async function AlertDetailPage({
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Info size={16} className="text-muted-foreground" />
-                Descripción
+                {UI_STRINGS.alertDetail.description}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -226,7 +192,7 @@ export default async function AlertDetailPage({
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-400">
                 <Shield size={16} />
-                Instrucciones de seguridad
+                {UI_STRINGS.alertDetail.safetyInstructions}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -243,7 +209,7 @@ export default async function AlertDetailPage({
             <a href={event.source_url} target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="gap-2">
                 <ExternalLink size={16} />
-                Ver en fuente oficial
+                {UI_STRINGS.alertDetail.officialSource}
               </Button>
             </a>
           </div>
