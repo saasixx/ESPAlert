@@ -202,7 +202,6 @@ async def test_batch_with_mixed_new_and_duplicate():
     existing = _make_db_event("batch-dup")
 
     call_count = 0
-    original_execute = None
 
     db = AsyncMock()
 

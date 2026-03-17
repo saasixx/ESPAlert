@@ -1,5 +1,5 @@
 # FastAPI & Server
-fastapi==0.115.6
+fastapi==0.135.1
 uvicorn[standard]==0.34.0
 python-multipart==0.0.20
 
@@ -12,7 +12,7 @@ psycopg2-binary==2.9.10
 
 # Redis & Celery
 redis==5.2.1
-celery[redis]==5.4.0
+celery[redis]==5.6.2
 
 # HTTP & Parsing
 httpx==0.28.1
