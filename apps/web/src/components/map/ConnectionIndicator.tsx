@@ -6,6 +6,7 @@
  */
 
 import { clsx } from "clsx";
+import { UI_STRINGS } from "@/lib/constants";
 
 interface ConnectionIndicatorProps {
   isConnected: boolean;
@@ -20,27 +21,27 @@ export function ConnectionIndicator({
     connected: {
       dot: "bg-green-500",
       text: "text-green-700 dark:text-green-400",
-      label: "En vivo",
+      label: UI_STRINGS.connectionState.connected,
     },
     connecting: {
       dot: "bg-yellow-500 animate-pulse",
       text: "text-yellow-700 dark:text-yellow-400",
-      label: "Conectando…",
+      label: UI_STRINGS.connectionState.connecting,
     },
     reconnecting: {
       dot: "bg-yellow-500 animate-pulse",
       text: "text-yellow-700 dark:text-yellow-400",
-      label: "Reconectando…",
+      label: UI_STRINGS.connectionState.reconnecting,
     },
     polling: {
       dot: "bg-blue-500",
       text: "text-blue-700 dark:text-blue-400",
-      label: "Actualización periódica",
+      label: UI_STRINGS.connectionState.polling,
     },
     disconnected: {
       dot: "bg-yellow-500",
       text: "text-yellow-700 dark:text-yellow-400",
-      label: "Conectando…",
+      label: UI_STRINGS.connectionState.disconnected,
     },
   };
 
