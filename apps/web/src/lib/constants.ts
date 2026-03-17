@@ -66,6 +66,67 @@ export const CATEGORY_CONFIG: Record<
   maritime: { label: "Costero", icon: "Waves" },
 };
 
+/** UI copy consolidated for future i18n work in map and alert views. */
+export const UI_STRINGS = {
+  connectionState: {
+    connected: "En vivo",
+    connecting: "Conectando…",
+    reconnecting: "Reconectando…",
+    polling: "Actualizacion periodica",
+    disconnected: "Conectando…",
+  },
+  alertPopup: {
+    magnitude: "Magnitud",
+    depthShort: "Prof",
+    officialSource: "Ver fuente oficial",
+  },
+  alertDetail: {
+    backToMap: "Volver al mapa",
+    timeline: "Linea temporal",
+    start: "Inicio",
+    expiration: "Expiracion",
+    recorded: "Registrado",
+    location: "Ubicacion",
+    area: "Zona",
+    magnitude: "Magnitud",
+    depth: "Profundidad",
+    source: "Fuente",
+    description: "Descripcion",
+    safetyInstructions: "Instrucciones de seguridad",
+    officialSource: "Ver en fuente oficial",
+  },
+  eventTypeLabels: {
+    wind: "Viento",
+    rain: "Lluvia",
+    storm: "Tormenta",
+    snow: "Nieve",
+    ice: "Hielo",
+    fog: "Niebla",
+    heat: "Altas temperaturas",
+    cold: "Bajas temperaturas",
+    fire_risk: "Riesgo de incendio",
+    coastal: "Costero",
+    wave: "Oleaje",
+    tide: "Mareas",
+    earthquake: "Terremoto",
+    tsunami: "Tsunami",
+    traffic_accident: "Accidente de trafico",
+    traffic_closure: "Corte de trafico",
+    traffic_works: "Obras en via",
+    traffic_jam: "Retenciones",
+    civil_protection: "Proteccion civil",
+    uv: "Radiacion UV",
+    other: "Otro",
+  },
+  sourceLabels: {
+    aemet: "AEMET",
+    ign: "IGN",
+    dgt: "DGT",
+    meteoalarm: "MeteoAlarm",
+    esalert: "ESPAlert",
+  },
+} as const;
+
 /**
  * Resolves the display category from an event's icon_key hint (backend)
  * or falls back to deriving it from event_type.
