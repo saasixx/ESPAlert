@@ -110,7 +110,25 @@ async def root():
 
 @app.get("/health")
 async def health(detailed: bool = False):
-    """Application health check with component latency."""
+    """Application health check with component latency.
+
+    Probes the database and Redis connections and measures their response
+    latency. Returns an overall status of ``healthy`` or ``degraded``.
+
+    In ``DEBUG`` mode, or when ``detailed=True``, the response is expanded to
+    include per-component check results (with latency), the application version,
+    the runtime environment, and optional ingest statistics for the last hour.
+
+    Args:
+        detailed: If ``True``, include full per-component checks, latency
+            figures, version, environment, and ingest statistics in the
+            response body.
+
+    Returns:
+        Dict containing ``status`` (``"healthy"`` or ``"degraded"``), and
+        optionally ``checks``, ``version``, ``environment``, and
+        ``ingest_last_hour`` when ``detailed=True`` or running in DEBUG mode.
+    """
     import time as _time
 
     checks: dict[str, dict] = {
