@@ -6,7 +6,7 @@ python-multipart==0.0.20
 # Database
 sqlalchemy==2.0.36
 geoalchemy2==0.15.2
-alembic==1.14.1
+alembic==1.18.4
 asyncpg==0.30.0
 psycopg2-binary==2.9.10
 
